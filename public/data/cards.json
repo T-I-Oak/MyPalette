@@ -1,0 +1,4784 @@
+{
+  "cards": [
+    {
+      "id": "A01",
+      "name": "レモンのある静物",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": true,
+          "green": false,
+          "blue": false,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "color": null,
+              "material": "brush"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "brush"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "brush"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": "yellow",
+              "material": "brush"
+            },
+            {
+              "material": null,
+              "color": "yellow",
+              "join": "or"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "brush"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "brush"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A02",
+      "name": "すみれの花束",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": false,
+          "blue": false,
+          "purple": true,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "color": null,
+              "material": "brush"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "color": "purple",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": "purple",
+              "material": "brush"
+            },
+            {
+              "material": null,
+              "color": "purple",
+              "join": "or"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A03",
+      "name": "赤毛の少女",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": true,
+          "yellow": false,
+          "green": true,
+          "blue": false,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "color": null,
+              "material": "brush"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "drawCards",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": "orange",
+              "material": null
+            },
+            {
+              "color": "green",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "drawCards",
+              "count": 1
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "green"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "drawCards",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "drawCards",
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A04",
+      "name": "赤い自転車",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": false,
+          "blue": true,
+          "purple": false,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "color": null,
+              "material": "brush"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": "blue",
+              "material": null
+            },
+            {
+              "color": "red",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "color": "blue",
+              "material": null
+            },
+            {
+              "color": "red",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A05",
+      "name": "新緑のトンネル",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": true,
+          "blue": false,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": null,
+              "material": "pastel"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "pastel"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": "green",
+              "material": "pastel"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "pastel"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": "green",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "pastel"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "pastel"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A06",
+      "name": "赤い手袋",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": false,
+          "blue": false,
+          "purple": false,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": null,
+              "material": "pastel"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": "red",
+              "material": "pastel"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": "red",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A07",
+      "name": "夏の麦わら帽子",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": true,
+          "green": false,
+          "blue": true,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": null,
+              "material": "pastel"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "drawCards",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": "yellow",
+              "material": null
+            },
+            {
+              "material": null,
+              "color": "blue"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "drawCards",
+              "count": 1
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": "yellow",
+              "material": "pastel"
+            },
+            {
+              "material": "pastel",
+              "color": "blue",
+              "join": "or"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "drawCards",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "drawCards",
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A08",
+      "name": "夕焼けの路面電車",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": true,
+          "yellow": false,
+          "green": false,
+          "blue": false,
+          "purple": true,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": null,
+              "material": "pastel"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": "orange",
+              "material": null
+            },
+            {
+              "color": "purple",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": "orange",
+              "material": "pastel"
+            },
+            {
+              "material": "pastel",
+              "color": "purple",
+              "join": "or"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A09",
+      "name": "青いビー玉",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": false,
+          "blue": true,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "airbrush"
+            },
+            {
+              "color": null,
+              "material": "airbrush"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "airbrush"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": "blue",
+              "material": "airbrush"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "airbrush"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": "blue",
+              "material": "airbrush"
+            },
+            {
+              "color": null,
+              "material": "airbrush"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "airbrush"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "airbrush"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A10",
+      "name": "窓辺のマーマレード",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": true,
+          "yellow": false,
+          "green": false,
+          "blue": false,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "airbrush"
+            },
+            {
+              "color": null,
+              "material": "airbrush"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": "orange",
+              "material": "airbrush"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": "orange",
+              "material": "airbrush"
+            },
+            {
+              "color": null,
+              "material": "airbrush"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A11",
+      "name": "森のブランコ",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": true,
+          "blue": false,
+          "purple": true,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "airbrush"
+            },
+            {
+              "color": null,
+              "material": "airbrush"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "drawCards",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": "green",
+              "material": null
+            },
+            {
+              "color": "purple",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "drawCards",
+              "count": 1
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "airbrush"
+            },
+            {
+              "color": "green",
+              "material": null
+            },
+            {
+              "color": "purple",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "drawCards",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "drawCards",
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A12",
+      "name": "黄色い風",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": true,
+          "green": false,
+          "blue": false,
+          "purple": false,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "airbrush"
+            },
+            {
+              "color": null,
+              "material": "airbrush"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": "yellow",
+              "material": null
+            },
+            {
+              "color": "red",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "airbrush"
+            },
+            {
+              "color": "yellow",
+              "material": null
+            },
+            {
+              "color": "red",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A13",
+      "name": "踊る赤い花",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": false,
+          "blue": false,
+          "purple": true,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": null,
+              "material": "pastel"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "reroll"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": "purple",
+              "material": null
+            },
+            {
+              "color": "red",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "reroll"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "color": null,
+              "material": "pastel"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "reroll"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "reroll"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A14",
+      "name": "夏のプールサイド",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": true,
+          "blue": true,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null,
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "reroll"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": "green",
+              "material": null
+            },
+            {
+              "color": "blue",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "reroll"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "brush"
+            },
+            {
+              "color": null,
+              "material": "airbrush"
+            },
+            {
+              "color": "green",
+              "material": null
+            },
+            {
+              "color": "blue",
+              "material": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "reroll"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "reroll"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A15",
+      "name": "灯りのともる窓",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": true,
+          "yellow": true,
+          "green": false,
+          "blue": false,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null,
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "reroll"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "color": null,
+              "material": "pastel"
+            },
+            {
+              "color": "orange",
+              "material": null
+            },
+            {
+              "color": "yellow",
+              "material": null
+            },
+            {
+              "material": "airbrush",
+              "color": null,
+              "join": "or"
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "reroll"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "color": "orange",
+              "material": "pastel"
+            },
+            {
+              "color": "yellow",
+              "material": "airbrush"
+            },
+            {
+              "material": "pastel",
+              "color": "yellow",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "orange"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "reroll"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "reroll"
+            },
+            {
+              "type": "changeFame",
+              "amount": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B01",
+      "name": "黄昏の砂丘",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": true,
+          "yellow": true,
+          "green": false,
+          "blue": false,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeMaterial",
+              "material": "brush"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeMaterial",
+              "material": "brush"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": "brush",
+              "color": "yellow",
+              "join": "or"
+            },
+            {
+              "material": null,
+              "color": "orange"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "permanent",
+              "material": "brush"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B02",
+      "name": "翠雨の竹林",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": true,
+          "blue": true,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeColor",
+              "color": "green"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeColor",
+              "color": "blue"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": "brush",
+              "color": "blue",
+              "join": "or"
+            },
+            {
+              "material": null,
+              "color": "green"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryBrush1"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B03",
+      "name": "孔雀石の夢",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": true,
+          "blue": true,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": "pastel",
+              "color": "blue",
+              "join": "or"
+            },
+            {
+              "material": null,
+              "color": "green"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeMaterial",
+              "material": "pastel"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeMaterial",
+              "material": "pastel"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "permanent",
+              "material": "pastel"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B04",
+      "name": "紅のフラメンコ",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": false,
+          "blue": false,
+          "purple": true,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "purple"
+            },
+            {
+              "material": null,
+              "color": "red"
+            },
+            {
+              "material": "pastel",
+              "color": "red",
+              "join": "or"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeColor",
+              "color": "purple"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "purple"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeColor",
+              "color": "red"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "purple"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryPastel1"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B05",
+      "name": "珊瑚の楽園",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": false,
+          "blue": false,
+          "purple": true,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "purple"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeMaterial",
+              "material": "airbrush"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "purple"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeMaterial",
+              "material": "airbrush"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "airbrush",
+              "color": "purple"
+            },
+            {
+              "material": null,
+              "color": "red"
+            },
+            {
+              "material": "airbrush",
+              "color": "red",
+              "join": "or"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "permanent",
+              "material": "airbrush"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B06",
+      "name": "光の回廊",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": true,
+          "yellow": true,
+          "green": false,
+          "blue": false,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeColor",
+              "color": "orange"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeColor",
+              "color": "yellow"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "airbrush",
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": "airbrush",
+              "color": "yellow",
+              "join": "or"
+            },
+            {
+              "material": null,
+              "color": "orange"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryAirbrush1"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B07",
+      "name": "彩色の街並み",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": true,
+          "green": true,
+          "blue": false,
+          "purple": true,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "discardDice",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "permanent"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainStockCards",
+              "count": 1
+            },
+            {
+              "type": "changeFame",
+              "amount": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B08",
+      "name": "果実の饗宴",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": true,
+          "yellow": true,
+          "green": false,
+          "blue": false,
+          "purple": false,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryNormal1"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryNormal1"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryNormal1"
+            },
+            {
+              "type": "changeFame",
+              "amount": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B09",
+      "name": "星空のサーカス",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": true,
+          "yellow": false,
+          "green": false,
+          "blue": true,
+          "purple": true,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "blue"
+            },
+            {
+              "material": "pastel",
+              "color": "purple"
+            },
+            {
+              "material": "brush",
+              "color": "purple",
+              "join": "or"
+            },
+            {
+              "material": "pastel",
+              "color": "blue"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainColorDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "colors": "orange_blue"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "orange"
+            },
+            {
+              "material": "pastel",
+              "color": "red"
+            },
+            {
+              "material": "brush",
+              "color": "red",
+              "join": "or"
+            },
+            {
+              "material": "pastel",
+              "color": "orange"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryOrangeBlue1"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainColorDice",
+              "count": 1,
+              "lifetime": "permanent",
+              "colors": "orange_blue"
+            },
+            {
+              "type": "changeFame",
+              "amount": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B10",
+      "name": "雨上がりの花市場",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": true,
+          "blue": true,
+          "purple": false,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "discardDice",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "permanent"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "green"
+            },
+            {
+              "material": "airbrush",
+              "color": "blue"
+            },
+            {
+              "material": "brush",
+              "color": "blue",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "red"
+            },
+            {
+              "material": "brush",
+              "color": "red",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "green"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainStockCards",
+              "count": 1
+            },
+            {
+              "type": "changeFame",
+              "amount": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B11",
+      "name": "水晶の洞窟",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": true,
+          "green": true,
+          "blue": true,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryNormal1"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryNormal1"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "yellow"
+            },
+            {
+              "material": "airbrush",
+              "color": "green"
+            },
+            {
+              "material": "brush",
+              "color": "green",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "blue"
+            },
+            {
+              "material": "brush",
+              "color": "blue",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryNormal1"
+            },
+            {
+              "type": "changeFame",
+              "amount": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B12",
+      "name": "夕暮れのランタン祭り",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": true,
+          "yellow": true,
+          "green": false,
+          "blue": false,
+          "purple": true,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainColorDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "colors": "yellow_purple"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "orange"
+            },
+            {
+              "material": "airbrush",
+              "color": "yellow"
+            },
+            {
+              "material": "brush",
+              "color": "yellow",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "purple"
+            },
+            {
+              "material": "brush",
+              "color": "purple",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "red"
+            },
+            {
+              "material": "brush",
+              "color": "red",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "orange"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryYellowPurple1"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainColorDice",
+              "count": 1,
+              "lifetime": "permanent",
+              "colors": "yellow_purple"
+            },
+            {
+              "type": "changeFame",
+              "amount": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B13",
+      "name": "夏の記憶",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": true,
+          "yellow": true,
+          "green": false,
+          "blue": true,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "temporary"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "orange"
+            },
+            {
+              "material": "airbrush",
+              "color": "yellow"
+            },
+            {
+              "material": "pastel",
+              "color": "yellow",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "blue"
+            },
+            {
+              "material": "pastel",
+              "color": "blue",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "orange"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "discardDice",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "gainNormalDice",
+              "count": 1,
+              "lifetime": "permanent"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "orange"
+            },
+            {
+              "material": "airbrush",
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": "pastel",
+              "color": "yellow",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "blue"
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": "pastel",
+              "color": "blue",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainStockCards",
+              "count": 1
+            },
+            {
+              "type": "changeFame",
+              "amount": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B14",
+      "name": "青いヴァイオリン",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": true,
+          "blue": true,
+          "purple": true,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryNormal1"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "green"
+            },
+            {
+              "material": "airbrush",
+              "color": "blue"
+            },
+            {
+              "material": "pastel",
+              "color": "blue",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "purple"
+            },
+            {
+              "material": "pastel",
+              "color": "purple",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "green"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryNormal1"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "green"
+            },
+            {
+              "material": "airbrush",
+              "color": "blue"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            },
+            {
+              "material": "pastel",
+              "color": "blue",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "purple"
+            },
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": "pastel",
+              "color": "purple",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryNormal1"
+            },
+            {
+              "type": "changeFame",
+              "amount": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B15",
+      "name": "水槽の向こう側",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": true,
+          "yellow": false,
+          "green": true,
+          "blue": false,
+          "purple": true,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainColorDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "colors": "red_green"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "green"
+            },
+            {
+              "material": "airbrush",
+              "color": "red"
+            },
+            {
+              "material": "pastel",
+              "color": "red",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "green"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "temporaryRedGreen1"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "orange"
+            },
+            {
+              "material": "airbrush",
+              "color": "purple"
+            },
+            {
+              "material": "pastel",
+              "color": "purple",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "orange"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "gainColorDice",
+              "count": 1,
+              "lifetime": "permanent",
+              "colors": "red_green"
+            },
+            {
+              "type": "changeFame",
+              "amount": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C01",
+      "name": "収穫の祝祭",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": true,
+          "yellow": true,
+          "green": false,
+          "blue": false,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "brush"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": "brush",
+              "color": "yellow",
+              "join": "or"
+            },
+            {
+              "material": null,
+              "color": "orange"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "permanent",
+              "material": "brush"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "discardDice",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "brush"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C02",
+      "name": "翡翠の舞踏",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": true,
+          "blue": true,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "green"
+            },
+            {
+              "material": "pastel",
+              "color": "blue"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "pastel"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "permanent",
+              "material": "pastel"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "discardDice",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": "pastel",
+              "color": "blue",
+              "join": "or"
+            },
+            {
+              "material": null,
+              "color": "green"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "pastel"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C03",
+      "name": "薄暮の祈り",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": false,
+          "blue": false,
+          "purple": true,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "airbrush"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "purple"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "permanent",
+              "material": "airbrush"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "discardDice",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "airbrush",
+              "color": "purple"
+            },
+            {
+              "material": "airbrush",
+              "color": "red"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainMaterialDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "material": "airbrush"
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C04",
+      "name": "陽光の果樹園",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": true,
+          "green": true,
+          "blue": false,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "green"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "activateSpecialFaces"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "yellow"
+            },
+            {
+              "material": "pastel",
+              "color": "green"
+            },
+            {
+              "material": "brush",
+              "color": "green",
+              "join": "or"
+            },
+            {
+              "material": "pastel",
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "activateSpecialFaces"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "green"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "exchangeCards",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C05",
+      "name": "夜想曲",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": false,
+          "blue": true,
+          "purple": true,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeCardStep",
+              "step": 0
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "blue"
+            },
+            {
+              "material": "pastel",
+              "color": "purple"
+            },
+            {
+              "material": "brush",
+              "color": "purple",
+              "join": "or"
+            },
+            {
+              "material": "pastel",
+              "color": "blue"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeCardStep",
+              "step": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeCardStep",
+              "step": 2
+            },
+            {
+              "type": "changeFame",
+              "amount": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C06",
+      "name": "紅蓮の騎行",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": true,
+          "airbrush": false
+        },
+        "colors": {
+          "orange": true,
+          "yellow": false,
+          "green": false,
+          "blue": false,
+          "purple": false,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "red"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "fame1"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "orange"
+            },
+            {
+              "material": "pastel",
+              "color": "red"
+            },
+            {
+              "material": "brush",
+              "color": "red",
+              "join": "or"
+            },
+            {
+              "material": "pastel",
+              "color": "orange"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "fame1"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainStockCards",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C07",
+      "name": "月下の藤棚",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": true,
+          "blue": false,
+          "purple": true,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "activateSpecialFaces"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "green"
+            },
+            {
+              "material": "airbrush",
+              "color": "purple"
+            },
+            {
+              "material": "brush",
+              "color": "purple",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "green"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "activateSpecialFaces"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "exchangeCards",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C08",
+      "name": "薔薇と硝子",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": false,
+          "blue": true,
+          "purple": false,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeCardStep",
+              "step": 0
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "blue"
+            },
+            {
+              "material": "airbrush",
+              "color": "red"
+            },
+            {
+              "material": "brush",
+              "color": "red",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "blue"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeCardStep",
+              "step": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": null,
+              "color": "red"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeCardStep",
+              "step": 2
+            },
+            {
+              "type": "changeFame",
+              "amount": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C09",
+      "name": "千年の夕映え",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": false,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": true,
+          "yellow": false,
+          "green": false,
+          "blue": false,
+          "purple": true,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "fame1"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "orange"
+            },
+            {
+              "material": "airbrush",
+              "color": "purple"
+            },
+            {
+              "material": "brush",
+              "color": "orange",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "purple"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "fame1"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainStockCards",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C10",
+      "name": "革命の朝",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": true,
+          "green": false,
+          "blue": false,
+          "purple": false,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "activateSpecialFaces"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "yellow"
+            },
+            {
+              "material": "pastel",
+              "color": "red"
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null,
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "yellow"
+            },
+            {
+              "material": "airbrush",
+              "color": "red"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "activateSpecialFaces"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "yellow"
+            },
+            {
+              "material": "airbrush",
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "red"
+            },
+            {
+              "material": "pastel",
+              "color": "red",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "red"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "exchangeCards",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C11",
+      "name": "密林の王",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": true,
+          "yellow": false,
+          "green": true,
+          "blue": false,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeCardStep",
+              "step": 0
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "orange"
+            },
+            {
+              "material": "pastel",
+              "color": "green"
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null,
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "orange"
+            },
+            {
+              "material": "airbrush",
+              "color": "green"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeCardStep",
+              "step": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "orange"
+            },
+            {
+              "material": "airbrush",
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": "pastel",
+              "color": "green",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "orange"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeCardStep",
+              "step": 2
+            },
+            {
+              "type": "changeFame",
+              "amount": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C12",
+      "name": "蒼天のひまわり",
+      "metadata": {
+        "materials": {
+          "brush": false,
+          "pastel": true,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": true,
+          "green": false,
+          "blue": true,
+          "purple": false,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "fame1"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "yellow"
+            },
+            {
+              "material": "pastel",
+              "color": "blue"
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null,
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "yellow"
+            },
+            {
+              "material": "airbrush",
+              "color": "blue"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "fame1"
+            }
+          ],
+          "achievementEffects": []
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "yellow"
+            },
+            {
+              "material": "airbrush",
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": "pastel",
+              "color": "blue",
+              "join": "or"
+            },
+            {
+              "material": "airbrush",
+              "color": "blue"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainStockCards",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C13",
+      "name": "玻璃の蝶",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": true,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": false,
+          "yellow": false,
+          "green": true,
+          "blue": true,
+          "purple": true,
+          "red": false
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "draw1"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "green"
+            },
+            {
+              "material": null,
+              "color": "blue"
+            },
+            {
+              "material": null,
+              "color": "purple"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "draw1"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "green"
+            },
+            {
+              "material": "pastel",
+              "color": "blue"
+            },
+            {
+              "material": "airbrush",
+              "color": "purple"
+            },
+            {
+              "material": "brush",
+              "color": "blue",
+              "join": "or"
+            },
+            {
+              "material": "pastel",
+              "color": "purple"
+            },
+            {
+              "material": "airbrush",
+              "color": "green"
+            },
+            {
+              "material": "brush",
+              "color": "purple",
+              "join": "or"
+            },
+            {
+              "material": "pastel",
+              "color": "green"
+            },
+            {
+              "material": "airbrush",
+              "color": "blue"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "draw1"
+            },
+            {
+              "type": "changeFame",
+              "amount": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C14",
+      "name": "硝子職人の工房",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": true,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": true,
+          "yellow": true,
+          "green": false,
+          "blue": false,
+          "purple": false,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "reroll1"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": null
+            },
+            {
+              "material": "pastel",
+              "color": null
+            },
+            {
+              "material": "airbrush",
+              "color": null
+            },
+            {
+              "material": null,
+              "color": "orange"
+            },
+            {
+              "material": null,
+              "color": "yellow"
+            },
+            {
+              "material": null,
+              "color": "red"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "reroll1"
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "orange"
+            },
+            {
+              "material": "pastel",
+              "color": "yellow"
+            },
+            {
+              "material": "airbrush",
+              "color": "red"
+            },
+            {
+              "material": "brush",
+              "color": "yellow",
+              "join": "or"
+            },
+            {
+              "material": "pastel",
+              "color": "red"
+            },
+            {
+              "material": "airbrush",
+              "color": "orange"
+            },
+            {
+              "material": "brush",
+              "color": "red",
+              "join": "or"
+            },
+            {
+              "material": "pastel",
+              "color": "orange"
+            },
+            {
+              "material": "airbrush",
+              "color": "yellow"
+            }
+          ],
+          "playEffects": [],
+          "achievementEffects": [
+            {
+              "type": "changeSpecialFace",
+              "face": "reroll1"
+            },
+            {
+              "type": "changeFame",
+              "amount": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C15",
+      "name": "光の継承",
+      "metadata": {
+        "materials": {
+          "brush": true,
+          "pastel": true,
+          "airbrush": true
+        },
+        "colors": {
+          "orange": true,
+          "yellow": true,
+          "green": true,
+          "blue": true,
+          "purple": true,
+          "red": true
+        }
+      },
+      "steps": [
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "orange"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "pastel",
+              "color": "yellow"
+            },
+            {
+              "material": "airbrush",
+              "color": "green"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 5
+            }
+          ]
+        },
+        {
+          "goals": [
+            {
+              "material": "brush",
+              "color": "blue"
+            },
+            {
+              "material": "pastel",
+              "color": "purple"
+            },
+            {
+              "material": "airbrush",
+              "color": "red"
+            }
+          ],
+          "playEffects": [
+            {
+              "type": "gainRerolls",
+              "count": 1
+            }
+          ],
+          "achievementEffects": [
+            {
+              "type": "changeFame",
+              "amount": 10
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
