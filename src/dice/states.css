@@ -1,0 +1,5 @@
+.state-special .DiceSpecialFrame { display: block; }
+.state-special .DiceResultMotion > img { position: absolute; left: 25%; top: 25%; width: 50%; height: 50%; }
+.state-special .texture-artwork { filter: none; }
+.DiceResult[hidden], .DiceSearchControls .Field[hidden], .DiceSearchBadge[hidden] { display: none; }
+.DiceSearchSummary[hidden] { display: flex; visibility: hidden; }

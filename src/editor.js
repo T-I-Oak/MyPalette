@@ -33,7 +33,7 @@ export function mountEditor(root, savedDocument, savedRevision) {
     const message = el('pre', '', 'Message');
     message.setAttribute('role', 'status');
     const layout = el('div', undefined, 'EditorLayout');
-    const overview = el('section', undefined, 'Overview texture-paper');
+    const overview = el('section', undefined, 'Overview Surface texture-paper');
     overview.setAttribute('aria-label', '45枚の設定一覧');
     const views = el('div', undefined, 'Toolbar');
     const showView = mode => {
@@ -48,8 +48,8 @@ export function mountEditor(root, savedDocument, savedRevision) {
     const wrapLabel = el('label', undefined, 'WrapControl'); const wrap = el('input'); wrap.type = 'checkbox';
     wrap.addEventListener('change', () => overview.classList.toggle('state-wrap', wrap.checked));
     wrapLabel.append(wrap, document.createTextNode('詳細を折り返す')); views.append(wrapLabel);
-    const sidebar = el('nav', undefined, 'CardList texture-paper'); sidebar.setAttribute('aria-label', 'カード一覧');
-    const detail = el('section', undefined, 'CardDetail texture-paper');
+    const sidebar = el('nav', undefined, 'CardList Surface texture-paper'); sidebar.setAttribute('aria-label', 'カード一覧');
+    const detail = el('section', undefined, 'CardDetail Surface texture-paper');
     const summary = el('p'); const saveState = el('span', 'ゲーム設定を読込済み');
     const draft = el('p', undefined, 'Draft');
     const current = () => state.document.cards.find(card => card.id === state.selected);

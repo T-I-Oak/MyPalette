@@ -9,6 +9,18 @@ const root = document.querySelector('#editor');
 root.textContent = 'ゲーム設定を読み込んでいます…';
 async function start() {
     try {
+        if (location.hash === '#icons') {
+            document.querySelector('header > span').textContent = '共通アイコン確認';
+            const { mountIconLab } = await import('./icons/lab.js');
+            mountIconLab(root, () => { location.href = location.pathname + location.search; });
+            return;
+        }
+        if (location.hash === '#dice') {
+            document.querySelector('header > span').textContent = 'ダイス動作確認';
+            const { mountDiceLab } = await import('./dice/lab.js');
+            await mountDiceLab(root, () => { location.href = location.pathname + location.search; });
+            return;
+        }
         const saved = await loadSettings();
         root.replaceChildren();
         const home = () => { location.href = location.pathname + location.search; };
@@ -20,14 +32,18 @@ async function start() {
             mountEditor(root, saved.document, saved.revision);
         } else {
             mode.textContent = '評価用ゲーム';
-            const menu = document.createElement('section'); menu.className = 'GameMenu texture-paper';
+            const menu = document.createElement('section'); menu.className = 'GameMenu Surface texture-paper';
             const heading = document.createElement('h2'); heading.textContent = 'アトリエで制作を始めましょう';
             const description = document.createElement('p'); description.textContent = '保存済みの45枚のカード設定で遊びます。画材を選んで作品を進め、信用を保ちながら名声を高めましょう。';
             const play = document.createElement('button'); play.className = 'Button'; play.textContent = 'ゲームを始める';
             play.addEventListener('click', () => mountGame(root, saved.document, home));
             const editor = document.createElement('button'); editor.className = 'Button'; editor.textContent = 'カード設定を開く';
             editor.addEventListener('click', () => { location.hash = 'settings'; location.reload(); });
-            menu.append(heading, description, play, editor); root.append(menu);
+            const dice = document.createElement('button'); dice.className = 'Button'; dice.textContent = 'ダイス動作確認を開く';
+            dice.addEventListener('click', () => { location.hash = 'dice'; location.reload(); });
+            const icons = document.createElement('button'); icons.className = 'Button'; icons.textContent = '共通アイコン確認を開く';
+            icons.addEventListener('click', () => { location.hash = 'icons'; location.reload(); });
+            menu.append(heading, description, play, editor, dice, icons); root.append(menu);
         }
     } catch (error) {
         root.textContent = `ゲーム設定を開けませんでした。${error.message}`;

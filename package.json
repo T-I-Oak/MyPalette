@@ -1,6 +1,6 @@
 {
   "name": "my-palette",
-  "version": "0.3.7",
+  "version": "0.4.2",
   "private": true,
   "type": "module",
   "engines": {
@@ -15,5 +15,9 @@
   },
   "devDependencies": {
     "vite": "^7.0.0"
+  },
+  "dependencies": {
+    "cannon-es": "^0.20.0",
+    "three": "^0.187.0"
   }
 }

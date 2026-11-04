@@ -33,7 +33,7 @@ export function mountGame(root, settings, onMenu) {
     };
     function cardView(card) {
         const definition = game.definitions[card.id];
-        const node = el('article', undefined, 'GameCard texture-paper'); node.dataset.cardId = card.id;
+        const node = el('article', undefined, 'GameCard Surface texture-paper'); node.dataset.cardId = card.id;
         const heading = el('div', undefined, 'GameCardHeading');
         heading.append(el('strong', `${card.id} ${definition.name}`), el('span', `ステップ${card.step}${card.step === 3 ? '（出荷済み）' : ''}`, 'GameCardStep'));
         node.append(heading);
@@ -63,7 +63,7 @@ export function mountGame(root, settings, onMenu) {
         return node;
     }
     function diceView(die, compact = false) {
-        const node = el('article', undefined, `GameDie texture-paper${die.used ? ' state-used' : ''}`);
+        const node = el('article', undefined, `GameDie Surface texture-paper${die.used ? ' state-used' : ''}`);
         node.dataset.dieId = die.id;
         node.append(el('strong', `${die.id} · ${displayLabel(die.lifetime)} · ${die.used ? '消費済み' : '未使用'}`), el('p', faceLabel(currentFace(die))));
         const detail = el('details'); detail.append(el('summary', compact ? '6面' : '6面の構成'));
@@ -91,7 +91,7 @@ export function mountGame(root, settings, onMenu) {
         for (const option of pending.options) {
             let item;
             if (pending.kind === 'candidates') {
-                item = el('article', undefined, 'GameDie texture-paper');
+                item = el('article', undefined, 'GameDie Surface texture-paper');
                 item.append(el('strong', `候補${Number(option.id) + 1}`), ...option.faces.map(face => el('p', faceLabel(face))));
             } else if (pending.kind === 'dice') item = diceView(game.state.dice.find(d => d.id === option.id));
             else {
