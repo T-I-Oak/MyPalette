@@ -4,7 +4,14 @@ import { goalGroups } from './goalGroups.js';
 export function describeEffect(effect) {
     if (effect.type === null) return '効果未設定';
     const definition = EFFECTS.find(item => item.type === effect.type);
-    return [definition.label, ...definition.fields.map(field => `${field.label}：${effect[field.name] === null ? '未設定' : displayLabel(effect[field.name])}`)].join(' / ');
+    const count = Object.hasOwn(effect, 'count') ? `(x${effect.count === null ? '未設定' : effect.count})` : '';
+    const parameters = definition.fields.filter(field => field.name !== 'count').map(field => {
+        const value = effect[field.name];
+        if (value === null) return '未設定';
+        if (field.name === 'amount' && value > 0) return `+${value}`;
+        return displayLabel(value);
+    });
+    return [definition.label + count, ...parameters].join(' / ');
 }
 
 export function describeGoals(goals) {

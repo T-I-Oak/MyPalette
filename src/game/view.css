@@ -1,0 +1,73 @@
+.GameBoard { flex: 1; min-height: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 6px; font-size: .82rem; }
+.GameSection { min-width: 0; min-height: 0; padding: 8px; background: #f8f4ec; border: 1px solid #d4c9b5; border-radius: 6px; }
+.GameSection[hidden] { display: none; }
+.GameSection h2 { margin: 0 0 6px; font-size: .95rem; }
+.GameSection h3 { font-size: .9rem; margin: 4px 0 8px; }
+.GameBoard .Button { min-height: 30px; padding: 4px 8px; font-size: inherit; }
+.GameStatus { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: center; }
+.GameStatus h2, .GameStatus p { margin: 0; }
+.GameStatus > .Button { margin-left: auto; }
+.GameTabs { display: flex; flex-wrap: wrap; gap: 5px; }
+.GameTabs [aria-pressed="true"] { background: #d8e9e5; border-color: #3e7066; }
+.GameWorkspace { display: grid; grid-template-columns: 215px minmax(0, 1fr) minmax(240px, 1fr); gap: 6px; min-height: 0; }
+.GameWorkspace > .GameSection { display: flex; flex-direction: column; overflow: hidden; }
+.GameWorkspace > [hidden] { display: none; }
+.GameWorkspace .GameGrid, .GameLog { overflow-y: auto; min-height: 0; flex: 1; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.GameGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); align-content: start; align-items: start; gap: 6px; }
+.GameDicePane .GameGrid { grid-template-columns: minmax(0, 1fr); }
+.GameCardsPane.hand .GameGrid, .GameCardsPane.field .GameGrid { grid-template-columns: minmax(0, 1fr); }
+.GameDicePane > .Button { flex-shrink: 0; margin-top: 6px; }
+.GameDicePane .GameDie { display: grid; grid-template-columns: minmax(0, 1fr) 20px 30px; gap: 2px 4px; padding: 6px; align-items: center; }
+.GameDicePane .GameDie strong { grid-column: 1; grid-row: 1; font-size: .75rem; }
+.GameDicePane .GameDie .GameSelection { grid-column: 2; grid-row: 1; margin: 0; font-size: 0; }
+.GameDicePane .GameDie > p { grid-column: 1; grid-row: 2; margin: 0; }
+.GameDicePane .GameDie > details { grid-column: 2 / -1; grid-row: 2; margin: 0; font-size: .7rem; }
+.GameDicePane .GameDie > details[open] { grid-column: 1 / -1; grid-row: 3; }
+.GameDicePane .GameDie > .Button { grid-column: 3; grid-row: 1; padding: 0; min-height: 26px; }
+.GameCardsPane.shipped, .GameStockPane, .GameLogsPane { grid-column: 2 / -1; }
+.GameCard, .GameDie { padding: 8px; overflow-wrap: anywhere; min-width: 0; }
+.GameCardHeading { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.GameCardStep { flex-shrink: 0; font-size: .75rem; }
+.GameCardActions { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 5px; }
+.GameCardActions > :last-child { margin-left: auto; }
+.GameCardDetails[hidden] { display: none; }
+.GameCardDetails { margin-top: 8px; border-top: 1px solid #d4c9b5; padding-top: 4px; }
+.GameCard.state-achievable { border-color: #3e875c; font-weight: normal; }
+.GameCard.state-achievable .GameCardHeading strong::after { content: ' · 達成可能'; font-size: .7rem; }
+.GameCard p, .GameDie p { margin: 5px 0; font-size: inherit; line-height: 1.4; }
+.GameCard .card-goal { color: #78500b; background: #fff2d4; border-left: 3px solid #b47a16; padding: 3px 6px; }
+.GameCard .card-play-effect { color: #225c89; background: #eaf3fb; border-left: 3px solid #377bac; padding: 3px 6px; }
+.GameCard .card-achievement-effect { color: #256342; background: #eaf5ed; border-left: 3px solid #3e875c; padding: 3px 6px; }
+.GameCard > .card-goal, .GameCard > .card-play-effect, .GameCard > .card-achievement-effect { margin: 3px 0; padding-top: 1px; padding-bottom: 1px; font-weight: normal; }
+.GameCard img { max-width: 100%; max-height: 220px; object-fit: contain; }
+.GameSelection { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-weight: 600; }
+.GameDie.state-used { background: #e4ded4; color: #6d665b; }
+.state-choice { border: 2px solid #3e7066; background: #edf6f1; }
+.state-achievable { color: #23634b; font-weight: 700; }
+.GameSection details { margin: 6px 0; }
+.GameSection summary { cursor: pointer; }
+.GameControls { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.GameControls h2 { display: none; }
+.GameControls p { margin: 0; }
+.GameControls .GameLatestLog { flex: 1; min-width: 100px; font-size: .75rem; color: #635b50; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.GameControls > .Button { margin-left: auto; flex-shrink: 0; }
+.GameLog, .StartIssues { white-space: pre-wrap; font: inherit; font-size: .82rem; }
+.StartIssues { overflow: auto; }
+.GameChoice { width: min(1100px, 94%); max-height: 90dvh; padding: 0; border: 0; border-radius: 8px; font: inherit; color: inherit; background: #edf6f1; }
+.GameChoice::backdrop { background: #302c2866; }
+.GameChoice .GameSection { display: flex; flex-direction: column; max-height: 88dvh; margin: 0; }
+.GameChoice .GameGrid { min-height: 0; overflow-y: auto; }
+.GameChoiceFooter { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
+.GameMenu { padding: 20px; }
+.GameMenu .Button { margin: 8px 12px 8px 0; }
+@media (max-width: 800px) {
+    .GameWorkspace { grid-template-columns: 175px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
+    .GameDicePane { grid-row: 1 / -1; }
+    .GameCardsPane.shipped, .GameStockPane, .GameLogsPane { grid-column: 2; grid-row: 1 / -1; }
+}
+@media (max-width: 480px) {
+    .GameWorkspace { grid-template-columns: 120px minmax(0, 1fr); }
+    .GameStatus { gap: 4px 8px; }
+    .GameBoard { font-size: .75rem; }
+    .GameSection, .GameCard, .GameDie { padding: 5px; }
+}
