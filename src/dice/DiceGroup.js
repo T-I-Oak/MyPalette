@@ -1,5 +1,6 @@
 import { World, Body, Box, Vec3, Material, ContactMaterial } from 'cannon-es';
 import { FIELD_WIDTH, FIELD_DEPTH, fieldEdges, fieldSpawn, constrainToField } from './field.js';
+import { READY_HEIGHT } from './pose.js';
 import { Die } from './Die.js';
 import { validateFaceCondition } from './faceConditions.js';
 
@@ -93,7 +94,7 @@ export class DiceGroup {
             if (die.quiet > .5 && die.top.alignment > .99 && die.body.position.y < .8) {
                 die.settle(die.top.index);
             } else if (die.quiet > .8 || die.elapsed > 12) {
-                if (++die.attempts > 3) { die.cancel('failed'); die.body.position.y = 2.5; }
+                if (++die.attempts > 3) { die.cancel('failed'); die.body.position.y = READY_HEIGHT; }
                 else this.throwDie(die);
             }
         }

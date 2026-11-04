@@ -63,7 +63,7 @@ export async function mountDiceLab(root, home) {
     const prepare = button('対象を空中回転へ戻す', () => {
         try {
             const dice = targets().map(id => group.get(id)); dice.forEach(die => die.assertMutable());
-            dice.forEach(die => { die.prepare(); die.setPosition({ x: die.body.position.x, y: 2.5, z: die.body.position.z }); });
+            dice.forEach(die => die.prepare());
             message.textContent = '対象をロール前の状態へ戻しました。'; renderList(); renderInspector();
         } catch (error) { message.textContent = error.message; }
     });

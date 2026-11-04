@@ -1,3 +1,4 @@
+import { READY_HEIGHT } from './pose.js';
 export const FIELD_WIDTH=26;
 // The supplied artwork already has perspective; compensate for the camera's foreshortening.
 export const FIELD_DEPTH=FIELD_WIDTH/3/(15/Math.hypot(15,9));
@@ -18,4 +19,4 @@ export function constrainToField(position,margin=.9){
  }
  return {...position,x,z};
 }
-export function fieldSpawn(slot){return constrainToField({x:1.56+(slot%4-1.5)*4,y:2.5,z:(Math.floor(slot/4)-1)*2.5});}
+export function fieldSpawn(slot){return constrainToField({x:1.56+(slot%4-1.5)*4,y:READY_HEIGHT,z:(Math.floor(slot/4)-1)*2.5});}

@@ -1,5 +1,6 @@
 import { Body, Box, Vec3 } from 'cannon-es';
 import { COLORS, MATERIALS, SPECIAL_FACES } from '../effectCatalog.js';
+import { READY_HEIGHT } from './pose.js';
 import { topFace } from './orientation.js';
 import { findMatchingFaces } from './faceConditions.js';
 
@@ -48,7 +49,15 @@ export class Die {
         const safe=this.owner?this.owner.constrainPosition({x,y,z}):{x,y,z};
         this.body.position.set(safe.x, safe.y, safe.z); this.body.aabbNeedsUpdate = true;
     }
-    prepare() { this.assertMutable(); this.state = 'ready'; this.current = null; }
+    prepare() {
+        this.assertMutable();
+        this.state = 'ready'; this.current = null;
+        this.body.type = Body.STATIC; this.body.mass = 0; this.body.updateMassProperties();
+        this.body.position.y = READY_HEIGHT;
+        this.body.velocity.setZero(); this.body.angularVelocity.setZero();
+        this.body.force.setZero(); this.body.torque.setZero();
+        this.body.aabbNeedsUpdate = true;
+    }
     begin() {
         this.assertMutable();
         if (this.consumed) throw new Error('consumed');

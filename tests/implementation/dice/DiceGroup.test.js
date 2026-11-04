@@ -76,3 +76,45 @@ test('12個の繰り返しロールと対象外の姿勢・結果保持', async 
     }
     group.dispose();
 });
+
+test('停止したダイスはprepare単体で空中へ戻り、回転して再ロールできる', async () => {
+    const group = new DiceGroup({ random: () => .37 });
+    const die = add(group, 'prepare');
+    async function finishRoll() {
+        const pending = die.roll();
+        for (let i = 0; i < 3600 && die.state === 'rolling'; i++) group.step(1 / 60);
+        assert.equal((await pending).status, 'settled');
+    }
+    try {
+        await finishRoll();
+        assert.ok(die.body.position.y < .8);
+        const { x, z } = die.body.position;
+        die.prepare();
+        assert.equal(die.result, null);
+        assert.equal(die.state, 'ready');
+        assert.equal(die.body.position.y, 2.5);
+        assert.equal(die.body.position.x, x); assert.equal(die.body.position.z, z);
+        const before = die.body.quaternion.clone();
+        for (let i = 0; i < 60; i++) {
+            group.step(1 / 60);
+            assert.ok(die.body.position.y - Math.sqrt(3) / 2 > 0);
+        }
+        assert.notDeepEqual(die.body.quaternion, before);
+        await finishRoll();
+        assert.equal(die.result.index, die.top.index);
+    } finally { group.dispose(); }
+});
+
+test('初期の4列3行は固定配置で、注入した乱数を消費しない', () => {
+    let calls = 0;
+    const a = new DiceGroup({ random: () => { calls++; return 0; } });
+    const b = new DiceGroup({ random: () => { calls++; return .99; } });
+    try {
+        for (let i=0;i<12;i++) { add(a,String(i)); add(b,String(i)); }
+        assert.equal(calls,0);
+        assert.deepEqual(a.dice.map(d=>d.body.position),b.dice.map(d=>d.body.position));
+        assert.ok(Math.abs(a.get('1').body.position.x-a.get('0').body.position.x-4)<1e-9);
+        assert.ok(Math.abs(a.get('4').body.position.z-a.get('0').body.position.z-2.5)<1e-9);
+        assert.ok(a.dice.every(d=>d.body.position.y===2.5));
+    } finally { a.dispose(); b.dispose(); }
+});
