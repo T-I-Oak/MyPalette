@@ -51,4 +51,3 @@ const assert=require('node:assert/strict');
     assert.deepEqual(errors,[]);console.log(JSON.stringify({layouts,errors,checks:'material/color/both, same-face counts, zero, repeat timer, expiry, edits, add/remove, selection/result preservation, clear'}));
     await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
-

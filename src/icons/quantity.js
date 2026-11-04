@@ -8,5 +8,3 @@ export function drawQuantity(ctx, { value, arrows = [] }) {
     arrows.forEach((arrow,index)=>drawGlyphText(ctx,arrow,50,rows[index],24,'#303e3b'));
     drawGlyphText(ctx,value,50,rows.at(-1),23,'#303e3b','#fff');
 }
-
-

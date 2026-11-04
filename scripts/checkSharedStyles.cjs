@@ -25,7 +25,3 @@ const assert=require('node:assert/strict');
   assert.deepEqual(errors,[]);console.log(JSON.stringify({results,errors}));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1)});
-
-
-
-

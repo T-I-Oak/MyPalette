@@ -88,4 +88,3 @@ const base = process.argv[2] || 'http://127.0.0.1:5174/';
     console.log(JSON.stringify(result, null, 2));
     await browser.close();
 })().catch(error => { console.error(error); process.exit(1); });
-

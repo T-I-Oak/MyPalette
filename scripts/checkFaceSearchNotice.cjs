@@ -33,4 +33,3 @@ const assert=require('node:assert/strict');
     console.log(JSON.stringify({errors,checks:'fixed DOM id, Japanese/English, singular/plural/zero, localized condition label, language switch, fallback, synchronized expiry, clear'}));
     await browser.close();
 })().catch(error=>{console.error(error);process.exit(1)});
-

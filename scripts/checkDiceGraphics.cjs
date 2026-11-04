@@ -56,4 +56,3 @@ const assert = require('node:assert/strict');
     assert.ok(checks.special.every(Boolean));
     console.log(JSON.stringify(checks)); await browser.close();
 })().catch(error => { console.error(error); process.exit(1); });
-

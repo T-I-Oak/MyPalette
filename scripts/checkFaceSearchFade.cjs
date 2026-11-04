@@ -26,4 +26,3 @@ const assert=require('node:assert/strict');
     assert.equal(samples[7].zero,.5);assert.match(samples[7].text,/ありません/);assert.equal(samples[8].disposed,true);
     console.log(JSON.stringify(samples));await browser.close();
 })().catch(error=>{console.error(error);process.exit(1)});
-
