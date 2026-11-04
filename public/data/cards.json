@@ -89,7 +89,7 @@
             {
               "type": "gainMaterialDice",
               "count": 1,
-              "lifetime": "temporary",
+              "lifetime": "permanent",
               "material": "brush"
             }
           ]
@@ -177,7 +177,7 @@
           ],
           "achievementEffects": [
             {
-              "type": "gainRerolls",
+              "type": "gainStockCards",
               "count": 1
             }
           ]
@@ -384,15 +384,7 @@
         {
           "goals": [
             {
-              "color": null,
-              "material": "pastel"
-            },
-            {
-              "color": null,
-              "material": "pastel"
-            },
-            {
-              "color": null,
+              "color": "green",
               "material": "pastel"
             }
           ],
@@ -409,8 +401,12 @@
         {
           "goals": [
             {
-              "color": "green",
+              "color": null,
               "material": "pastel"
+            },
+            {
+              "material": null,
+              "color": "green"
             }
           ],
           "playEffects": [
@@ -430,8 +426,8 @@
               "material": "pastel"
             },
             {
-              "color": "green",
-              "material": null
+              "color": null,
+              "material": "pastel"
             }
           ],
           "playEffects": [
@@ -446,7 +442,7 @@
             {
               "type": "gainMaterialDice",
               "count": 1,
-              "lifetime": "temporary",
+              "lifetime": "permanent",
               "material": "pastel"
             }
           ]
@@ -475,15 +471,7 @@
         {
           "goals": [
             {
-              "color": null,
-              "material": "pastel"
-            },
-            {
-              "color": null,
-              "material": "pastel"
-            },
-            {
-              "color": null,
+              "color": "red",
               "material": "pastel"
             }
           ],
@@ -498,8 +486,12 @@
         {
           "goals": [
             {
-              "color": "red",
+              "color": null,
               "material": "pastel"
+            },
+            {
+              "material": null,
+              "color": "red"
             }
           ],
           "playEffects": [
@@ -517,8 +509,8 @@
               "material": "pastel"
             },
             {
-              "color": "red",
-              "material": null
+              "color": null,
+              "material": "pastel"
             }
           ],
           "playEffects": [
@@ -529,7 +521,7 @@
           ],
           "achievementEffects": [
             {
-              "type": "gainRerolls",
+              "type": "gainStockCards",
               "count": 1
             }
           ]
@@ -558,16 +550,12 @@
         {
           "goals": [
             {
-              "color": null,
-              "material": "pastel"
+              "color": "yellow",
+              "material": null
             },
             {
-              "color": null,
-              "material": "pastel"
-            },
-            {
-              "color": null,
-              "material": "pastel"
+              "material": null,
+              "color": "blue"
             }
           ],
           "playEffects": [],
@@ -581,12 +569,12 @@
         {
           "goals": [
             {
-              "color": "yellow",
-              "material": null
+              "color": null,
+              "material": "pastel"
             },
             {
-              "material": null,
-              "color": "blue"
+              "material": "pastel",
+              "color": null
             }
           ],
           "playEffects": [
@@ -646,16 +634,12 @@
         {
           "goals": [
             {
-              "color": null,
-              "material": "pastel"
+              "color": "orange",
+              "material": null
             },
             {
-              "color": null,
-              "material": "pastel"
-            },
-            {
-              "color": null,
-              "material": "pastel"
+              "color": "purple",
+              "material": null
             }
           ],
           "playEffects": [],
@@ -670,12 +654,12 @@
         {
           "goals": [
             {
-              "color": "orange",
-              "material": null
+              "color": null,
+              "material": "pastel"
             },
             {
-              "color": "purple",
-              "material": null
+              "color": null,
+              "material": "pastel"
             }
           ],
           "playEffects": [
@@ -796,7 +780,7 @@
             {
               "type": "gainMaterialDice",
               "count": 1,
-              "lifetime": "temporary",
+              "lifetime": "permanent",
               "material": "airbrush"
             }
           ]
@@ -875,7 +859,7 @@
           ],
           "achievementEffects": [
             {
-              "type": "gainRerolls",
+              "type": "gainStockCards",
               "count": 1
             }
           ]
@@ -1141,7 +1125,8 @@
           ],
           "achievementEffects": [
             {
-              "type": "reroll"
+              "type": "gainStockCards",
+              "count": 1
             }
           ]
         }
@@ -1245,7 +1230,8 @@
           ],
           "achievementEffects": [
             {
-              "type": "reroll"
+              "type": "gainStockCards",
+              "count": 1
             }
           ]
         }
@@ -1367,7 +1353,8 @@
           ],
           "achievementEffects": [
             {
-              "type": "reroll"
+              "type": "gainStockCards",
+              "count": 1
             },
             {
               "type": "changeFame",
@@ -2257,11 +2244,18 @@
           ],
           "playEffects": [
             {
+              "type": "gainColorDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "colors": "orange_blue"
+            }
+          ],
+          "achievementEffects": [
+            {
               "type": "changeSpecialFace",
               "face": "temporaryOrangeBlue1"
             }
-          ],
-          "achievementEffects": []
+          ]
         },
         {
           "goals": [
@@ -2617,11 +2611,18 @@
           ],
           "playEffects": [
             {
+              "type": "gainColorDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "colors": "yellow_purple"
+            }
+          ],
+          "achievementEffects": [
+            {
               "type": "changeSpecialFace",
               "face": "temporaryYellowPurple1"
             }
-          ],
-          "achievementEffects": []
+          ]
         },
         {
           "goals": [
@@ -3011,11 +3012,18 @@
           ],
           "playEffects": [
             {
+              "type": "gainColorDice",
+              "count": 1,
+              "lifetime": "temporary",
+              "colors": "red_green"
+            }
+          ],
+          "achievementEffects": [
+            {
               "type": "changeSpecialFace",
               "face": "temporaryRedGreen1"
             }
-          ],
-          "achievementEffects": []
+          ]
         },
         {
           "goals": [
@@ -3636,13 +3644,13 @@
               "color": "red"
             }
           ],
-          "playEffects": [
+          "playEffects": [],
+          "achievementEffects": [
             {
               "type": "changeSpecialFace",
               "face": "fame1"
             }
-          ],
-          "achievementEffects": []
+          ]
         },
         {
           "goals": [
@@ -3664,13 +3672,13 @@
               "color": "orange"
             }
           ],
-          "playEffects": [
+          "playEffects": [],
+          "achievementEffects": [
             {
               "type": "changeSpecialFace",
               "face": "fame1"
             }
-          ],
-          "achievementEffects": []
+          ]
         },
         {
           "goals": [
@@ -3957,13 +3965,13 @@
               "color": "purple"
             }
           ],
-          "playEffects": [
+          "playEffects": [],
+          "achievementEffects": [
             {
               "type": "changeSpecialFace",
               "face": "fame1"
             }
-          ],
-          "achievementEffects": []
+          ]
         },
         {
           "goals": [
@@ -3977,21 +3985,21 @@
             },
             {
               "material": "brush",
-              "color": "orange",
+              "color": "purple",
               "join": "or"
             },
             {
               "material": "airbrush",
-              "color": "purple"
+              "color": "orange"
             }
           ],
-          "playEffects": [
+          "playEffects": [],
+          "achievementEffects": [
             {
               "type": "changeSpecialFace",
               "face": "fame1"
             }
-          ],
-          "achievementEffects": []
+          ]
         },
         {
           "goals": [
@@ -4312,13 +4320,13 @@
               "color": null
             }
           ],
-          "playEffects": [
+          "playEffects": [],
+          "achievementEffects": [
             {
               "type": "changeSpecialFace",
               "face": "fame1"
             }
-          ],
-          "achievementEffects": []
+          ]
         },
         {
           "goals": [
@@ -4348,13 +4356,13 @@
               "color": "blue"
             }
           ],
-          "playEffects": [
+          "playEffects": [],
+          "achievementEffects": [
             {
               "type": "changeSpecialFace",
               "face": "fame1"
             }
-          ],
-          "achievementEffects": []
+          ]
         },
         {
           "goals": [
