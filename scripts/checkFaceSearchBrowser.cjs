@@ -1,0 +1,54 @@
+const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwright');
+const assert=require('node:assert/strict');
+(async()=>{
+    const browser=await chromium.launch({channel:process.env.MYPALETTE_BROWSER_CHANNEL || 'msedge',headless:true});
+    const page=await browser.newPage({viewport:{width:1280,height:900}});
+    const errors=[];page.on('pageerror',e=>errors.push(e.message));
+    await page.goto((process.argv[2] || 'http://127.0.0.1:5174/') + '#dice');
+    const search=page.getByRole('button',{name:'条件を含むダイスを探す',exact:true});await search.waitFor();
+    await page.getByRole('button',{name:'使う画材を決める',exact:true}).click();
+    await page.waitForFunction(()=>!document.querySelector('.texture-primary').disabled,null,{timeout:60000});
+    const snapshot=async()=>({checks:await page.locator('.DiceSelection input').evaluateAll(nodes=>nodes.map(node=>node.checked)),results:await page.locator('.DiceReadout').allTextContents()});
+    const before=await snapshot();
+    await search.click();await page.waitForFunction(()=>document.querySelectorAll('.DiceSearchBadge:not([hidden])').length===1);
+    assert.match(await page.locator('.DiceSearchSummary').textContent(),/ダイスが1個あります/);
+    assert.equal(await page.locator('.DiceSearchBadge:not([hidden])').getAttribute('aria-label'),'絵筆：6面');
+    assert.deepEqual(await snapshot(),before);
+    await page.screenshot({path:'tmp_review_face_search_material.png'});
+    await page.getByLabel('検索する条件',{exact:true}).selectOption('color');
+    await search.click();await page.waitForFunction(()=>document.querySelectorAll('.DiceSearchBadge:not([hidden])').length===3);
+    assert.match(await page.locator('.DiceSearchSummary').textContent(),/ダイスが3個あります/);
+    await page.getByLabel('検索する条件',{exact:true}).selectOption('both');await search.click();
+    await page.waitForFunction(()=>document.querySelectorAll('.DiceSearchBadge:not([hidden])').length===1);
+    assert.equal(await page.locator('.DiceSearchBadge:not([hidden])').getAttribute('aria-label'),'絵筆・橙：1面');
+    await page.getByLabel('色',{exact:true}).nth(1).selectOption('orange');
+    await page.waitForFunction(()=>document.querySelector('.DiceSearchBadge:not([hidden])')?.getAttribute('aria-label')==='絵筆・橙：2面');
+    await search.click();await page.screenshot({path:'tmp_review_face_search_combined.png'});
+    await page.waitForTimeout(1800);await search.click();await page.waitForTimeout(1600);
+    assert.equal(await page.locator('.DiceSearchBadge:not([hidden])').count(),1);
+    await page.waitForFunction(()=>document.querySelectorAll('.DiceSearchBadge:not([hidden])').length===0,null,{timeout:5000});
+    assert.equal(await page.locator('#dice-search-notice').getAttribute('hidden'),'');
+    await page.getByLabel('検索する色',{exact:true}).selectOption('yellow');await search.click();
+    await page.waitForFunction(()=>document.querySelector('.DiceSearchSummary').textContent.includes('ありません'));
+    await page.waitForFunction(()=>document.querySelectorAll('.DiceSearchBadge:not([hidden])').length===0);
+    await page.screenshot({path:'tmp_review_face_search_none.png'});
+    await page.getByLabel('検索する条件',{exact:true}).selectOption('material');
+    await page.getByLabel('検索する画材',{exact:true}).selectOption('pastel');await search.click();
+    await page.getByLabel('追加する面構成',{exact:true}).selectOption('pastel');await page.getByRole('button',{name:'ダイスを追加',exact:true}).click();
+    await page.waitForFunction(()=>document.querySelector('.DiceSearchSummary').textContent.includes('ダイスが2個あります'));
+    await page.getByRole('button',{name:'このダイスを削除',exact:true}).click();
+    await page.waitForFunction(()=>document.querySelector('.DiceSearchSummary').textContent.includes('ダイスが1個あります'));
+    const layouts=[];
+    for(const [width,height] of [[390,844],[844,390]]){
+        await page.setViewportSize({width,height});await search.click();await page.waitForTimeout(100);
+        layouts.push(await page.evaluate(()=>({width:innerWidth,height:innerHeight,overflow:document.documentElement.scrollWidth>innerWidth||document.documentElement.scrollHeight>innerHeight,bottom:document.querySelector('.DiceControls').getBoundingClientRect().bottom})));
+        assert.equal(layouts.at(-1).overflow,false);assert.ok(layouts.at(-1).bottom<=height+1);
+        await page.screenshot({path:`tmp_review_face_search_${width}.png`});
+    }
+    await page.getByRole('button',{name:'検索表示をクリア',exact:true}).click();
+    assert.equal(await page.locator('#dice-search-notice').getAttribute('hidden'),'');
+    await page.waitForFunction(()=>document.querySelectorAll('.DiceSearchBadge:not([hidden])').length===0);
+    assert.deepEqual(errors,[]);console.log(JSON.stringify({layouts,errors,checks:'material/color/both, same-face counts, zero, repeat timer, expiry, edits, add/remove, selection/result preservation, clear'}));
+    await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});
+

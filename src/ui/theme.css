@@ -1,0 +1,65 @@
+.theme-atelier {
+    --ui-text: #302c28;
+    --ui-text-muted: #635b50;
+    --ui-canvas: #eee8dc;
+    --ui-surface: #fffdf7;
+    --ui-control-border: #b9aa92;
+    --ui-control-hover: #e9e0ce;
+    --ui-focus: #266b78;
+    --ui-border: #d4c9b5;
+    --ui-selected-surface: #d8e9e5;
+    --ui-selected-border: #3e7066;
+    --ui-separator: #e4dece;
+    --ui-message-surface: #f9f5ec;
+    --ui-draft-text: #755013;
+    --ui-table-heading: #e4ddcd;
+    --ui-table-border: #ddd5c5;
+    --ui-link: #235e68;
+    --ui-table-stripe: #f5f2ea;
+    --ui-table-hover: #e8f1ed;
+    --ui-group-border: #c3b89f;
+    --ui-invalid-border: #ad3535;
+    --ui-section-heading: #e8e1d2;
+    --ui-alternative-text: #766344;
+    --ui-alternative-border: #c9baa0;
+    --ui-invalid-strong-border: #b34235;
+    --ui-invalid-surface: #fff0eb;
+    --ui-section-surface: #f8f4ec;
+    --ui-success-border: #3e875c;
+    --ui-goal-text: #78500b;
+    --ui-goal-surface: #fff2d4;
+    --ui-goal-border: #b47a16;
+    --ui-action-text: #225c89;
+    --ui-action-surface: #eaf3fb;
+    --ui-action-border: #377bac;
+    --ui-reward-text: #256342;
+    --ui-reward-surface: #eaf5ed;
+    --ui-reward-border: var(--ui-success-border);
+    --ui-inactive-surface: #e4ded4;
+    --ui-inactive-text: #6d665b;
+    --ui-choice-surface: #edf6f1;
+    --ui-success-text: #23634b;
+    --ui-scrim: #302c2866;
+    --ui-surface-muted-border: #d4dfd7;
+    --ui-surface-muted: #f4f6ef;
+    --ui-inverse-text: #fff;
+    --ui-inverse-surface: #304c45dd;
+    --ui-primary: #315e50;
+    --ui-on-primary: #fffaf0;
+    --ui-primary-hover: #254c40;
+    --ui-artwork-shadow: #263e3430;
+    --ui-callout-border: #52665b;
+    --ui-callout-shadow: #263e3420;
+    --ui-floating-surface: #fffdf7f5;
+    --ui-floating-border: #7a8e80;
+    --ui-inverse-inactive-surface: #736c60;
+}
+.theme-atelier {
+    --ui-surface-warm: var(--ui-on-primary);
+    --ui-surface-cool: #98d5ed;
+}
+
+.theme-atelier {
+    --ui-highlight-surface: #f4df94;
+    --ui-highlight-border: #846735;
+}
