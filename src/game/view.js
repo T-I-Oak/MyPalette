@@ -1,8 +1,7 @@
 import { Game, gameIssues } from './engine.js';
-import { currentFace } from './dice.js';
 import { matchingDice, satisfiesSelection } from './goals.js';
 import { displayLabel } from '../effectCatalog.js';
-import { describeGoals, describeEffect } from '../cardSummary.js';
+import { goalIcons, effectIcons, dieFaceIcon } from '../cardIcons.js';
 import './view.css';
 
 const el = (tag, text, className) => {
@@ -37,20 +36,17 @@ export function mountGame(root, settings, onMenu) {
         const heading = el('div', undefined, 'GameCardHeading');
         heading.append(el('strong', `${card.id} ${definition.name}`), el('span', `ステップ${card.step}${card.step === 3 ? '（出荷済み）' : ''}`, 'GameCardStep'));
         node.append(heading);
-        if (card.step < 3) {
-            const step = definition.steps[card.step];
-            node.append(el('p', `目標：${describeGoals(step.goals)}`, 'card-goal'));
-            for (const [key, label] of [['playEffects', 'プレイ時'], ['achievementEffects', '達成時']]) {
-                if (step[key].length) node.append(el('p', `${label}：${step[key].map(describeEffect).join(' → ')}`, key === 'playEffects' ? 'card-play-effect' : 'card-achievement-effect'));
+        const appendStep = (parent, step, label) => {
+            if (label) parent.append(el('strong', label, 'GameStepHeading'));
+            const goals = el('div', undefined, 'card-goal'); goals.append(el('span', '目標：'), goalIcons(step.goals)); parent.append(goals);
+            for (const [key, title] of [['playEffects', 'プレイ時'], ['achievementEffects', '達成時']]) {
+                const effects = el('div', undefined, key === 'playEffects' ? 'card-play-effect' : 'card-achievement-effect');
+                effects.append(el('span', `${title}：`), effectIcons(step[key])); parent.append(effects);
             }
-        }
+        };
+        if (card.step < 3) appendStep(node, definition.steps[card.step], '');
         const detail = el('div', undefined, 'GameCardDetails'); detail.hidden = true;
-        definition.steps.forEach((step, i) => {
-            detail.append(el('p', `ステップ${i}${card.step === i ? '（現在）' : ''} 目標：${describeGoals(step.goals)}`, 'card-goal'));
-            for (const [key, label] of [['playEffects', 'プレイ時'], ['achievementEffects', '達成時']]) {
-                if (step[key].length) detail.append(el('p', `${label}：${step[key].map(describeEffect).join(' → ')}`, key === 'playEffects' ? 'card-play-effect' : 'card-achievement-effect'));
-            }
-        });
+        definition.steps.forEach((step, i) => appendStep(detail, step, `ステップ${i}${card.step === i ? '（現在）' : ''} `));
         const image = el('img'); image.src = `${import.meta.env.BASE_URL}assets/paintings/${card.id}-3.png`;
         image.alt = `${definition.name}の完成図`; image.loading = 'lazy'; detail.append(image);
         const actions = el('div', undefined, 'GameCardActions');
@@ -62,13 +58,22 @@ export function mountGame(root, settings, onMenu) {
         showSteps.setAttribute('aria-expanded', 'false'); actions.append(showSteps); node.append(actions, detail);
         return node;
     }
-    function diceView(die, compact = false) {
+    function facesView(faces, lifetime, current) {
+        const row = el('div', undefined, 'DieFaces');
+        faces.forEach((face, i) => {
+            const slot = el('span', undefined, `DieFaceSlot${i === current ? ' state-current' : ''}`);
+            slot.append(dieFaceIcon(face, lifetime, `${i + 1}面：${faceLabel(face)}${i === current ? '（現在）' : ''}`),
+                el('span', `${i + 1}${i === current ? ' 現在' : ''}`, 'DieFaceIndex'));
+            row.append(slot);
+        });
+        return row;
+    }
+    function diceView(die) {
         const node = el('article', undefined, `GameDie Surface texture-paper${die.used ? ' state-used' : ''}`);
         node.dataset.dieId = die.id;
-        node.append(el('strong', `${die.id} · ${displayLabel(die.lifetime)} · ${die.used ? '消費済み' : '未使用'}`), el('p', faceLabel(currentFace(die))));
-        const detail = el('details'); detail.append(el('summary', compact ? '6面' : '6面の構成'));
-        die.faces.forEach((face, i) => detail.append(el('p', `${i + 1}：${faceLabel(face)}${i === die.current ? ' ← 現在' : ''}`)));
-        node.append(detail); return node;
+        node.append(el('strong', `${die.id} · ${displayLabel(die.lifetime)} · ${die.used ? '消費済み' : '未使用'}`),
+            facesView(die.faces, die.lifetime, die.current));
+        return node;
     }
     function checkbox(node, id, label, update) {
         const wrapper = el('label', undefined, 'GameSelection'); const input = el('input'); input.type = 'checkbox';
@@ -92,7 +97,7 @@ export function mountGame(root, settings, onMenu) {
             let item;
             if (pending.kind === 'candidates') {
                 item = el('article', undefined, 'GameDie Surface texture-paper');
-                item.append(el('strong', `候補${Number(option.id) + 1}`), ...option.faces.map(face => el('p', faceLabel(face))));
+                item.append(el('strong', `候補${Number(option.id) + 1}`), facesView(option.faces, option.lifetime, -1));
             } else if (pending.kind === 'dice') item = diceView(game.state.dice.find(d => d.id === option.id));
             else {
                 const card = [...game.state.hand, ...Object.values(game.state.stocks).flat()].find(c => c.id === option.id);
@@ -130,7 +135,7 @@ export function mountGame(root, settings, onMenu) {
             for (const { card, node } of achieveButtons) node.disabled = !canPlay || !satisfiesSelection(game.step(card).goals, s.dice, [...selected]);
         };
         for (const die of visibleDice) {
-            const node = diceView(die, true);
+            const node = diceView(die);
             if (canPlay && !die.used) checkbox(node, die.id, `${die.id}を達成に使用`, updateAchievements);
             const reroll = button('↻', () => act(() => game.reroll(die.id)), !canPlay || die.used || !s.rerolls);
             reroll.setAttribute('aria-label', `${die.id}をリロール`); reroll.title = `${die.id}をリロール`;

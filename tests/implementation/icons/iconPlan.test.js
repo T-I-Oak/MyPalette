@@ -78,7 +78,7 @@ test('面内の取得×1は省略し、直接のカード効果とドロー＋1�
  assert.equal(faceEffectIconPlan({type:'gainRerolls',count:2}).nodes.at(-1).value,'×2');
 });
 
-test('再利用アイコン案は描画できる種類に含め、ゲームの効果候補は増やさない',()=>{
+test('再利用効果はゲームと同じ定義で描画する',()=>{
  assert.equal(effectIconPlan({type:'refreshDice'}).nodes[0].kind,'refreshedDie');
- assert.equal(EFFECTS.some(effect=>effect.type==='refreshDice'),false);
+ assert.equal(EFFECTS.filter(effect=>effect.type==='refreshDice').length,1);
 });

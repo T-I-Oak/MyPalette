@@ -1,7 +1,8 @@
 import { initializeAppVersion } from './version.js';
 import './style.css';
 import { mountEditor } from './editor.js';
-import { loadSettings } from './settingsStorage.js';
+import { loadSettings, loadSettingsFile } from './settingsStorage.js';
+import { readEvaluation } from './effectEvaluation.js';
 import { mountGame } from './game/view.js';
 
 document.querySelector('#app-version').textContent = initializeAppVersion(__APP_VERSION__);
@@ -27,9 +28,10 @@ async function start() {
         const mode = document.querySelector('header > span');
         if (location.hash === '#settings') {
             mode.textContent = 'カード設定';
-            const back = document.createElement('button'); back.className = 'Button'; back.textContent = '入口へ戻る';
-            back.addEventListener('click', home); root.append(back);
-            mountEditor(root, saved.document, saved.revision);
+            const back = document.createElement('button'); back.className = 'Button SettingsBack'; back.textContent = '入口へ戻る';
+            back.addEventListener('click', home); document.querySelector('header').append(back);
+            const evaluation = await loadSettingsFile('effect-evaluation.json', readEvaluation);
+            mountEditor(root, saved.document, saved.revision, evaluation);
         } else {
             mode.textContent = '評価用ゲーム';
             const menu = document.createElement('section'); menu.className = 'GameMenu Surface texture-paper';

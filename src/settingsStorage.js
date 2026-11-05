@@ -7,15 +7,20 @@ export function revision(text) {
 }
 
 export async function loadSettings(fetcher = fetch) {
-    const response = await fetcher(`${import.meta.env?.BASE_URL ?? '/'}data/cards.json`, { cache: 'no-store' });
+    return loadSettingsFile('cards.json', readDocument, fetcher);
+}
+export async function loadSettingsFile(filename, reader, fetcher = fetch) {
+    const response = await fetcher(`${import.meta.env?.BASE_URL ?? '/'}data/${filename}`, { cache: 'no-store' });
     if (!response.ok) throw new Error('ゲーム設定を読み込めませんでした。再読み込みしてください。');
     const text = await response.text();
-    return { document: readDocument(text), revision: revision(text) };
+    return { document: reader(text), revision: revision(text) };
 }
 
 export async function saveSettings(document, savedRevision, fetcher = fetch) {
-    const body = serializeDocument(document);
-    const response = await fetcher('/api/card-settings', {
+    return saveSettingsFile('/api/card-settings', serializeDocument(document), savedRevision, fetcher);
+}
+export async function saveSettingsFile(url, body, savedRevision, fetcher = fetch) {
+    const response = await fetcher(url, {
         method: 'PUT', headers: { 'Content-Type': 'application/json', 'If-Match': savedRevision }, body,
     });
     if (!response.ok) {
