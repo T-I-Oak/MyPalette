@@ -6,6 +6,23 @@ import { currentFace } from '../../src/game/dice.js';
 const settings = JSON.parse(readFileSync(new URL('../../public/data/cards.json', import.meta.url), 'utf8'));
 const make = () => new Game(settings, () => .23);
 const effect = (game, item) => game.run(game.effects([item]));
+
+test('6.2 通常ダイスの全候補へ獲得効果の所持期間を渡し、選択後も維持する', () => {
+    for (const lifetime of ['temporary', 'permanent']) {
+        const game = make();
+        effect(game, {type:'gainNormalDice', count:1, lifetime});
+        assert.equal(game.state.pending.kind, 'candidates');
+        assert.ok(game.state.pending.options.length > 0);
+        for (const option of game.state.pending.options) {
+            assert.equal(option.lifetime, lifetime);
+            assert.equal(option.faces.length, 6);
+        }
+        const chosen = game.state.pending.options[0];
+        game.choose([chosen.id]);
+        assert.equal(game.state.dice.at(-1).lifetime, lifetime);
+        assert.deepEqual(game.state.dice.at(-1).faces, chosen.faces);
+    }
+});
 test('6.2 specified dice have exact six faces and lifetime, are rolled unused', () => {
     const game = make(), s = game.state;
     effect(game, { type: 'gainColorDice', count: 2, colors: 'orange_blue', lifetime: 'temporary' });

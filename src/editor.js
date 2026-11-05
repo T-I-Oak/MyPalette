@@ -1,11 +1,14 @@
 import { COLORS, MATERIALS, EFFECTS, displayLabel } from './effectCatalog.js';
-import { draftIssues, validateDocument } from './cardData.js';
-import { saveSettings } from './settingsStorage.js';
-import { describeEffect, describeGoals } from './cardSummary.js';
+import { draftIssues } from './cardData.js';
+import { saveSettings, saveSettingsFile } from './settingsStorage.js';
+import { cardEvaluation, serializeEvaluation } from './effectEvaluation.js';
+import { mountEvaluationEditor } from './evaluationEditor.js';
+import { goalIcons, effectIcons } from './cardIcons.js';
 import { createProbabilityDisplay } from './probabilityDisplay.js';
 import { removeGoal } from './goalEditing.js';
 import { sortDocumentGoals } from './goalOrdering.js';
 import { goalChoices, goalMetadataIssues } from './goalChoices.js';
+import { effectChoices } from './effectChoices.js';
 
 function el(tag, text, className) {
     const item = document.createElement(tag);
@@ -25,26 +28,30 @@ function select(label, options, value, update, numeric = false) {
     input.addEventListener('change', () => update(input.value === '' ? null : numeric ? Number(input.value) : input.value));
     wrapper.append(input); return wrapper;
 }
-export function mountEditor(root, savedDocument, savedRevision) {
-    const state = { document: savedDocument, selected: 'A01', dirty: false, revision: savedRevision };
+export function mountEditor(root, savedDocument, savedRevision, savedEvaluation) {
+    const state = { document: savedDocument, selected: 'A01', dirty: false, revision: savedRevision,
+        evaluation:savedEvaluation.document, evaluationRevision:savedEvaluation.revision };
     const probability = createProbabilityDisplay();
-    const pendingOr = new Set();
     const toolbar = el('div', undefined, 'Toolbar');
     const message = el('pre', '', 'Message');
     message.setAttribute('role', 'status');
     const layout = el('div', undefined, 'EditorLayout');
     const overview = el('section', undefined, 'Overview Surface texture-paper');
     overview.setAttribute('aria-label', '45枚の設定一覧');
+    const evaluationScreen = el('section', undefined, 'EvaluationScreen Surface texture-paper');
     const views = el('div', undefined, 'Toolbar');
     const showView = mode => {
         overview.hidden = mode !== 'overview'; layout.hidden = mode !== 'editor';
+        evaluationScreen.hidden = mode !== 'evaluation';
         listView.setAttribute('aria-pressed', String(mode === 'overview'));
         editView.setAttribute('aria-pressed', String(mode === 'editor'));
+        evaluationView.setAttribute('aria-pressed', String(mode === 'evaluation'));
         if (mode === 'overview') renderOverview();
     };
     const listView = button('全体一覧', () => showView('overview'));
     const editView = button('選択カードを編集', () => showView('editor'));
-    views.append(listView, editView);
+    const evaluationView = button('効果の評価設定', () => showView('evaluation'));
+    views.append(listView, editView, evaluationView);
     const wrapLabel = el('label', undefined, 'WrapControl'); const wrap = el('input'); wrap.type = 'checkbox';
     wrap.addEventListener('change', () => overview.classList.toggle('state-wrap', wrap.checked));
     wrapLabel.append(wrap, document.createTextNode('詳細を折り返す')); views.append(wrapLabel);
@@ -61,35 +68,48 @@ export function mountEditor(root, savedDocument, savedRevision) {
     function changed() {
         state.dirty = true; saveState.textContent = '未保存の変更あり';
         message.textContent = '';
-        renderList(); renderDraft();
+        renderList(); renderDraft(); refreshScores();
+    }
+    function refreshScores() {
+        for (const output of root.querySelectorAll('[data-score-card]')) {
+            const card = state.document.cards.find(card => card.id === output.dataset.scoreCard);
+            const score = cardEvaluation(card, state.evaluation);
+            output.textContent = score === null ? '—' : score.toFixed(2);
+        }
+    }
+    function scoreOutput(card) {
+        const output = el('output', undefined, 'CardScore'); output.dataset.scoreCard = card.id;
+        output.setAttribute('aria-label', `${card.id}の評価点`);
+        output.title = '効果の評価点×数量×ステップ倍率の合計。名声は符号付きの増減値を掛けます。';
+        const score = cardEvaluation(card, state.evaluation); output.textContent = score === null ? '—' : score.toFixed(2);
+        return output;
     }
     const save = button('ゲーム設定を保存', async () => {
-        if (pendingOr.size) { message.textContent = 'ORの後に目標を追加するか、末尾のORを削除してください。'; return; }
-        toolbar.inert = true; layout.inert = true; overview.inert = true; views.inert = true;
+        toolbar.inert = true; layout.inert = true; overview.inert = true; views.inert = true; evaluationScreen.inert = true;
         message.textContent = 'ゲーム設定を保存しています…';
+        let cardsSaved = false;
         try {
+            const evaluationJson = serializeEvaluation(state.evaluation);
             const sorted = sortDocumentGoals(state.document);
             state.revision = await saveSettings(sorted, state.revision);
+            cardsSaved = true;
+            state.evaluationRevision = await saveSettingsFile('/api/effect-evaluation', evaluationJson, state.evaluationRevision);
             const scroll = detail.scrollTop;
             state.document = sorted;
             renderList(); renderDetail(); renderOverview(); detail.scrollTop = scroll;
             state.dirty = false; saveState.textContent = 'ゲーム設定に保存済み';
-            message.textContent = 'ゲーム設定に保存しました。次回起動時もこの内容を読み込みます。';
-        } catch (error) { message.textContent = `保存できませんでした。編集内容は保持しています。\n${error.message}`; }
-        finally { toolbar.inert = false; layout.inert = false; overview.inert = false; views.inert = false; }
+            message.textContent = 'カード設定と効果の評価設定を保存しました。次回起動時も読み込みます。';
+        } catch (error) { message.textContent = `${cardsSaved ? 'カード設定は保存済みですが、効果の評価設定を保存できませんでした。' : '保存できませんでした。'}編集内容は保持しています。\n${error.message}`; }
+        finally { toolbar.inert = false; layout.inert = false; overview.inert = false; views.inert = false; evaluationScreen.inert = false; }
     });
     save.disabled = !import.meta.env.DEV;
     if (save.disabled) message.textContent = 'ゲーム設定の編集・保存はローカル開発サーバーで行ってください。';
-    toolbar.append(save, button('入力を検証', () => {
-        const errors = validateDocument(state.document);
-        message.textContent = errors.length ? errors.map(e => `${e.path}: ${e.reason}`).join('\n')
-            : `入力エラーなし。制作途中 ${state.document.cards.filter(card => draftIssues(card).length).length}／45枚（未設定のまま保存できます）。`;
-    }), saveState);
+    toolbar.append(save, saveState);
     function renderOverview() {
         overview.replaceChildren();
         const table = el('table', undefined, 'OverviewTable');
         const head = el('thead'); const headers = el('tr'); const subheaders = el('tr');
-        for (const [title, className] of [['ID', 'id-column'], ['カード名', 'name-column'], ['画材', 'material-column'], ['色', 'color-column']]) {
+        for (const [title, className] of [['ID', 'id-column'], ['カード名', 'name-column'], ['画材', 'material-column'], ['色', 'color-column'], ['難易度', 'difficulty-column'], ['評価点', 'score-column']]) {
             const th = el('th', title, className); th.rowSpan = 2; th.scope = 'col'; headers.append(th);
         }
         for (let i = 0; i < 3; i++) {
@@ -103,10 +123,12 @@ export function mountEditor(root, savedDocument, savedRevision) {
             id.append(button(card.id, () => { state.selected = card.id; renderList(); renderDetail(); detail.scrollTop = 0; showView('editor'); }));
             row.append(id, cell(card.name || '名称未設定', 'card-name'));
             for (const key of ['materials', 'colors']) row.append(cell(Object.keys(card.metadata[key]).filter(value => card.metadata[key][value]).map(displayLabel).join('・') || '—'));
+            const difficulty = el('td'); difficulty.append(probability.difficultyOutput(card.steps, card.id[0])); row.append(difficulty);
+            const score = el('td'); score.append(scoreOutput(card)); row.append(score);
             for (const step of card.steps) {
-                row.append(cell(step.goals.length ? describeGoals(step.goals) : '—', 'step-start'));
+                const goalCell = el('td', undefined, 'step-start'); goalCell.append(goalIcons(step.goals)); row.append(goalCell);
                 const chance = el('td'); chance.append(probability.output(step.goals, card.id[0])); row.append(chance);
-                for (const key of ['playEffects', 'achievementEffects']) row.append(cell(step[key].length ? step[key].map((effect, i) => `${i + 1}. ${describeEffect(effect)}`).join(' → ') : '—'));
+                for (const key of ['playEffects', 'achievementEffects']) { const td = el('td'); td.append(effectIcons(step[key])); row.append(td); }
             }
             body.append(row);
         }
@@ -131,16 +153,12 @@ export function mountEditor(root, savedDocument, savedRevision) {
             const label = el('label'); const input = el('input'); input.type = 'checkbox'; input.checked = card.metadata[key][value];
             input.addEventListener('change', () => {
                 card.metadata[key][value] = input.checked; changed();
-                for (const select of detail.querySelectorAll('select[data-goal-field]')) {
-                    setGoalOptions(select, select.dataset.goalField, select.value === '' ? null : select.value);
-                }
             });
             label.append(input, document.createTextNode(displayLabel(value))); row.append(label);
         }
         group.append(row); return group;
     }
-    function setGoalOptions(input, field, value) {
-        const options = goalChoices(current(), field);
+    function setAvailableOptions(input, options, value) {
         input.replaceChildren(new Option('未指定', ''), ...options.map(code => new Option(displayLabel(code), code)));
         const outside = value !== null && !options.includes(value);
         if (outside) {
@@ -148,101 +166,157 @@ export function mountEditor(root, savedDocument, savedRevision) {
         }
         input.value = value ?? '';
         input.setAttribute('aria-invalid', String(outside));
-        input.title = outside ? 'メタ対象外の設定です。目標を変更するか、メタ情報を見直してください。' : '';
+        input.setCustomValidity(outside ? 'メタ情報に含まれる項目を選択してください。' : '');
+        input.title = outside ? 'メタ対象外の設定です。設定値を変更するか、メタ情報を見直してください。' : '';
     }
     function goalSelect(label, field, goal, refreshGoal) {
         const control = select(label, goalChoices(current(), field), goal[field], value => {
-            goal[field] = value; setGoalOptions(control.querySelector('select'), field, value); refreshGoal();
+            goal[field] = value; setAvailableOptions(control.querySelector('select'), goalChoices(current(), field), value); refreshGoal();
         });
         const input = control.querySelector('select'); input.dataset.goalField = field;
-        setGoalOptions(input, field, goal[field]); return control;
+        setAvailableOptions(input, goalChoices(current(), field), goal[field]); return control;
+    }
+    function editDialog(title, content) {
+        const dialog = el('dialog', undefined, 'EditorDialog Surface texture-paper');
+        const heading = el('h2', title); heading.id = 'editor-dialog-heading';
+        dialog.setAttribute('aria-labelledby', heading.id);
+        const body = el('form', undefined, 'DialogFields');
+        body.addEventListener('submit', event => event.preventDefault());
+        const actions = el('div', undefined, 'Row');
+        const close = () => dialog.close();
+        const apply = () => { changed(); renderDetail(); close(); };
+        dialog.append(heading, body, actions);
+        content(body, actions, apply);
+        const confirm = actions.querySelector('button');
+        const refreshValidity = () => { confirm.disabled = !body.checkValidity(); };
+        body.addEventListener('input', refreshValidity); body.addEventListener('change', refreshValidity);
+        refreshValidity();
+        actions.append(button('キャンセル', close));
+        dialog.addEventListener('close', () => dialog.remove());
+        root.append(dialog); dialog.showModal();
+    }
+    function editGoal(step, index, at) {
+        const adding = at === undefined;
+        const value = adding ? { material: null, color: null } : structuredClone(step.goals[at]);
+        editDialog(`ステップ${index} 目標を${adding ? '追加' : '編集'}`, (body, actions, apply) => {
+            const material = goalSelect('画材', 'material', value, () => updateCondition());
+            const color = goalSelect('色', 'color', value, () => updateCondition());
+            const updateCondition = () => {
+                const input = material.querySelector('select');
+                setAvailableOptions(input, goalChoices(current(), 'material'), value.material);
+                if (value.material === null && value.color === null) input.setCustomValidity('画材か色を指定してください。');
+            };
+            body.append(material, color); updateCondition();
+            if (adding ? step.goals.length : at > 0) {
+                const connection = select('直前の目標との結合', ['and', 'or'], value.join ?? 'and', next => {
+                    value.join = next;
+                });
+                connection.querySelector('option[value=""]').remove(); body.append(connection);
+            }
+            actions.append(button('確定', () => {
+                if (adding) step.goals.push(value); else step.goals[at] = value;
+                apply();
+            }));
+            if (!adding) actions.append(button('削除', () => { removeGoal(step.goals, at); apply(); }));
+        });
     }
     function goals(step, index) {
         const group = el('fieldset'); group.append(el('legend', '達成目標'));
         group.setAttribute('aria-label', `ステップ${index} 達成目標`);
-        group.title = 'ANDを優先し、ORで区切った組のいずれかを満たせば達成します。各目標には別々のダイスを使います。';
-        const previewGoals = () => pendingOr.has(step) ? [...step.goals, {material:null,color:null,join:'or'}] : step.goals;
-        const expression = el('p', describeGoals(step.goals) + (pendingOr.has(step) ? ' |' : ''), 'GoalExpression'); group.append(expression);
-        const refreshGoal = () => { changed(); expression.textContent = describeGoals(step.goals) + (pendingOr.has(step) ? ' |' : ''); probability.refreshStep(group, previewGoals(), current().id[0]); };
-        const chance = el('span', '達成率 '); chance.append(probability.output(previewGoals(), current().id[0])); group.querySelector('legend').append(' · ', chance);
-        const separator = action => {
-            const item = el('div', undefined, 'OrSeparator'); item.append(el('span', 'OR'));
-            const remove = button('×', action); remove.setAttribute('aria-label', 'ORを削除'); remove.title = 'ORを削除して前後の目標をつなぐ';
-            item.append(remove); return item;
-        };
-        step.goals.forEach((goal, i) => {
-            const row = el('div', undefined, 'GoalRow'); row.setAttribute('aria-label', `目標${i + 1}`);
-            if (goal.join === 'or') group.append(separator(() => { delete goal.join; changed(); renderDetail(); }));
-            row.append(
-                goalSelect('画材', 'material', goal, refreshGoal),
-                goalSelect('色', 'color', goal, refreshGoal),
-                button('×', () => { removeGoal(step.goals, i); if (!step.goals.length) pendingOr.delete(step); changed(); renderDetail(); }));
-            const remove = row.querySelector('button'); remove.setAttribute('aria-label', `目標${i + 1}を削除`); remove.title = '目標を削除'; group.append(row);
-        });
-        if (pendingOr.has(step)) group.append(separator(() => { pendingOr.delete(step); changed(); renderDetail(); }));
+        const chance = el('span', ' · 達成率 '); chance.append(probability.output(step.goals, current().id[0]));
+        group.querySelector('legend').append(chance);
+        group.append(goalIcons(step.goals, at => editGoal(step, index, at)));
         const actions = el('div', undefined, 'Row');
-        const addOr = button('ORを追加', () => { pendingOr.add(step); changed(); renderDetail(); });
-        addOr.disabled = !step.goals.length || pendingOr.has(step);
-        actions.append(button('目標を追加', () => {
-            step.goals.push({ material: null, color: null, ...(pendingOr.has(step) ? {join:'or'} : {}) });
-            pendingOr.delete(step); changed(); renderDetail();
-        }), addOr); group.append(actions);
-        return group;
+        actions.append(button('目標を追加', () => editGoal(step, index)));
+        group.append(actions); return group;
     }
     function parameterFields(effect, update) {
         const fields = el('div', undefined, 'Row');
         const definition = EFFECTS.find(item => item.type === effect.type);
         for (const field of definition.fields) {
             const change = value => { effect[field.name] = value; update(); };
-            if (field.options) fields.append(select(field.label, field.options, effect[field.name], change, typeof field.options[0] === 'number'));
+            if (field.options) {
+                const options = effectChoices(current(), field);
+                const constrained = ['material', 'color', 'colors'].includes(field.name);
+                const control = select(field.label, options, effect[field.name], value => {
+                    change(value);
+                    if (constrained) setAvailableOptions(control.querySelector('select'), options, value);
+                }, typeof field.options[0] === 'number');
+                if (constrained) setAvailableOptions(control.querySelector('select'), options, effect[field.name]);
+                control.querySelector('select').required = true;
+                fields.append(control);
+            }
             else {
                 const label = el('label', field.label, 'Field'); const input = el('input'); input.type = 'number'; input.step = '1';
-                if (field.min) input.min = String(field.min);
+                input.required = true; input.min = String(field.min ?? -Number.MAX_SAFE_INTEGER); input.max = String(Number.MAX_SAFE_INTEGER);
                 input.value = effect[field.name] === null ? '' : effect[field.name];
-                input.addEventListener('input', () => change(input.value === '' ? null : input.valueAsNumber)); label.append(input); fields.append(label);
+                const checkNumber = () => input.setCustomValidity(field.nonzero && input.valueAsNumber === 0 ? '0以外の整数を指定してください。' : '');
+                checkNumber();
+                input.addEventListener('input', () => { checkNumber(); change(input.value === '' ? null : input.valueAsNumber); }); label.append(input); fields.append(label);
             }
         }
         return fields;
     }
-    function effects(step, key, title, index) {
-        const group = el('fieldset'); group.append(el('legend', title)); group.setAttribute('aria-label', `ステップ${index} ${title}`);
-        step[key].forEach((effect, i) => {
-            const def = EFFECTS.find(item => item.type === effect.type);
-            const row = el('div', undefined, 'EffectRow');
-            row.append(select(`効果${i + 1}の種類`, EFFECTS.map(item => item.label), def?.label ?? null, value => {
-                const selected = EFFECTS.find(item => item.label === value);
-                step[key][i] = selected
-                    ? Object.fromEntries([['type', selected.type], ...selected.fields.map(field => [field.name, field.integer ? 1 : null])])
-                    : { type: null };
-                changed(); renderDetail();
+    function editEffect(step, key, title, index, at) {
+        const adding = at === undefined;
+        let value = adding ? { type: null } : structuredClone(step[key][at]);
+        let position = adding ? step[key].length : at;
+        editDialog(`ステップ${index} ${title}を${adding ? '追加' : '編集'}`, (body, actions, apply) => {
+            const fields = el('div');
+            const refresh = () => fields.replaceChildren(...(value.type === null ? [] : [parameterFields(value, () => {})]));
+            body.append(select('効果の種類', EFFECTS.map(item => item.label),
+                value.type === null ? null : EFFECTS.find(item => item.type === value.type).label, label => {
+                    const selected = EFFECTS.find(item => item.label === label);
+                    value = selected ? Object.fromEntries([['type', selected.type], ...selected.fields.map(field => [field.name, field.integer ? 1 : null])]) : { type: null };
+                    refresh();
+                }), fields);
+            refresh();
+            body.querySelector('select').required = true;
+            if (!adding) {
+                const order = el('span');
+                const up = button('上へ', () => { position--; refreshOrder(); });
+                const down = button('下へ', () => { position++; refreshOrder(); });
+                const refreshOrder = () => {
+                    order.textContent = `実行順 ${position + 1} / ${step[key].length}`;
+                    up.disabled = position === 0; down.disabled = position === step[key].length - 1;
+                };
+                const row = el('div', undefined, 'Row'); row.append(order, up, down); body.append(row); refreshOrder();
+            }
+            actions.append(button('確定', () => {
+                if (!adding) step[key].splice(at, 1);
+                step[key].splice(position, 0, value); apply();
             }));
-            const fields = effect.type === null ? el('div', undefined, 'Row') : parameterFields(effect, changed);
-            const move = delta => { [step[key][i + delta], step[key][i]] = [step[key][i], step[key][i + delta]]; changed(); renderDetail(); };
-            const up = button('上へ', () => move(-1)); up.disabled = i === 0;
-            const down = button('下へ', () => move(1)); down.disabled = i === step[key].length - 1;
-            fields.append(up, down, button('削除', () => { step[key].splice(i, 1); changed(); renderDetail(); }));
-            row.append(fields); group.append(row);
+            if (!adding) actions.append(button('削除', () => { step[key].splice(at, 1); apply(); }));
         });
-        group.append(button('効果を追加', () => {
-            step[key].push({ type: null });
-            changed(); renderDetail();
-        })); return group;
+    }
+    function effects(step, key, title, index) {
+        const group = el('fieldset'); group.append(el('legend', title));
+        group.setAttribute('aria-label', `ステップ${index} ${title}`);
+        group.append(effectIcons(step[key], at => editEffect(step, key, title, index, at)),
+            button('効果を追加', () => editEffect(step, key, title, index)));
+        return group;
     }
     function renderDetail() {
         const card = current(); const heading = el('div', undefined, 'CardHeading'); heading.append(el('h2', `${card.id}`)); detail.replaceChildren(heading);
         const label = el('label', 'カード名', 'Field'); const name = el('input'); name.type = 'text'; name.value = card.name;
-        name.addEventListener('input', () => { card.name = name.value; changed(); }); label.append(name); heading.append(label, draft); renderDraft();
+        name.addEventListener('input', () => { card.name = name.value; changed(); }); label.append(name);
+        const difficulty = el('span', '難易度 ', 'DifficultyLabel'); difficulty.append(probability.difficultyOutput(card.steps, card.id[0]));
+        const score = el('span', '評価点 ', 'DifficultyLabel'); score.append(scoreOutput(card));
+        heading.append(label, difficulty, score, draft); renderDraft();
         const meta = el('div', undefined, 'MetadataRow');
         meta.append(metadata(card, 'materials', '画材', MATERIALS), metadata(card, 'colors', '色', COLORS)); detail.append(meta);
         const grid = el('div', undefined, 'StepGrid'); grid.setAttribute('aria-label', 'ステップ別設定');
-        card.steps.forEach((_, i) => grid.append(el('h3', `ステップ${i}`)));
-        card.steps.forEach((step, i) => grid.append(goals(step, i)));
-        card.steps.forEach((step, i) => grid.append(effects(step, 'playEffects', 'プレイ時効果', i)));
-        card.steps.forEach((step, i) => grid.append(effects(step, 'achievementEffects', '達成時効果', i)));
+        card.steps.forEach((step, i) => {
+            const column = el('section', undefined, 'StepColumn');
+            column.append(el('h3', `ステップ${i}`), goals(step, i),
+                effects(step, 'playEffects', 'プレイ時効果', i), effects(step, 'achievementEffects', '達成時効果', i));
+            grid.append(column);
+        });
         detail.append(grid);
     }
     const controls = el('div', undefined, 'ControlBar'); controls.append(views, toolbar, summary);
     controls.append(probability.controls(root));
-    layout.append(sidebar, detail); root.append(controls, message, overview, layout); renderList(); renderDetail(); showView('overview');
+    mountEvaluationEditor(evaluationScreen, state.evaluation, changed);
+    layout.append(sidebar, detail); root.append(controls, message, overview, layout, evaluationScreen); renderList(); renderDetail(); showView('overview');
     window.addEventListener('beforeunload', event => { if (state.dirty) { event.preventDefault(); event.returnValue = ''; } });
 }

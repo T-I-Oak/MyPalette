@@ -34,6 +34,7 @@ const material = { name: 'material', label: '画材', options: MATERIALS };
 const lifetime = { name: 'lifetime', label: '所持期間', options: ['permanent', 'temporary'] };
 
 export const EFFECTS = [
+    { type: 'refreshDice', label: '使用済みダイスの再利用', fields: [] },
     { type: 'gainNormalDice', label: '通常ダイス獲得', fields: [quantity, lifetime] },
     { type: 'gainColorDice', label: '色指定ダイス獲得', fields: [quantity, lifetime, pair] },
     { type: 'gainMaterialDice', label: '画材指定ダイス獲得', fields: [quantity, lifetime, material] },

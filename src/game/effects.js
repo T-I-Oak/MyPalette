@@ -18,7 +18,7 @@ export function* acquire(game, effect) {
         let faces;
         if (effect.type === 'gainNormalDice') {
             const candidates = normalCandidates(game.random);
-            const [id] = yield* select(game, 'candidates', `通常ダイス獲得 ${i + 1}/${effect.count}`, candidates.map((faces, index) => ({ id: String(index), faces })));
+            const [id] = yield* select(game, 'candidates', `通常ダイス獲得 ${i + 1}/${effect.count}`, candidates.map((faces, index) => ({ id: String(index), faces, lifetime: effect.lifetime })));
             faces = candidates[Number(id)];
         } else faces = specifiedFaces(effect);
         gained.push(game.makeDie(faces, effect.lifetime));
@@ -46,6 +46,9 @@ export function* resolveEffects(game, effects) {
         if (['gainNormalDice', 'gainColorDice', 'gainMaterialDice'].includes(effect.type)) {
             yield* acquire(game, effect);
         } else if (effect.type === 'changeFame') s.fame += effect.amount;
+        else if (effect.type === 'refreshDice') {
+            for (const die of s.dice) die.used = false;
+        }
         else if (effect.type === 'gainRerolls') s.rerolls += effect.count;
         else if (effect.type === 'drawCards') game.draw(effect.count);
         else if (effect.type === 'gainStockCards') yield* stockCards(game, effect.count);
