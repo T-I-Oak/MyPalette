@@ -40,8 +40,10 @@ input[type="checkbox"] { width: 20px; min-height: 20px; height: 20px; accent-col
 fieldset { min-width: 0; margin: 12px 0; padding: 12px; border: 1px solid var(--ui-border); border-radius: 5px; }
 legend { padding: 0 6px; }
 .Step { border-top: 2px solid var(--ui-border); margin-top: 20px; }
-.Message { white-space: pre-wrap; overflow-wrap: anywhere; overflow-y: auto; max-height: 70px; flex-shrink: 0; font: inherit; font-size: .8rem; background: var(--ui-message-surface); padding: 6px; margin: 0; }
-.Message:empty { display: none; }
+.EditorNotice { position: fixed; right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); z-index: 3; display: flex; align-items: start; gap: 8px; max-width: min(36rem, calc(100vw - 24px)); padding: 6px; border: 1px solid var(--ui-border); border-radius: 5px; background: var(--ui-message-surface); }
+.EditorNotice:has(.Message:empty) { display: none; }
+.EditorNotice .Button { min-height: 24px; padding: 0 6px; }
+.Message { white-space: pre-wrap; overflow-wrap: anywhere; overflow-y: auto; max-height: 70px; font: inherit; font-size: .8rem; padding: 3px; margin: 0; }
 .Draft { color: var(--ui-draft-text); font-size: .85rem; }
 .ControlBar { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; flex-shrink: 0; margin-bottom: 6px; overflow-x: auto; }
 .ControlBar .Toolbar { flex-wrap: nowrap; gap: 4px; font-size: 11px; white-space: nowrap; }

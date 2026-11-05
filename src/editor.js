@@ -31,10 +31,16 @@ function select(label, options, value, update, numeric = false) {
 export function mountEditor(root, savedDocument, savedRevision, savedEvaluation) {
     const state = { document: savedDocument, selected: 'A01', dirty: false, revision: savedRevision,
         evaluation:savedEvaluation.document, evaluationRevision:savedEvaluation.revision };
+    let evaluationBase = structuredClone(savedEvaluation.document);
+    let cardBase = sortDocumentGoals(savedDocument);
     const probability = createProbabilityDisplay();
     const toolbar = el('div', undefined, 'Toolbar');
+    const notice = el('div', undefined, 'EditorNotice');
     const message = el('pre', '', 'Message');
     message.setAttribute('role', 'status');
+    const dismissNotice = button('×', () => { message.textContent = ''; });
+    dismissNotice.setAttribute('aria-label', '通知を閉じる');
+    notice.append(message, dismissNotice);
     const layout = el('div', undefined, 'EditorLayout');
     const overview = el('section', undefined, 'Overview Surface texture-paper');
     overview.setAttribute('aria-label', '45枚の設定一覧');
@@ -88,18 +94,32 @@ export function mountEditor(root, savedDocument, savedRevision, savedEvaluation)
         toolbar.inert = true; layout.inert = true; overview.inert = true; views.inert = true; evaluationScreen.inert = true;
         message.textContent = 'ゲーム設定を保存しています…';
         let cardsSaved = false;
+        const written = [];
         try {
             const evaluationJson = serializeEvaluation(state.evaluation);
             const sorted = sortDocumentGoals(state.document);
-            state.revision = await saveSettings(sorted, state.revision);
+            if (JSON.stringify(sorted) !== JSON.stringify(cardBase)) {
+                state.revision = await saveSettings(sorted, state.revision);
+                cardBase = sorted;
+                written.push('カード設定');
+            }
             cardsSaved = true;
-            state.evaluationRevision = await saveSettingsFile('/api/effect-evaluation', evaluationJson, state.evaluationRevision);
+            if (evaluationJson !== serializeEvaluation(evaluationBase)) {
+                state.evaluationRevision = await saveSettingsFile('/api/effect-evaluation', evaluationJson, state.evaluationRevision);
+                evaluationBase = structuredClone(state.evaluation);
+                written.push('効果の評価設定');
+            }
             const scroll = detail.scrollTop;
-            state.document = sorted;
+            state.document = structuredClone(sorted);
             renderList(); renderDetail(); renderOverview(); detail.scrollTop = scroll;
             state.dirty = false; saveState.textContent = 'ゲーム設定に保存済み';
-            message.textContent = 'カード設定と効果の評価設定を保存しました。次回起動時も読み込みます。';
-        } catch (error) { message.textContent = `${cardsSaved ? 'カード設定は保存済みですが、効果の評価設定を保存できませんでした。' : '保存できませんでした。'}編集内容は保持しています。\n${error.message}`; }
+            message.textContent = written.length
+                ? `${written.join('と')}を保存しました。`
+                : 'このタブに保存する変更はありません。';
+        } catch (error) {
+            message.textContent = `${cardsSaved ? 'カード設定は保存済みですが、効果の評価設定を保存できませんでした。' : '保存できませんでした。'}編集内容は保持しています。\n${error.message}`;
+            if (cardsSaved) saveState.textContent = 'カード保存済み・評価設定未保存';
+        }
         finally { toolbar.inert = false; layout.inert = false; overview.inert = false; views.inert = false; evaluationScreen.inert = false; }
     });
     save.disabled = !import.meta.env.DEV;
@@ -317,6 +337,6 @@ export function mountEditor(root, savedDocument, savedRevision, savedEvaluation)
     const controls = el('div', undefined, 'ControlBar'); controls.append(views, toolbar, summary);
     controls.append(probability.controls(root));
     mountEvaluationEditor(evaluationScreen, state.evaluation, changed);
-    layout.append(sidebar, detail); root.append(controls, message, overview, layout, evaluationScreen); renderList(); renderDetail(); showView('overview');
+    layout.append(sidebar, detail); root.append(controls, overview, layout, evaluationScreen, notice); renderList(); renderDetail(); showView('overview');
     window.addEventListener('beforeunload', event => { if (state.dirty) { event.preventDefault(); event.returnValue = ''; } });
 }
