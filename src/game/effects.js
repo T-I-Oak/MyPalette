@@ -34,7 +34,7 @@ export function* stockCards(game, count, destination = 'discard') {
         const [id] = yield* select(game, 'cards', `公開カードを取得 ${i + 1}/${count}`, options);
         const grade = id[0];
         const card = game.state.stocks[grade].shift();
-        game.state.public[grade] = null;
+        game.state.public[grade] = game.state.stocks[grade][0]?.id ?? null;
         game.state[destination].push(card);
         game.log(`${id}を${destination === 'hand' ? '手札' : '捨て札'}へ取得`);
     }

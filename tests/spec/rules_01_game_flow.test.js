@@ -50,13 +50,17 @@ test('1.3 third shipment increases credit without granting dice or requesting a 
     assert.equal(s.pending, null); assert.equal(s.dice.length, 3);
     assert.equal(s.phase, 'play');
 });
-test('1.3 refresh rotates untouched publics, reveals acquisitions without rotating hidden top', () => {
+test('1.3 refresh rotates public cards, including replacements exposed after acquisition', () => {
     const game = new Game(settings, random(3)), s = game.state;
     const oldA = s.public.A, newB = s.stocks.B[1].id;
+    const afterRefreshB = s.stocks.B[2].id;
     game.run(game.effects([{ type: 'gainStockCards', count: 1 }])); game.choose([s.public.B]);
+    assert.equal(s.public.B, newB);
     s.discard.push(...s.hand.splice(0)); s.dice.forEach(d => { d.used = true; });
     game.endDay();
-    assert.equal(s.stocks.A.at(-1).id, oldA); assert.equal(s.public.B, newB);
+    assert.equal(s.stocks.A.at(-1).id, oldA);
+    assert.equal(s.stocks.B.at(-1).id, newB);
+    assert.equal(s.public.B, afterRefreshB);
 });
 test('1.3 flyer carries odd progress and costs rise 3,5,7; public choice pauses before credit update', () => {
     const game = new Game(settings, random(9)), s = game.state;
