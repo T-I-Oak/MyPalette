@@ -12,12 +12,17 @@ test('7.2 fame can decrease, 7.3 draw reshuffles discard and stops when exhauste
     game.run(game.effects([{ type: 'changeFame', amount: -3 }, { type: 'drawCards', count: 99 }]));
     assert.equal(s.fame, -3); assert.equal(s.hand.length, 7); assert.equal(s.deck.length, 0); assert.equal(s.discard.length, 0);
 });
-test('7.3 stock acquisition caps to public cards without exposing new cards, step is absolute', () => {
+test('7.3 stock acquisition immediately exposes the next card and stops when stocks are empty, step is absolute', () => {
     const game = make(), s = game.state;
-    game.run(game.effects([{ type: 'gainStockCards', count: 9 }, { type: 'changeCardStep', step: 2 }]));
-    const publicIds = Object.values(s.public);
-    for (const id of publicIds) game.choose([id]);
-    assert.equal(s.discard.length, 3); assert.equal(Object.values(s.public).every(id => id === null), true);
+    const stockIds = Object.values(s.stocks).flat().map(card => card.id);
+    game.run(game.effects([{ type: 'gainStockCards', count: stockIds.length + 1 }, { type: 'changeCardStep', step: 2 }]));
+    for (const id of stockIds) {
+        const grade = id[0];
+        assert.equal(s.public[grade], id);
+        game.choose([id]);
+        assert.equal(s.public[grade], s.stocks[grade][0]?.id ?? null);
+    }
+    assert.deepEqual(s.discard.map(card => card.id), stockIds);
     const card = s.hand[0]; game.choose([card.id]); assert.equal(card.step, 2);
     game.run(game.effects([{ type: 'changeCardStep', step: 0 }])); game.choose([card.id]); assert.equal(card.step, 0);
     s.hand = []; game.run(game.effects([{ type: 'changeCardStep', step: 1 }, { type: 'exchangeCards', count: 2 }]));
