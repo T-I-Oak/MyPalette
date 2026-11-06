@@ -8,9 +8,12 @@ const assert=require('node:assert/strict');
     const search=page.getByRole('button',{name:'条件を含むダイスを探す',exact:true});await search.waitFor();
     const notice=page.locator('#dice-search-notice');assert.equal(await notice.isVisible(),false);
     const language=async lang=>page.evaluate(async lang=>{
-        const source=await (await fetch('/src/dice/searchMessages.js')).text();
+        const sourceUrl=new URL('./src/dice/searchMessages.js',location.href);
+        const response=await fetch(sourceUrl);
+        if(!response.ok)throw new Error(`Failed to load ${sourceUrl}: ${response.status}`);
+        const source=await response.text();
         const moduleUrl=source.match(/from\s*['"]([^'"]*\/i18n\.js[^'"]*)['"]/)[1];
-        const {setLanguage}=await import(moduleUrl);setLanguage(lang);
+        const {setLanguage}=await import(new URL(moduleUrl,sourceUrl).href);setLanguage(lang);
     },lang);
     await search.click();assert.match(await notice.textContent(),/ダイスが1個あります/);
     await language('en');await page.waitForFunction(()=>document.querySelector('#dice-search-notice').textContent.includes('1 die contains'));
