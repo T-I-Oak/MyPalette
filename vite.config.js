@@ -8,15 +8,15 @@ const packageInfo = JSON.parse(readFileSync(new URL('./package.json', import.met
 
 export default defineConfig({
     plugins: [cardSettingsPlugin(fileURLToPath(new URL('./public/data/cards.json', import.meta.url))),
-        settingsFilePlugin(fileURLToPath(new URL('./public/data/effect-evaluation.json', import.meta.url)),
-            {name:'effect-evaluation', route:'/api/effect-evaluation', read:readEvaluation, serialize:serializeEvaluation})],
+        settingsFilePlugin(fileURLToPath(new URL('./dev-data/effect-evaluation.json', import.meta.url)),
+            {name:'effect-evaluation', route:'/api/effect-evaluation', read:readEvaluation, serialize:serializeEvaluation, allowRead:true})],
     base: '/MyPalette/',
     define: { __APP_VERSION__: JSON.stringify(packageInfo.version) },
     server: {
         host: '127.0.0.1',
         port: 3000,
         open: false,
-        watch: { ignored: ['**/public/data/cards.json', '**/public/data/cards.json.*.tmp', '**/public/data/effect-evaluation.json', '**/public/data/effect-evaluation.json.*.tmp'] },
+        watch: { ignored: ['**/public/data/cards.json', '**/public/data/cards.json.*.tmp', '**/dev-data/effect-evaluation.json', '**/dev-data/effect-evaluation.json.*.tmp'] },
         fs: {
             allow: [
                 fileURLToPath(new URL('.', import.meta.url)),

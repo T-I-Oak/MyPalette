@@ -2,13 +2,13 @@ const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict');
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
  const page=await browser.newPage({viewport:{width:1280,height:900}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('http://127.0.0.1:5174/#dice');await page.locator('.DiceLabId').first().waitFor();assert.equal(await page.locator('.DiceLabId').count(),3);
+ await page.goto('http://127.0.0.1:3000/MyPalette/dev.html#dice');await page.locator('.DiceLabId').first().waitFor();assert.equal(await page.locator('.DiceLabId').count(),3);
  await page.getByRole('button',{name:'使う画材を決める',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('.texture-primary').disabled,null,{timeout:60000});
  assert.equal(await page.locator('.DiceResult:not([hidden])').count(),3);
  await page.getByRole('button',{name:'消費済みにする',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.DiceResult:not([hidden])').length===2);
  await page.getByRole('button',{name:'未消費に戻す',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.DiceResult:not([hidden])').length===3);
  const result=await page.evaluate(async()=>{
-  const {DiceScene}=await import('/src/dice/DiceScene.js');const {DiceGroup}=await import('/src/dice/DiceGroup.js');const {loadResultGraphics}=await import('/src/dice/resultGraphics.js');
+  const {DiceScene}=await import('/MyPalette/src/dice/DiceScene.js');const {DiceGroup}=await import('/MyPalette/src/dice/DiceGroup.js');const {loadResultGraphics}=await import('/MyPalette/src/dice/resultGraphics.js');
   const container=document.createElement('div');container.style.width=innerWidth+'px';container.style.height=Math.round(innerHeight*.6)+'px';document.body.append(container);
   const group=new DiceGroup();const die=group.add({id:'standalone',faces:Array.from({length:6},()=>({special:'fame1'}))});
   const scene=new DiceScene(container,group,await loadResultGraphics(),()=>{});let latest=[];const unsubscribe=scene.subscribeScreenPositions(items=>latest=items);

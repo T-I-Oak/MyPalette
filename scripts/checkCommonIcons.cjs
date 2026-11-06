@@ -4,14 +4,14 @@ const assert=require('node:assert/strict');
  const browser=await chromium.launch({channel:process.env.MYPALETTE_BROWSER_CHANNEL || 'msedge',headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1150,height:850}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto((process.argv[2]||'http://127.0.0.1:5174/')+'?icon=color-orange#icons');
+  await page.goto((process.argv[2]||'http://127.0.0.1:3000/MyPalette/dev.html')+'?icon=color-orange#icons');
   await page.getByRole('heading',{name:'面の色変更：橙',exact:true}).waitFor();
   const results=await page.evaluate(async()=>{
-   const {ICON_REVIEW_CASES}=await import('/src/icons/reviewCases.js');
-   const {effectIconCanvas,goalIconCanvas}=await import('/src/icons/render.js');
-   const {faceCanvas}=await import('/src/dice/icons.js');
-   const {SPECIAL_FACE_EFFECTS}=await import('/src/effectCatalog.js');
-   const {specialSymbol}=await import('/src/icons/symbols.js');
+   const {ICON_REVIEW_CASES}=await import('/MyPalette/src/icons/reviewCases.js');
+   const {effectIconCanvas,goalIconCanvas}=await import('/MyPalette/src/icons/render.js');
+   const {faceCanvas}=await import('/MyPalette/src/dice/icons.js');
+   const {SPECIAL_FACE_EFFECTS}=await import('/MyPalette/src/effectCatalog.js');
+   const {specialSymbol}=await import('/MyPalette/src/icons/symbols.js');
    const oldFill=CanvasRenderingContext2D.prototype.fillText,oldStroke=CanvasRenderingContext2D.prototype.strokeText;
    CanvasRenderingContext2D.prototype.fillText=CanvasRenderingContext2D.prototype.strokeText=()=>{throw new Error('Font dependency');};
    let rendered=0;const empty=[];const clipped=[];

@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
  const browser=await chromium.launch({channel:'msedge',headless:true});
  try {
   const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  const base=process.argv[2]||'http://127.0.0.1:5174/';const results=[];
+  const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/dev.html';const results=[];
   for(const hash of ['#settings','#dice']){
    await page.goto(base+hash);await page.reload();await page.locator(hash==='#dice'?'.DiceRow':'.CardDetail').first().waitFor({state:'attached'});
    const result=await page.evaluate(()=>{

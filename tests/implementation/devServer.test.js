@@ -18,7 +18,7 @@ test('ベースパス配下の入口・設定・画像と同一Originの保存�
     const evaluation = createEvaluation();
     const evaluationOriginal = serializeEvaluation(evaluation) + '\n'; await writeFile(evaluationPath, evaluationOriginal);
     const server = await createServer({ ...config, configFile: false, plugins: [cardSettingsPlugin(path),
-        settingsFilePlugin(evaluationPath, {name:'effect-evaluation', route:'/api/effect-evaluation', read:readEvaluation, serialize:serializeEvaluation})],
+        settingsFilePlugin(evaluationPath, {name:'effect-evaluation', route:'/api/effect-evaluation', read:readEvaluation, serialize:serializeEvaluation, allowRead:true})],
         server: { ...config.server, port: 0, open: false } });
     try {
         assert.equal(config.server.port, 3000);
@@ -26,11 +26,22 @@ test('ベースパス配下の入口・設定・画像と同一Originの保存�
         assert.equal(config.server.host, '127.0.0.1');
         await server.listen();
         const origin = `http://127.0.0.1:${server.httpServer.address().port}`;
-        for (const url of ['/MyPalette/', '/MyPalette/data/cards.json', '/MyPalette/data/effect-evaluation.json', '/MyPalette/assets/paintings/A01-3.png']) {
+        for (const url of ['/MyPalette/data/cards.json', '/MyPalette/assets/paintings/A01-3.png']) {
             const response = await fetch(origin + url);
             assert.equal(response.status, 200, url);
             await response.arrayBuffer();
         }
+        const gameEntry = await fetch(origin + '/MyPalette/');
+        assert.equal(gameEntry.status, 200);
+        const gameHtml = await gameEntry.text();
+        assert.match(gameHtml, /src\/main\.js/);
+        assert.doesNotMatch(gameHtml, /dev\.html|src\/dev\.js/);
+        const devEntry = await fetch(origin + '/MyPalette/dev.html');
+        assert.equal(devEntry.status, 200);
+        assert.match(await devEntry.text(), /src\/dev\.js/);
+        const evaluationResponse = await fetch(origin + '/api/effect-evaluation');
+        assert.equal(evaluationResponse.status, 200);
+        assert.equal(await evaluationResponse.text(), evaluationOriginal);
         const saved = await fetch(origin + '/api/card-settings', { method: 'PUT',
             headers: { Origin: origin, 'Content-Type': 'application/json', 'If-Match': revision(original) }, body: original });
         assert.equal(saved.status, 200);

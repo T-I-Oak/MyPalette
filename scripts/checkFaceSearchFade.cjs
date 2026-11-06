@@ -3,10 +3,10 @@ const assert=require('node:assert/strict');
 (async()=>{
     const browser=await chromium.launch({channel:process.env.MYPALETTE_BROWSER_CHANNEL || 'msedge',headless:true});
     const page=await browser.newPage({viewport:{width:800,height:600}});
-    await page.goto(process.argv[2] || 'http://127.0.0.1:5174/');await page.getByRole('button',{name:'ダイス動作確認を開く',exact:true}).waitFor();
+    await page.goto(process.argv[2] || 'http://127.0.0.1:3000/MyPalette/dev.html');await page.getByRole('button',{name:'ダイス動作確認を開く',exact:true}).waitFor();
     const samples=await page.evaluate(async()=>{
-        await import('/src/dice/lab.js');
-        const {DiceGroup}=await import('/src/dice/DiceGroup.js');const {DiceScene}=await import('/src/dice/DiceScene.js');
+        await import('/MyPalette/src/dice/lab.js');
+        const {DiceGroup}=await import('/MyPalette/src/dice/DiceGroup.js');const {DiceScene}=await import('/MyPalette/src/dice/DiceScene.js');
         const notice=document.createElement('output');notice.id='dice-search-notice';notice.className='DiceSearchSummary';
         const view=document.createElement('div');view.className='DiceViewport';view.style.width='800px';view.style.height='500px';document.body.replaceChildren(notice,view);
         const group=new DiceGroup();group.add({id:'test',faces:Array.from({length:6},()=>({material:'brush',color:'orange'}))});
