@@ -130,10 +130,9 @@ export class MoveArea {
             this.#surface.removeFromArea(object, this);
             return;
         }
-        const bounds = transformRect(
-            transformRect(rect, this.#transform),
-            this.#surface.readViewportTransform(),
-        );
-        this.#surface.renderInArea(object, bounds, this.#interactive && object.interactive, this);
+        const viewport = this.#surface.readViewportTransform();
+        const bounds = transformRect(transformRect(rect, this.#transform), viewport);
+        const scale = this.#transform.scale * viewport.scale;
+        this.#surface.renderInArea(object, bounds, this.#interactive && object.interactive, this, scale);
     }
 }

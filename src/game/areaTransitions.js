@@ -85,22 +85,21 @@ export function createGameAreaTransitions(root, board) {
     function updateTarget(transfer) {
         const { id, to, key, origin } = transfer;
         const node = find(to, id);
-        const target = boundsForTarget(node, to);
+        const target = node ? bounds(node) : anchorBounds(to);
         if (node) node.classList.add('GameTransferTarget');
         areas.get(to).setSlot(key, target ?? offscreenCardRect(to, origin, window.innerWidth));
     }
 
-    function boundsForTarget(node, area) {
-        if (node) return bounds(node);
+    function anchorBounds(area) {
         const anchor = board.querySelector(`[data-transfer-anchor="${area}"]`);
         return anchor ? bounds(anchor) : null;
     }
 
     function play({ id, from, to, source }) {
         const node = find(to, id);
-        const target = node ? capture(node) : null;
-        const visual = source ?? target;
-        if (!visual || window.matchMedia(reducedMotion).matches) return null;
+        if (window.matchMedia(reducedMotion).matches) return null;
+        const visual = source?.element ? source : node && capture(node);
+        if (!visual) return null;
         const key = `${from === 'candidates' ? 'die' : 'card'}:${id}`;
         const origin = source?.rect ?? offscreenCardRect(from, visual.rect, window.innerWidth);
         const object = new MoveObject(key, visual.element);
@@ -129,7 +128,9 @@ export function createGameAreaTransitions(root, board) {
     return {
         captureCard: (area, id) => {
             const node = find(area, id);
-            return node ? capture(node) : null;
+            if (node) return capture(node);
+            const rect = anchorBounds(area);
+            return rect ? { rect } : null;
         },
         captureCandidate: capture,
         play,

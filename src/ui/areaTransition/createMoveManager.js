@@ -33,6 +33,7 @@ export function createMoveManager(surface) {
 function animate({ surface, object, from, to, departure, arrival, durationMs, signal }) {
     let startMs;
     let sourceRect;
+    let sourceScale;
     let progress = 0;
     let movingDrawn = false;
 
@@ -57,7 +58,9 @@ function animate({ surface, object, from, to, departure, arrival, durationMs, si
                 }
 
                 if (startMs === undefined) {
-                    sourceRect = transformRect(departure.readLocalRect(), from.readTransform());
+                    const source = from.readTransform();
+                    sourceRect = transformRect(departure.readLocalRect(), source);
+                    sourceScale = source.scale;
                     surface.clearFocus(object);
                     departure.detach();
                     startMs = nowMs;
@@ -76,10 +79,13 @@ function animate({ surface, object, from, to, departure, arrival, durationMs, si
                     return;
                 }
 
-                const target = transformRect(arrival.readLocalRect(), to.readTransform());
+                const targetTransform = to.readTransform();
+                const target = transformRect(arrival.readLocalRect(), targetTransform);
                 const current = interpolateRect(sourceRect, target, progress);
+                const viewport = surface.readViewportTransform();
+                const scale = sourceScale + (targetTransform.scale - sourceScale) * progress;
                 movingDrawn = true;
-                surface.renderMoving(object, transformRect(current, surface.readViewportTransform()));
+                surface.renderMoving(object, transformRect(current, viewport), scale * viewport.scale);
                 surface.scheduleFrame(frame);
             } catch (error) {
                 try {

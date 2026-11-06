@@ -10,8 +10,8 @@ function setup() {
     const drawn = new Map();
     const events = [];
     const viewport = { transform: transform(0, 0, 0.5) };
-    const render = (object, viewportRect, interactive, layer) => {
-        const context = { viewportRect, interactive, layer };
+    const render = (object, viewportRect, interactive, layer, scale) => {
+        const context = { viewportRect, interactive, layer, scale };
         drawn.set(object, context);
         object.render(context);
     };
@@ -19,9 +19,9 @@ function setup() {
         readViewportTransform: () => viewport.transform,
         scheduleFrame: callback => frames.push(callback),
         clearFocus: () => events.push('blur'),
-        renderInArea: (object, bounds, interactive) => render(object, bounds, interactive, 'area'),
+        renderInArea: (object, bounds, interactive, area, scale) => render(object, bounds, interactive, 'area', scale),
         removeFromArea: object => drawn.delete(object),
-        renderMoving: (object, bounds) => render(object, bounds, false, 'transition'),
+        renderMoving: (object, bounds, scale) => render(object, bounds, false, 'transition', scale),
         removeMoving: object => drawn.delete(object),
     };
     const deck = new MoveArea('deck', surface, transform(-300, 100, 1));
@@ -46,17 +46,18 @@ test('public API moves a generic object from an offscreen area to a differently 
     tick(0);
     assert.equal(object.area, null);
     assert.deepEqual(drawn.get(object), {
-        viewportRect: rect(-150, 50, 50, 60), interactive: false, layer: 'transition',
+        viewportRect: rect(-150, 50, 50, 60), interactive: false, layer: 'transition', scale: 0.5,
     });
     tick(50);
     assert.deepEqual(drawn.get(object).viewportRect, rect(-25, 50, 75, 90));
+    assert.equal(drawn.get(object).scale, 0.75);
     hand.setSlot('first', rect(10, 5, 100, 120));
     viewport.transform = transform(10, 20, 1);
     tick(100);
     assert.deepEqual(await pending, { status: 'arrived' });
     assert.equal(object.area, hand);
     assert.deepEqual(drawn.get(object), {
-        viewportRect: rect(230, 130, 200, 240), interactive: true, layer: 'area',
+        viewportRect: rect(230, 130, 200, 240), interactive: true, layer: 'area', scale: 2,
     });
     assert.deepEqual(events, ['blur', 'started', 'moving', 'arrived']);
 });

@@ -21,11 +21,12 @@ export function createDomTransitionSurface(root, initialTransform = { x: 0, y: 0
         return layer;
     }
 
-    function render(object, viewportRect, interactive, layer) {
+    function render(object, viewportRect, interactive, layer, scale) {
         let wrapper = mounts.get(object);
         if (!wrapper) {
             wrapper = document.createElement('div');
             wrapper.style.position = 'absolute';
+            wrapper.style.transformOrigin = 'top left';
             wrapper.appendChild(object.element);
             mounts.set(object, wrapper);
         }
@@ -33,14 +34,15 @@ export function createDomTransitionSurface(root, initialTransform = { x: 0, y: 0
         Object.assign(wrapper.style, {
             left: `${x}px`,
             top: `${y}px`,
-            width: `${width}px`,
-            height: `${height}px`,
+            width: `${width / scale}px`,
+            height: `${height / scale}px`,
+            transform: `scale(${scale})`,
             pointerEvents: interactive ? 'auto' : 'none',
         });
         wrapper.inert = !interactive;
         const parent = layer === 'area' ? areaLayer : transitionLayer;
         if (wrapper.parentNode !== parent) parent.appendChild(wrapper);
-        object.render({ layer, viewportRect, interactive });
+        object.render({ layer, viewportRect, interactive, scale });
     }
 
     function remove(object, layer) {
@@ -60,9 +62,9 @@ export function createDomTransitionSurface(root, initialTransform = { x: 0, y: 0
             if (object.element.contains(focused)) focused.blur();
         },
         scheduleFrame: callback => window.requestAnimationFrame(callback),
-        renderInArea: (object, rect, interactive) => render(object, rect, interactive, 'area'),
+        renderInArea: (object, rect, interactive, area, scale = 1) => render(object, rect, interactive, 'area', scale),
         removeFromArea: object => remove(object, areaLayer),
-        renderMoving: (object, rect) => render(object, rect, false, 'transition'),
+        renderMoving: (object, rect, scale = 1) => render(object, rect, false, 'transition', scale),
         removeMoving: object => remove(object, transitionLayer),
     };
 }
