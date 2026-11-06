@@ -12,7 +12,7 @@
 .GameWorkspace { display: grid; grid-template-columns: 215px minmax(0, 1fr) minmax(240px, 1fr); gap: 6px; min-height: 0; }
 .GameWorkspace > .GameSection { display: flex; flex-direction: column; overflow: hidden; }
 .GameWorkspace > [hidden] { display: none; }
-.GameWorkspace .GameGrid, .GameLog { overflow-y: auto; min-height: 0; flex: 1; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.GameWorkspace .GameGrid:not(.GameCardAreaContent), .GameCardArea, .GameLog { overflow-y: auto; min-height: 0; flex: 1; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .GameGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); align-content: start; align-items: start; gap: 6px; }
 .GameDicePane .GameGrid { grid-template-columns: minmax(0, 1fr); }
 .GameCardsPane.hand .GameGrid, .GameCardsPane.field .GameGrid { grid-template-columns: minmax(0, 1fr); }
@@ -23,31 +23,16 @@
 .GameDicePane .GameDie > .DieFaces { grid-column: 1 / -1; grid-row: 2; }
 .GameDicePane .GameDie > .Button { grid-column: 3; grid-row: 1; padding: 0; min-height: 26px; }
 .GameCardsPane.shipped, .GameStockPane, .GameLogsPane { grid-column: 2 / -1; }
-.GameCard, .GameDie { padding: 8px; overflow-wrap: anywhere; min-width: 0; }
-.GameCardHeading { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-.GameCardStep { flex-shrink: 0; font-size: .75rem; }
+.GameDie { padding: 8px; overflow-wrap: anywhere; min-width: 0; }
 .GameCardActions { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 5px; }
 .GameCardActions > :last-child { margin-left: auto; }
-.GameCardDetails[hidden] { display: none; }
-.GameCardDetails { margin-top: 8px; border-top: 1px solid var(--ui-border); padding-top: 4px; }
-.GameCard.state-achievable { border-color: var(--ui-success-border); font-weight: normal; }
-.GameCard.state-achievable .GameCardHeading strong::after { content: ' · 達成可能'; font-size: .7rem; }
-.GameCard p, .GameDie p { margin: 5px 0; font-size: inherit; line-height: 1.4; }
-.GameCard .card-goal { color: var(--ui-goal-text); background: var(--ui-goal-surface); border-left: 3px solid var(--ui-goal-border); padding: 3px 6px; }
-.GameCard .card-play-effect { color: var(--ui-action-text); background: var(--ui-action-surface); border-left: 3px solid var(--ui-action-border); padding: 3px 6px; }
-.GameCard .card-achievement-effect { color: var(--ui-reward-text); background: var(--ui-reward-surface); border-left: 3px solid var(--ui-success-border); padding: 3px 6px; }
-.GameCard > .card-goal, .GameCard > .card-play-effect, .GameCard > .card-achievement-effect { margin: 3px 0; padding-top: 1px; padding-bottom: 1px; font-weight: normal; }
-.GameCard .card-goal, .GameCard .card-play-effect, .GameCard .card-achievement-effect { display: flex; align-items: center; gap: 4px; }
-.GameCard .card-goal > span:first-child, .GameCard .card-play-effect > span:first-child, .GameCard .card-achievement-effect > span:first-child { flex: 0 0 auto; white-space: nowrap; }
-.GameCard .CardIconSequence { flex: 1; min-width: 0; }
-.GameStepHeading { display: block; margin-top: 6px; font-size: .75rem; }
+.GameDie p { margin: 5px 0; font-size: inherit; line-height: 1.4; }
 .DieFaces { display: flex; flex-wrap: wrap; align-items: start; gap: 3px; margin-top: 4px; }
 .DieFaceSlot { display: flex; flex-direction: column; align-items: center; border: 1px solid var(--ui-border); border-radius: 3px; padding: 1px; }
 .DieFaceSlot.state-current { border-color: var(--ui-selected-border); background: var(--ui-selected-surface); }
 .DieFaceSlot .CardIcon { min-width: 0; min-height: 22px; }
 .DieFaceSlot .CardIcon canvas { height: 22px; }
 .DieFaceIndex { font-size: 9px; white-space: nowrap; }
-.GameCard img { max-width: 100%; max-height: 220px; object-fit: contain; }
 .GameSelection { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-weight: 600; }
 .GamePileCounts { display: flex; gap: 8px; margin: 0 0 6px; }
 .GameTransferLayer { position: fixed; inset: 0; z-index: 5; pointer-events: none; font-size: .82rem; }
@@ -84,3 +69,71 @@
     .GameTransferLayer { font-size: .75rem; }
     .GameSection, .GameCard, .GameDie { padding: 5px; }
 }
+
+.GameCardSlot { min-width: 0; padding: 4px; }
+.GameCardArea {
+    container-type: size;
+    --area-design-width: 318px;
+    --area-design-height: 480px;
+}
+.GameCardAreaContent {
+    width: var(--area-design-width);
+    min-height: var(--area-design-height);
+    margin-inline: auto;
+    zoom: min(
+        100cqw / var(--area-design-width),
+        100cqh / var(--area-design-height));
+}
+.GameCardArea[data-pane="hand"] {
+    --area-design-width: 1236px;
+}
+.GameCardArea:is([data-pane="stock"], [data-pane="shipped"]) {
+    --area-design-width: 966px;
+    --area-design-height: 500px;
+}
+.GameCardsPane.hand .GameHandCards {
+    display: block;
+    position: relative;
+    isolation: isolate;
+}
+.GameHandCards > .GameCardSlot {
+    position: absolute;
+    top: 12px;
+    left: calc(12px + var(--hand-position) * (100% - 24px - var(--painting-width)));
+    width: var(--painting-width);
+    padding: 0;
+}
+.GameStockPane .GameCardAreaContent { grid-template-columns: repeat(auto-fit, minmax(min(318px, 100%), 1fr)); }
+.GameStockPile {
+    display: grid;
+    isolation: isolate;
+    padding: calc(12px + var(--stack-layers) * var(--painting-thickness)) 12px 12px;
+}
+.GameStockPile > .PaintingCard {
+    grid-area: 1 / 1;
+    align-self: start;
+    top: calc(-1 * var(--stack-layer) * var(--painting-thickness));
+    z-index: var(--stack-layer);
+}
+.GameChoice .GameGrid:has(.PaintingCard) { zoom: .5; }
+.GameCardActions { width: min(100%, 260px); margin-inline: auto; }
+.GameCardActions:empty { display: none; }
+.GameCardDetail {
+    max-width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    padding: 10px;
+    border: 0;
+    overflow: visible;
+    background: transparent;
+    color: var(--ui-text);
+}
+.GameCardDetail::backdrop { background: var(--ui-scrim); }
+.GameCardDetailViewport {
+    width: max-content;
+    margin-inline: auto;
+    zoom: min(1.25, (100vw - 36px) / 294px, (100dvh - 78px) / 414px);
+}
+.GameCardDetail .GameCardActions { justify-content: center; flex-wrap: wrap; width: auto; margin-top: 10px; }
+.GameCardDetail .GameCardActions > :last-child { margin-left: 0; }
+.GameCardDetail .GameCardActions .Button { background: var(--ui-surface); }
+.GameWorkspace .GameGrid, .GameCardArea, .GameLog, .GameChoice .GameGrid { scrollbar-color: var(--ui-control-border) var(--ui-section-surface); scrollbar-width: thin; }

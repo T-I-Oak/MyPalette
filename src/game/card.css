@@ -1,0 +1,107 @@
+.PaintingCard, .GameHandCards { --painting-width: 294px; }
+.PaintingCard, .GameStockPile { --painting-thickness: 1.5px; }
+.PaintingCard {
+    width: var(--painting-width);
+    margin-inline: auto;
+    position: relative;
+    perspective: 900px;
+    transform: translate(var(--painting-x, 0), var(--painting-y, 0)) rotate(var(--painting-tilt, 0deg));
+    --edge-depth: var(--painting-thickness);
+    --edge-x: calc(var(--edge-depth) * sin(var(--painting-tilt, 0deg)));
+    --edge-y: calc(var(--edge-depth) * cos(var(--painting-tilt, 0deg)));
+    --painting-frame: linear-gradient(150deg, #fffef9, #e7decf);
+    --painting-rim: #bdb3a2;
+}
+.PaintingCard[data-card-area="hand"] { --edge-depth: calc(-1 * var(--painting-thickness)); }
+.PaintingCard[data-grade="B"] { --painting-frame: linear-gradient(150deg, #f5f6f8, #a8aeb7 48%, #e7e9eb 84%); --painting-rim: #797e87; }
+.PaintingCard[data-grade="C"] { --painting-frame: linear-gradient(150deg, #f9e4a9, #c59b56 49%, #efcf88 83%); --painting-rim: #96743e; }
+.PaintingFaces { display: grid; transform-style: preserve-3d; transform: rotateY(var(--painting-flip, 0deg)); }
+.PaintingFront, .PaintingBack {
+    grid-area: 1 / 1;
+    min-width: 0;
+    backface-visibility: hidden;
+    border: 1px solid var(--painting-rim);
+    border-radius: 12px;
+    padding: 9px;
+    box-shadow: var(--edge-x) var(--edge-y) 0 var(--painting-rim), 1px 6px 10px var(--ui-scrim);
+}
+.PaintingFront { background: var(--painting-frame); transform: translateZ(.75px); }
+.PaintingCard.state-achievable .PaintingFront { outline: 2px solid var(--ui-success-border); }
+.PaintingCard[data-card-area="hand"].state-achievable .PaintingFront::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 0 3px var(--ui-success-border), 0 0 14px 5px var(--ui-success-border);
+    pointer-events: none;
+    animation: hand-achievable-glow 1.6s ease-in-out infinite alternate;
+}
+@keyframes hand-achievable-glow { from { opacity: .55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+    .PaintingCard[data-card-area="hand"].state-achievable .PaintingFront::after { animation: none; }
+}
+.PaintingBack {
+    display: grid;
+    place-items: center;
+    color: #e7d1a1;
+    background: linear-gradient(140deg, #355e54, #193a37);
+    border-color: currentColor;
+    box-shadow: calc(-1 * var(--edge-x)) var(--edge-y) 0 currentColor, 1px 6px 10px var(--ui-scrim);
+    transform: rotateY(180deg) translateZ(.75px);
+}
+.PaintingBack::before { content: ''; position: absolute; inset: 9px; border: 1px solid currentColor; border-radius: 5px; }
+.PaintingBack svg { width: 72%; }
+.PaintingCardBackOnly { height: 414px; pointer-events: none; }
+.PaintingCardBackOnly .PaintingBack {
+    height: 100%;
+    transform: none;
+    box-shadow: var(--edge-x) var(--edge-y) 0 currentColor, 1px 6px 10px var(--ui-scrim);
+}
+.PaintingSheet { overflow: hidden; border: 1px solid var(--ui-control-border); border-radius: 6px; color: var(--ui-text); background: var(--ui-message-surface); }
+.PaintingName { height: 41px; display: flex; align-items: center; gap: 8px; padding-inline: 8px; }
+.PaintingTitle { min-width: 0; overflow: hidden; white-space: nowrap; font: 650 15px/1.5 system-ui, sans-serif; }
+.PaintingGrade { display: grid; place-items: center; flex: 0 0 25px; height: 25px; border: 1px solid var(--painting-rim); border-radius: 3px; background: var(--painting-frame); font: bold 16px Georgia, serif; }
+.PaintingArtwork { position: relative; aspect-ratio: 3 / 2; margin: 0 7px 9px; border: 1px solid var(--ui-control-border); background: var(--ui-surface); }
+.PaintingImage { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.PaintingArtwork.state-incomplete .PaintingImage:last-child { mask-image: linear-gradient(135deg, transparent 21%, #000 80%); }
+.PaintingTabs { display: grid; grid-template-columns: repeat(3, minmax(0, 61px)); gap: 2px; margin-inline: 5px; }
+.PaintingTabs.has-completion { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.PaintingTabs.has-completion .PaintingTab { white-space: nowrap; }
+.PaintingTab, .PaintingPanel { --painting-paper: var(--ui-inactive-surface); background: var(--painting-paper); color: var(--ui-text); }
+.PaintingTab[aria-current="step"], .PaintingPanel.state-current { --painting-paper: var(--ui-surface); }
+.PaintingTab { position: relative; margin-bottom: -1px; padding: 2px 0; border: 1px solid var(--ui-control-border); border-radius: 5px 5px 0 0; font: 400 12px/18px system-ui; cursor: pointer; }
+.PaintingTab[aria-selected="true"] { border-bottom-color: var(--painting-paper); font: 800 14px/18px system-ui; z-index: 1; }
+.PaintingTab:focus-visible { outline: 2px solid var(--ui-focus); outline-offset: -3px; }
+.PaintingPanel { display: grid; grid-template: 96px 36px / repeat(2, minmax(0, 1fr)); gap: 4px; padding: 5px 6px; border-top: 1px solid var(--ui-control-border); }
+.PaintingCompletion { grid-area: 1 / 1 / -1 / -1; display: grid; place-items: center; }
+.PaintingCertificate {
+    display: grid;
+    justify-items: center;
+    gap: 5px;
+    width: 90%;
+    padding: 10px 12px;
+    border: 1px solid var(--ui-control-border);
+    border-radius: 4px;
+    background: var(--ui-message-surface);
+    color: var(--ui-text);
+    text-align: center;
+}
+.PaintingCertificateNumber { color: var(--ui-text-muted); font: 700 11px/1.25 system-ui, sans-serif; letter-spacing: .15em; }
+.PaintingCertificateTitle { min-width: 0; max-width: 100%; overflow-wrap: anywhere; font: 650 16px/1.4 system-ui, sans-serif; }
+.PaintingAtelierSignature { border-top: 1px solid var(--ui-separator); padding: 4px 8px 0; font: italic 16px/1.2 Georgia, serif; }
+.PaintingBlock { display: grid; grid-template-columns: 23px minmax(0, 1fr); align-items: center; overflow: hidden; border: 1px solid var(--block-border); border-radius: 6px; }
+.PaintingBlock.goal { grid-column: 1 / -1; align-items: stretch; --block-border: var(--ui-goal-border); --block-label: var(--ui-goal-surface); --block-text: var(--ui-goal-text); }
+.PaintingBlock.play { --block-border: var(--ui-action-border); --block-label: var(--ui-action-surface); --block-text: var(--ui-action-text); }
+.PaintingBlock.reward { --block-border: var(--ui-reward-border); --block-label: var(--ui-reward-surface); --block-text: var(--ui-reward-text); }
+.PaintingBlockLabel { display: grid; place-items: center; align-self: stretch; border-inline-end: 1px solid var(--block-border); background: color-mix(in srgb, var(--block-label), var(--painting-paper) 25%); color: var(--block-text); }
+.PaintingBlockLabel svg { width: 17px; height: 17px; }
+.PaintingGoals { display: grid; min-width: 0; padding: 2px 3px; --painting-icon-size: min(28px, calc((90px - 3px * (var(--goal-rows) - 1)) / var(--goal-rows))); }
+.PaintingOr { display: grid; grid-template-columns: 1fr auto 1fr; gap: 5px; align-items: center; align-content: center; color: var(--ui-text-muted); font: 700 9px/9px system-ui; }
+.PaintingOr::before, .PaintingOr::after { content: ''; height: 1px; background: var(--ui-control-border); }
+.PaintingBlock .CardIconSequence { flex-wrap: nowrap; justify-content: center; gap: 3px; min-width: 0; }
+.PaintingBlock > .CardIconSequence { padding-inline: 3px; }
+.PaintingBlock .CardIcon { min-width: 0; min-height: 0; flex: 0 1 auto; }
+.PaintingIconFrame { display: block; position: relative; max-width: 100%; }
+.PaintingBlock .PaintingIconFrame canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.PaintingEmpty { align-self: center; text-align: center; color: var(--ui-text-muted); }
+.PaintingCard.GameTransferPiece { margin: 0; height: auto; overflow: visible; }
