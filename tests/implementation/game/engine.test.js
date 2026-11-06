@@ -51,10 +51,14 @@ test('turn end consumes specials then two flyer dice, reduces credit and removes
     assert.equal(s.dayEndDice, null);
 });
 test('normal multi acquisition waits for all candidates before rolling and adding', () => {
-    const game = make(), s = game.state;
+    const accepted = [];
+    const game = new Game(settings, () => .4, { onCandidateAcquired: id => accepted.push(id) });
+    const s = game.state;
     game.run(game.effects([{ type: 'gainNormalDice', count: 2, lifetime: 'temporary' }]));
     game.choose(['0']); assert.equal(s.dice.length, 3);
+    assert.equal(accepted.length, 1);
     game.choose(['2']); assert.equal(s.dice.length, 5);
+    assert.deepEqual(accepted, s.dice.slice(3).map(die => die.id));
     assert.equal(s.dice.at(-1).used, false);
 });
 test('empty stock exchange returns then exposes same card, resetting step', () => {

@@ -10,10 +10,11 @@ export function gameIssues(settings) {
     return settings.cards.flatMap(card => draftIssues(card).map(issue => `${card.id}：${issue}`));
 }
 export class Game {
-    constructor(settings, random = Math.random) {
+    constructor(settings, random = Math.random, { onCandidateAcquired } = {}) {
         const issues = gameIssues(settings);
         if (issues.length) throw new Error(issues.join('\n'));
         this.random = random;
+        this.onCandidateAcquired = onCandidateAcquired;
         this.definitions = Object.fromEntries(structuredClone(settings.cards).map(card => [card.id, card]));
         this.sequence = 0; this.task = null;
         this.state = {

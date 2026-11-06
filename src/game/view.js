@@ -2,6 +2,7 @@ import { Game, gameIssues } from './engine.js';
 import { matchingDice, satisfiesSelection } from './goals.js';
 import { displayLabel } from '../effectCatalog.js';
 import { goalIcons, effectIcons, dieFaceIcon } from '../cardIcons.js';
+import { cardLocations, changedCardAreas, createGameAreaTransitions } from './areaTransitions.js';
 import './view.css';
 
 const el = (tag, text, className) => {
@@ -23,13 +24,72 @@ export function mountGame(root, settings, onMenu) {
         root.replaceChildren(el('h2', '設定が制作途中のため開始できません'), el('pre', issues.join('\n'), 'StartIssues'), button('入口へ戻る', onMenu));
         return;
     }
-    const game = new Game(settings);
+    const candidateOrigins = new Map();
+    let candidateSource;
+    const game = new Game(settings, Math.random, {
+        onCandidateAcquired(id) {
+            if (candidateSource) candidateOrigins.set(id, candidateSource);
+        },
+    });
     let selected = new Set();
     let activeTab = 'play';
+    let moving = false;
     const scroll = el('div', undefined, 'GameBoard'); root.replaceChildren(scroll);
-    const act = action => {
-        action(); selected = new Set(); activeTab = 'play'; render();
-    };
+    const transitions = createGameAreaTransitions(root, scroll);
+    function setActionLock(locked) {
+        for (const node of scroll.querySelectorAll('[data-game-action]')) {
+            if (locked && !node.disabled) {
+                node.dataset.transferLocked = '';
+                node.disabled = true;
+            } else if (!locked && 'transferLocked' in node.dataset) {
+                delete node.dataset.transferLocked;
+                node.disabled = false;
+            }
+        }
+    }
+    function openChoice() {
+        const dialog = scroll.querySelector('.GameChoice');
+        if (dialog?.isConnected && !dialog.open) dialog.showModal();
+    }
+    function act(action, source = null) {
+        if (moving) return;
+        const before = cardLocations(game.state);
+        candidateSource = source;
+        try {
+            action();
+        } finally {
+            candidateSource = null;
+        }
+        const transfers = changedCardAreas(before, cardLocations(game.state)).map(move => ({
+            ...move, source: transitions.captureCard(move.from, move.id),
+        }));
+        for (const { id } of game.state.dice) {
+            const origin = candidateOrigins.get(id);
+            if (origin) {
+                transfers.push({ id, from: 'candidates', to: 'dice', source: origin });
+                candidateOrigins.delete(id);
+            }
+        }
+        selected = new Set();
+        activeTab = 'play';
+        moving = transfers.length > 0;
+        render();
+        if (!moving) return;
+        const running = transfers.map(transfer => transitions.play(transfer));
+        Promise.allSettled(running).then(results => {
+            moving = false;
+            setActionLock(false);
+            openChoice();
+            for (const result of results) {
+                if (result.status === 'rejected') console.error(result.reason);
+            }
+        });
+    }
+    function gameButton(text, action, disabled) {
+        const node = button(text, action, disabled);
+        node.dataset.gameAction = '';
+        return node;
+    }
     function cardView(card) {
         const definition = game.definitions[card.id];
         const node = el('article', undefined, 'GameCard Surface texture-paper'); node.dataset.cardId = card.id;
@@ -90,7 +150,12 @@ export function mountGame(root, settings, onMenu) {
         const node = section(`選択待ち：${pending.title}`, dialog, 'state-choice');
         node.append(el('p', `${pending.min === pending.max ? pending.min : `${pending.min}〜${pending.max}`}個を選んで確定してください。`));
         const list = el('div', undefined, 'GameGrid');
-        const submit = button('選択を確定', () => act(() => game.choose([...selected])), true);
+        const candidateNodes = new Map();
+        const submit = button('選択を確定', () => {
+            const ids = [...selected];
+            const candidate = candidateNodes.get(ids[0]);
+            act(() => game.choose(ids), candidate ? transitions.captureCandidate(candidate) : null);
+        }, true);
         const count = el('p', '選択数：0');
         const update = () => { count.textContent = `選択数：${selected.size}`; submit.disabled = selected.size < pending.min || selected.size > pending.max; };
         for (const option of pending.options) {
@@ -98,6 +163,7 @@ export function mountGame(root, settings, onMenu) {
             if (pending.kind === 'candidates') {
                 item = el('article', undefined, 'GameDie Surface texture-paper');
                 item.append(el('strong', `候補${Number(option.id) + 1}`), facesView(option.faces, option.lifetime, -1));
+                candidateNodes.set(option.id, item);
             } else if (pending.kind === 'dice') item = diceView(game.state.dice.find(d => d.id === option.id));
             else {
                 const card = [...game.state.hand, ...Object.values(game.state.stocks).flat()].find(c => c.id === option.id);
@@ -107,7 +173,7 @@ export function mountGame(root, settings, onMenu) {
             list.append(item);
         }
         const footer = el('div', undefined, 'GameChoiceFooter'); footer.append(count, submit);
-        node.append(list, footer); dialog.showModal();
+        node.append(list, footer);
     }
     function render() {
         const positions = new Map([...scroll.querySelectorAll('[data-pane]')].map(node => [node.dataset.pane, node.scrollTop]));
@@ -115,9 +181,12 @@ export function mountGame(root, settings, onMenu) {
         const status = section(`${s.day}日目 · ${phaseLabel[s.phase]}${s.pending ? '（効果を選択中）' : ''}`, scroll, 'GameStatus');
         status.append(el('p', `名声 ${s.fame} / 信用 ${s.credit} / リロール権 ${s.rerolls} / 出荷 ${s.shipped.length}枚`),
             el('p', `チラシ ${s.flyers}枚 · 制作進捗 ${s.progress}/2 · 次回発注 ${s.orderCost}枚`));
-        const menu = button('入口へ戻る', onMenu); status.append(menu);
+        const menu = button('入口へ戻る', () => { transitions.dispose(); onMenu(); }); status.append(menu);
         if (s.phase === 'finished') {
-            status.append(el('h2', `結果：${s.day}日 · 名声 ${s.fame} · 出荷 ${s.shipped.length}枚`), button('もう一度遊ぶ', () => mountGame(root, settings, onMenu)));
+            status.append(el('h2', `結果：${s.day}日 · 名声 ${s.fame} · 出荷 ${s.shipped.length}枚`), button('もう一度遊ぶ', () => {
+                transitions.dispose();
+                mountGame(root, settings, onMenu);
+            }));
         }
         const tabs = el('nav', undefined, 'GameTabs'); tabs.setAttribute('aria-label', 'ゲーム情報');
         for (const [id, label] of [['play', '制作と手札'], ['stock', `ストック・山札（${s.deck.length}）・捨て札（${s.discard.length}）`], ['shipped', `出荷済み（${s.shipped.length}）`], ['logs', '進行記録']]) {
@@ -136,12 +205,15 @@ export function mountGame(root, settings, onMenu) {
         };
         for (const die of visibleDice) {
             const node = diceView(die);
-            if (canPlay && !die.used) checkbox(node, die.id, `${die.id}を達成に使用`, updateAchievements);
-            const reroll = button('↻', () => act(() => game.reroll(die.id)), !canPlay || die.used || !s.rerolls);
+            if (canPlay && !die.used) {
+                checkbox(node, die.id, `${die.id}を達成に使用`, updateAchievements);
+                node.querySelector('input').dataset.gameAction = '';
+            }
+            const reroll = gameButton('↻', () => act(() => game.reroll(die.id)), !canPlay || die.used || !s.rerolls);
             reroll.setAttribute('aria-label', `${die.id}をリロール`); reroll.title = `${die.id}をリロール`;
             node.append(reroll); diceList.append(node);
         }
-        diceSection.append(diceList, button('全未使用ダイスをリロール', () => act(() => game.reroll()), !canPlay || !s.rerolls || !s.dice.some(d => !d.used)));
+        diceSection.append(diceList, gameButton('全未使用ダイスをリロール', () => act(() => game.reroll()), !canPlay || !s.rerolls || !s.dice.some(d => !d.used)));
         diceSection.title = 'ダイスにチェックを付け、制作中の作品の達成ボタンで確定します。';
         for (const [key, label] of [['field', '制作中'], ['hand', '手札'], ['shipped', '出荷済み作品']]) {
             const zone = section(`${label} ${s[key].length}枚`, workspace, `GameCardsPane ${key}`), list = el('div', undefined, 'GameGrid');
@@ -151,9 +223,9 @@ export function mountGame(root, settings, onMenu) {
                 const node = cardView(card);
                 const match = key === 'hand' || key === 'field' ? matchingDice(game.step(card).goals, s.dice) : null;
                 node.classList.toggle('state-achievable', !!match);
-                if (key === 'hand') node.querySelector('.GameCardActions').prepend(button('場にプレイ', () => act(() => game.play(card.id)), !canPlay || s.hand.length < 2));
+                if (key === 'hand') node.querySelector('.GameCardActions').prepend(gameButton('場にプレイ', () => act(() => game.play(card.id)), !canPlay || s.hand.length < 2));
                 if (key === 'field') {
-                    const action = button('選択ダイスで達成', () => act(() => game.achieve(card.id, [...selected])), true);
+                    const action = gameButton('選択ダイスで達成', () => act(() => game.achieve(card.id, [...selected])), true);
                     action.title = match ? '達成可能：使用するダイスを選んでください' : '現在は達成できません';
                     achieveButtons.push({ card, node: action }); node.querySelector('.GameCardActions').prepend(action);
                 }
@@ -161,8 +233,15 @@ export function mountGame(root, settings, onMenu) {
             }
             zone.append(list);
         }
-        const stocks = section(`公開ストック · デッキ ${s.deck.length}枚 · 捨て札 ${s.discard.length}枚`, workspace, 'GameStockPane');
+        const stocks = section('公開ストック', workspace, 'GameStockPane');
         stocks.hidden = activeTab !== 'stock';
+        const counts = el('p', undefined, 'GamePileCounts');
+        for (const [area, label] of [['deck', 'デッキ'], ['discard', '捨て札']]) {
+            const count = el('span', `${label} ${s[area].length}枚`);
+            count.dataset.transferAnchor = area;
+            counts.append(count);
+        }
+        stocks.append(counts);
         const stockList = el('div', undefined, 'GameGrid');
         stockList.dataset.pane = 'stock';
         for (const grade of ['A', 'B', 'C']) {
@@ -178,11 +257,14 @@ export function mountGame(root, settings, onMenu) {
         controls.append(el('p', s.logs.at(-1), 'GameLatestLog'));
         if (s.phase === 'play') {
             controls.append(el('p', '任意のタイミングで仕事を終了できます。余った画材はチラシ制作・信用更新に使われます。'),
-                button('一日の仕事を終える', () => act(() => game.endDay()), !canPlay));
-        } else if (s.phase === 'betweenDays') controls.append(button('翌日の仕事を始める', () => act(() => game.nextDay())));
+                gameButton('一日の仕事を終える', () => act(() => game.endDay()), !canPlay));
+        } else if (s.phase === 'betweenDays') controls.append(gameButton('翌日の仕事を始める', () => act(() => game.nextDay())));
         updateAchievements();
         for (const node of scroll.querySelectorAll('[data-pane]')) node.scrollTop = positions.get(node.dataset.pane) ?? 0;
         if (s.pending) selectionPanel(s.pending);
+        transitions.refresh();
+        if (moving) setActionLock(true);
+        else openChoice();
     }
     render();
 }

@@ -15,13 +15,13 @@ function* select(game, kind, title, options, min = 1, max = min) {
 export function* acquire(game, effect) {
     const gained = [];
     for (let i = 0; i < effect.count; i++) {
-        let faces;
         if (effect.type === 'gainNormalDice') {
             const candidates = normalCandidates(game.random);
             const [id] = yield* select(game, 'candidates', `通常ダイス獲得 ${i + 1}/${effect.count}`, candidates.map((faces, index) => ({ id: String(index), faces, lifetime: effect.lifetime })));
-            faces = candidates[Number(id)];
-        } else faces = specifiedFaces(effect);
-        gained.push(game.makeDie(faces, effect.lifetime));
+            const die = game.makeDie(candidates[Number(id)], effect.lifetime);
+            gained.push(die);
+            game.onCandidateAcquired?.(die.id);
+        } else gained.push(game.makeDie(specifiedFaces(effect), effect.lifetime));
     }
     for (const die of gained) roll(die, game.random);
     game.state.dice.push(...gained);

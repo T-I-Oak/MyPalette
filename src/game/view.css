@@ -49,6 +49,10 @@
 .DieFaceIndex { font-size: 9px; white-space: nowrap; }
 .GameCard img { max-width: 100%; max-height: 220px; object-fit: contain; }
 .GameSelection { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-weight: 600; }
+.GamePileCounts { display: flex; gap: 8px; margin: 0 0 6px; }
+.GameTransferLayer { position: fixed; inset: 0; z-index: 5; pointer-events: none; font-size: .82rem; }
+.GameTransferPiece { width: 100%; height: 100%; box-sizing: border-box; overflow: hidden; }
+.GameTransferTarget { visibility: hidden; }
 .GameDie.state-used { background: var(--ui-inactive-surface); color: var(--ui-inactive-text); }
 .state-choice { border: 2px solid var(--ui-selected-border); background: var(--ui-choice-surface); }
 .state-achievable { color: var(--ui-success-text); font-weight: 700; }
@@ -77,5 +81,6 @@
     .GameWorkspace { grid-template-columns: 120px minmax(0, 1fr); }
     .GameStatus { gap: 4px 8px; }
     .GameBoard { font-size: .75rem; }
+    .GameTransferLayer { font-size: .75rem; }
     .GameSection, .GameCard, .GameDie { padding: 5px; }
 }
