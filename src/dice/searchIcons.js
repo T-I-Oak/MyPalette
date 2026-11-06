@@ -1,13 +1,12 @@
 import {goalIconCanvas} from '../icons/render.js';
-import {drawGlyphText} from './glyphs.js';
+import {drawGlyphText} from '../icons/glyphs.js';
 import {validateFaceCondition} from './faceConditions.js';
 import {describeSearchCondition} from './searchMessages.js';
 
-export const describeCondition=describeSearchCondition;
 export function conditionCanvas(condition,size=96) {
     const query=validateFaceCondition(condition);
     const canvas=goalIconCanvas(query,size);
-    canvas.className='DiceConditionIcon';canvas.setAttribute('role','img');canvas.setAttribute('aria-label',describeCondition(query));
+    canvas.className='DiceConditionIcon';canvas.setAttribute('role','img');canvas.setAttribute('aria-label',describeSearchCondition(query));
     return canvas;
 }
 export function countCanvas(count) {
