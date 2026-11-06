@@ -2,12 +2,12 @@ const { chromium } = require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwri
 const assert = require('node:assert/strict');
 (async () => {
     const browser = await chromium.launch({ channel: process.env.MYPALETTE_BROWSER_CHANNEL || 'msedge', headless: true });
-    const page = await browser.newPage(); await page.goto('http://127.0.0.1:5174/#dice');
+    const page = await browser.newPage(); await page.goto('http://127.0.0.1:3000/MyPalette/dev.html#dice');
     const checks = await page.evaluate(async () => {
-        const { loadResultGraphics } = await import('/src/dice/resultGraphics.js');
-        const { INKS } = await import('/src/dice/icons.js');
-        const { colorizeGrayscale } = await import('/src/dice/colorizeGrayscale.js');
-        const { MATERIALS, SPECIAL_FACES } = await import('/src/effectCatalog.js');
+        const { loadResultGraphics } = await import('/MyPalette/src/dice/resultGraphics.js');
+        const { INKS } = await import('/MyPalette/src/dice/icons.js');
+        const { colorizeGrayscale } = await import('/MyPalette/src/dice/colorizeGrayscale.js');
+        const { MATERIALS, SPECIAL_FACES } = await import('/MyPalette/src/effectCatalog.js');
         const graphics = await loadResultGraphics();
         const pixels = async url => {
             const image = new Image(); image.src = url; await image.decode();

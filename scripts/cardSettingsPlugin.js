@@ -6,7 +6,7 @@ import { revision } from '../src/settingsStorage.js';
 export function cardSettingsPlugin(settingsPath) {
     return settingsFilePlugin(settingsPath, {name:'card-settings', route:'/api/card-settings', read:readDocument, serialize:serializeDocument});
 }
-export function settingsFilePlugin(settingsPath, {name, route, read, serialize}) {
+export function settingsFilePlugin(settingsPath, {name, route, read, serialize, allowRead = false}) {
     let pending = Promise.resolve();
     return {
         name,
@@ -14,6 +14,16 @@ export function settingsFilePlugin(settingsPath, {name, route, read, serialize})
             const handler = async (request, response) => {
                 response.setHeader('Content-Type', 'application/json; charset=utf-8');
                 response.setHeader('Cache-Control', 'no-store');
+                if (allowRead && request.method === 'GET') {
+                    try {
+                        response.end(await readFile(settingsPath, 'utf8'));
+                    } catch (error) {
+                        server.config.logger.error(error.stack);
+                        response.statusCode = 500;
+                        response.end(JSON.stringify({ error: '設定ファイルを読み込めませんでした。' }));
+                    }
+                    return;
+                }
                 if (request.method !== 'PUT') { response.statusCode = 405; response.end(JSON.stringify({ error: 'PUTのみ利用できます。' })); return; }
                 const origin = request.headers.origin;
                 if (!origin || origin !== `http://${request.headers.host}` || !/^127\.0\.0\.1(?::\d+)?$/.test(request.headers.host ?? '')) {

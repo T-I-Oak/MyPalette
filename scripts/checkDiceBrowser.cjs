@@ -1,7 +1,7 @@
 const { chromium } = require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const base = process.argv[2] || 'http://127.0.0.1:5174/';
+const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/dev.html';
 (async () => {
     const browser = await chromium.launch({ channel: process.env.MYPALETTE_BROWSER_CHANNEL || 'msedge', headless: true });
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });

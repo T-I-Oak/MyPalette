@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
     const browser=await chromium.launch({channel:process.env.MYPALETTE_BROWSER_CHANNEL || 'msedge',headless:true});
     const page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];
     page.on('pageerror',error=>errors.push(error.message));
-    await page.goto((process.argv[2] || 'http://127.0.0.1:5174/') + '#dice');
+    await page.goto((process.argv[2] || 'http://127.0.0.1:3000/MyPalette/dev.html') + '#dice');
     const search=page.getByRole('button',{name:'条件を含むダイスを探す',exact:true});await search.waitFor();
     const notice=page.locator('#dice-search-notice');assert.equal(await notice.isVisible(),false);
     const language=async lang=>page.evaluate(async lang=>{
