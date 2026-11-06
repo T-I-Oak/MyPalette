@@ -23,13 +23,25 @@ export function changedCardAreas(before, after) {
 
 function bounds(node) {
     const { x, y, width, height } = node.getBoundingClientRect();
-    return width && height ? { x, y, width, height } : null;
+    if (!width || !height) return null;
+    if (!node.classList.contains('PaintingCard')) return { x, y, width, height };
+    const view = node.ownerDocument.defaultView;
+    const { width: logicalWidth, height: logicalHeight } = view.getComputedStyle(node);
+    const viewport = node.closest('.GameCardAreaContent');
+    const scale = viewport ? Number(view.getComputedStyle(viewport).zoom) || 1 : 1;
+    const boxWidth = parseFloat(logicalWidth) * scale;
+    const boxHeight = parseFloat(logicalHeight) * scale;
+    return { x: x + (width - boxWidth) / 2, y: y + (height - boxHeight) / 2, width: boxWidth, height: boxHeight };
 }
 
-function capture(node) {
+function capture(node, copyCardDrawing) {
     const rect = bounds(node);
     if (!rect) return null;
     const element = node.cloneNode(true);
+    if (node.classList.contains('PaintingCard')) {
+        element.dataset.paintingWidth = node.ownerDocument.defaultView.getComputedStyle(node).width.replace('px', '');
+    }
+    copyCardDrawing?.(node, element);
     const canvases = element.querySelectorAll('canvas');
     node.querySelectorAll('canvas').forEach((canvas, index) => {
         if (canvas.width && canvas.height) canvases[index].getContext('2d').drawImage(canvas, 0, 0);
@@ -45,7 +57,7 @@ export function offscreenCardRect(area, { y, width, height }, viewportWidth) {
     return { x: area === 'stock' ? x + width : x, y, width, height };
 }
 
-export function createGameAreaTransitions(root, board) {
+export function createGameAreaTransitions(root, board, { createCardTransfer, copyCardDrawing } = {}) {
     const document = root.ownerDocument;
     const window = document.defaultView;
     const host = document.createElement('div');
@@ -60,6 +72,10 @@ export function createGameAreaTransitions(root, board) {
         // The board owns the stationary elements and their grid layout.
         renderInArea() {},
         removeFromArea() {},
+        renderMoving(object, rect, scale) {
+            const cardWidth = object.element.dataset.paintingWidth;
+            dom.renderMoving(object, rect, cardWidth ? rect.width / Number(cardWidth) : scale);
+        },
         scheduleFrame(callback) {
             dom.scheduleFrame(time => {
                 if (time !== lastFrame) {
@@ -85,7 +101,7 @@ export function createGameAreaTransitions(root, board) {
     function updateTarget(transfer) {
         const { id, to, key, origin } = transfer;
         const node = find(to, id);
-        const target = node ? bounds(node) : anchorBounds(to);
+        const target = node ? bounds(node) : fitAnchor(anchorBounds(to), origin, transfer.painting);
         if (node) node.classList.add('GameTransferTarget');
         areas.get(to).setSlot(key, target ?? offscreenCardRect(to, origin, window.innerWidth));
     }
@@ -95,14 +111,24 @@ export function createGameAreaTransitions(root, board) {
         return anchor ? bounds(anchor) : null;
     }
 
+    function fitAnchor(anchor, visual, painting) {
+        if (!anchor || !painting) return anchor;
+        const { width, height } = visual;
+        return { width, height, x: anchor.x + (anchor.width - width) / 2, y: anchor.y + (anchor.height - height) / 2 };
+    }
+
     function play({ id, from, to, source }) {
         const node = find(to, id);
         if (window.matchMedia(reducedMotion).matches) return null;
-        const visual = source?.element ? source : node && capture(node);
+        const visual = source?.element ? source : node && capture(node, copyCardDrawing);
         if (!visual) return null;
         const key = `${from === 'candidates' ? 'die' : 'card'}:${id}`;
-        const origin = source?.rect ?? offscreenCardRect(from, visual.rect, window.innerWidth);
-        const object = new MoveObject(key, visual.element);
+        const painting = visual.element.classList.contains('PaintingCard');
+        const origin = (source?.element ? source.rect : fitAnchor(source?.rect, visual.rect, painting))
+            ?? offscreenCardRect(from, visual.rect, window.innerWidth);
+        const object = from !== 'candidates' && createCardTransfer
+            ? createCardTransfer(key, visual.element, from, to)
+            : new MoveObject(key, visual.element);
         object.element.dataset.gameTransfer = key;
         object.element.dataset.transferFrom = from;
         object.element.dataset.transferTo = to;
@@ -110,7 +136,7 @@ export function createGameAreaTransitions(root, board) {
         const targetArea = areas.get(to);
         sourceArea.setSlot(key, origin);
         sourceArea.place(object, key);
-        const transfer = { id, to, key, origin };
+        const transfer = { id, to, key, origin, painting };
         active.set(key, transfer);
         updateTarget(transfer);
         return manager.move({
@@ -128,7 +154,7 @@ export function createGameAreaTransitions(root, board) {
     return {
         captureCard: (area, id) => {
             const node = find(area, id);
-            if (node) return capture(node);
+            if (node) return capture(node, copyCardDrawing);
             const rect = anchorBounds(area);
             return rect ? { rect } : null;
         },
