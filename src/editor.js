@@ -17,7 +17,7 @@ function el(tag, text, className) {
     return item;
 }
 function button(text, action) {
-    const item = el('button', text, 'Button'); item.type = 'button';
+    const item = el('button', text, 'Button texture-raised'); item.type = 'button';
     item.addEventListener('click', action); return item;
 }
 function select(label, options, value, update, numeric = false) {

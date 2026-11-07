@@ -135,5 +135,4 @@
 }
 .GameCardDetail .GameCardActions { justify-content: center; flex-wrap: wrap; width: auto; margin-top: 10px; }
 .GameCardDetail .GameCardActions > :last-child { margin-left: 0; }
-.GameCardDetail .GameCardActions .Button { background: var(--ui-surface); }
 .GameWorkspace .GameGrid, .GameCardArea, .GameLog, .GameChoice .GameGrid { scrollbar-color: var(--ui-control-border) var(--ui-section-surface); scrollbar-width: thin; }

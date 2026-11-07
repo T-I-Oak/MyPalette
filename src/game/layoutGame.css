@@ -1,4 +1,4 @@
-.GameAreaHost { width: 100%; height: 100%; overflow: auto; overscroll-behavior: contain; padding: 6px; font: 14px system-ui, sans-serif; color: var(--ui-text); background: var(--ui-surface); }
+.GameAreaHost { box-sizing: border-box; width: 100%; height: 100%; overflow: clip; padding: 6px; font: 14px system-ui, sans-serif; color: var(--ui-text); background: var(--ui-surface); }
 .GameAreaHost .GameSection { border: 0; padding: 4px; }
 .GameAreaHost .GameSection h2, .GameAreaHost > h2 { font-size: 16px; margin: 0 0 4px; }
 .GameAreaHost .Button { min-height: 28px; font: inherit; padding: 3px 6px; }

@@ -11,6 +11,7 @@ const english = {
     exchangeCards: 'Exchange cards', activateSpecialFaces: 'Activate visible special faces',
 };
 const resources = {
+    startPainting: translated('着手', 'Start'),
     goal: translated('目標', 'Goal'),
     play: translated('プレイ時効果', 'On play'),
     reward: translated('達成時効果', 'On completion'),

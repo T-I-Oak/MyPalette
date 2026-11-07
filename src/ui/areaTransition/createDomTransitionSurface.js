@@ -1,11 +1,12 @@
 import { readTransform } from './geometry.js';
 
 export function createDomTransitionSurface(root, initialTransform = { x: 0, y: 0, scale: 1 },
-    { areaRootFor = () => root, transitionRoot = root } = {}) {
+    { areaRootFor = () => root, transitionRoot = root, relativeToRoot = false, viewportTransformFor = null } = {}) {
     const document = root.ownerDocument;
     const window = document.defaultView;
     const mounts = new Map();
     let transform = readTransform(initialTransform);
+    const currentTransform = () => viewportTransformFor ? readTransform(viewportTransformFor()) : transform;
 
     const areaLayers = new Map();
     const transitionLayer = createLayer();
@@ -24,7 +25,7 @@ export function createDomTransitionSurface(root, initialTransform = { x: 0, y: 0
     function createLayer() {
         const layer = document.createElement('div');
         Object.assign(layer.style, {
-            position: 'fixed',
+            position: relativeToRoot ? 'absolute' : 'fixed',
             inset: '0',
             overflow: 'hidden',
             pointerEvents: 'none',
@@ -42,9 +43,10 @@ export function createDomTransitionSurface(root, initialTransform = { x: 0, y: 0
             mounts.set(object, wrapper);
         }
         const { x, y, width, height } = viewportRect;
+        const viewport = currentTransform();
         Object.assign(wrapper.style, {
-            left: `${x}px`,
-            top: `${y}px`,
+            left: `${relativeToRoot ? (x - viewport.x) / viewport.scale : x}px`,
+            top: `${relativeToRoot ? (y - viewport.y) / viewport.scale : y}px`,
             width: `${width / scale}px`,
             height: `${height / scale}px`,
             transform: `scale(${scale})`,
@@ -64,7 +66,7 @@ export function createDomTransitionSurface(root, initialTransform = { x: 0, y: 0
     }
 
     return {
-        readViewportTransform: () => transform,
+        readViewportTransform: currentTransform,
         setViewportTransform(nextTransform) {
             transform = readTransform(nextTransform);
         },

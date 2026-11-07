@@ -1,5 +1,6 @@
 import { MoveObject } from '../ui/areaTransition/MoveObject.js';
 import { releasePaintingIcons } from '../cardIcons.js';
+import { createHandPresentation } from './handPresentation.js';
 import './layoutGame.css';
 
 // Each host can later be replaced by an area-specific renderer.
@@ -15,13 +16,16 @@ export function createLayoutPresentation(screen) {
         area.place(object, object.id);
         hosts.set(id, { host, object });
     }
+    const handPresentation = createHandPresentation(screen.areas.get('hand'), hosts.get('hand').host);
     const unsubscribe = screen.subscribe(() => {
         for (const [id, { object }] of hosts) {
             const area = screen.areas.get(id);
             area.setSlot(object.id, { x: 0, y: 0, width: area.logicalWidth, height: area.logicalHeight });
         }
+        handPresentation.update();
     });
     function clear() {
+        handPresentation.clear();
         for (const { host } of hosts.values()) {
             // Closed panel hosts are detached, so the screen root cannot release their observers.
             releasePaintingIcons(host);
@@ -41,7 +45,9 @@ export function createLayoutPresentation(screen) {
             move('info', '.GameControls');
             move('palette', '.GameDicePane');
             move('play', '.field');
-            move('hand', '.hand');
+            const hand = move('hand', '.hand');
+            hand.querySelector('h2').remove();
+            handPresentation.present(hand);
             move('stock', '.GameStockPane');
             move('discard', '.discard');
             const deck = hosts.get('deck').host;
@@ -59,11 +65,11 @@ export function createLayoutPresentation(screen) {
                 dialog.className = 'GameInspection';
                 dialog.setAttribute('aria-label', label);
                 const close = document.createElement('button');
-                close.className = 'Button'; close.textContent = '閉じる';
+                close.className = 'Button texture-raised'; close.textContent = '閉じる';
                 close.addEventListener('click', () => dialog.close());
                 dialog.append(close, content); board.append(dialog);
                 const open = document.createElement('button');
-                open.className = 'Button'; open.textContent = label;
+                open.className = 'Button texture-raised'; open.textContent = label;
                 open.addEventListener('click', () => dialog.showModal()); info.append(open);
             }
             board.querySelector('.GameTabs').remove();
@@ -71,6 +77,7 @@ export function createLayoutPresentation(screen) {
         },
         dispose() {
             clear(); unsubscribe();
+            handPresentation.dispose();
             for (const { object } of hosts.values()) object.area.remove(object);
         },
     };

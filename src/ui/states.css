@@ -1,1 +1,3 @@
 .texture-label-inverse.state-consumed, .state-consumed .texture-label-inverse { background: var(--ui-inverse-inactive-surface); }
+.Button:disabled { cursor: default; }
+.texture-raised:disabled { color: var(--ui-inactive-text); background: var(--ui-inactive-surface); border-color: var(--ui-control-border); box-shadow: none; }

@@ -14,7 +14,7 @@ const el = (tag, text, className) => {
     return node;
 };
 function button(text, action, disabled = false) {
-    const node = el('button', text, 'Button'); node.type = 'button'; node.disabled = disabled;
+    const node = el('button', text, 'Button texture-raised'); node.type = 'button'; node.disabled = disabled;
     node.addEventListener('click', action); return node;
 }
 export const faceLabel = face => face.special ? `特殊面：${displayLabel(face.special)}` : `${displayLabel(face.color)}・${displayLabel(face.material)}`;

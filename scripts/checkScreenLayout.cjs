@@ -53,7 +53,7 @@ const assert = require('node:assert/strict');
         }
         const session = await page.context().newCDPSession(page);
         await session.send('Emulation.setDeviceMetricsOverride', { width: 600, height: 600, deviceScaleFactor: 1, mobile: false });
-        await page.waitForFunction(() => document.querySelector('[data-area="play"]').width === 300);
+        await page.waitForFunction(() => document.querySelector('canvas[data-area="play"]').width === 300);
         await page.goto(base + 'dev.html');
         await page.getByRole('button', { name: 'ゲームを始める', exact: true }).click();
         await page.locator('.GameBoard').waitFor();

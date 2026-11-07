@@ -28,7 +28,7 @@ async function start() {
         const mode = document.querySelector('header > span');
         if (location.hash === '#settings') {
             mode.textContent = 'カード設定';
-            const back = document.createElement('button'); back.className = 'Button SettingsBack'; back.textContent = '入口へ戻る';
+            const back = document.createElement('button'); back.className = 'Button texture-raised SettingsBack'; back.textContent = '入口へ戻る';
             back.addEventListener('click', home); document.querySelector('header').append(back);
             const evaluation = await loadSettingsFile('/api/effect-evaluation', readEvaluation);
             mountEditor(root, saved.document, saved.revision, evaluation);
@@ -37,13 +37,13 @@ async function start() {
             const menu = document.createElement('section'); menu.className = 'GameMenu Surface texture-paper';
             const heading = document.createElement('h2'); heading.textContent = 'アトリエで制作を始めましょう';
             const description = document.createElement('p'); description.textContent = '保存済みの45枚のカード設定で遊びます。画材を選んで作品を進め、信用を保ちながら名声を高めましょう。';
-            const play = document.createElement('button'); play.className = 'Button'; play.textContent = 'ゲームを始める';
+            const play = document.createElement('button'); play.className = 'Button texture-raised'; play.textContent = 'ゲームを始める';
             play.addEventListener('click', () => mountGame(root, saved.document, home));
-            const editor = document.createElement('button'); editor.className = 'Button'; editor.textContent = 'カード設定を開く';
+            const editor = document.createElement('button'); editor.className = 'Button texture-raised'; editor.textContent = 'カード設定を開く';
             editor.addEventListener('click', () => { location.hash = 'settings'; location.reload(); });
-            const dice = document.createElement('button'); dice.className = 'Button'; dice.textContent = 'ダイス動作確認を開く';
+            const dice = document.createElement('button'); dice.className = 'Button texture-raised'; dice.textContent = 'ダイス動作確認を開く';
             dice.addEventListener('click', () => { location.hash = 'dice'; location.reload(); });
-            const icons = document.createElement('button'); icons.className = 'Button'; icons.textContent = '共通アイコン確認を開く';
+            const icons = document.createElement('button'); icons.className = 'Button texture-raised'; icons.textContent = '共通アイコン確認を開く';
             icons.addEventListener('click', () => { location.hash = 'icons'; location.reload(); });
             menu.append(heading, description, play, editor, dice, icons); root.append(menu);
         }

@@ -1,6 +1,11 @@
 .texture-paper { background: var(--ui-surface); border-color: var(--ui-border); }
 .texture-surface-muted { border-color: var(--ui-surface-muted-border); background: var(--ui-surface-muted); }
 .texture-label-inverse { color: var(--ui-inverse-text); background: var(--ui-inverse-surface); }
+.texture-raised { color: var(--ui-primary); border-color: var(--ui-primary); background: linear-gradient(var(--ui-surface), var(--ui-message-surface)); box-shadow: inset 0 1px 0 var(--ui-surface), 0 1px 2px var(--ui-artwork-shadow); }
+@media (hover: hover) {
+    .texture-raised:hover:not(:disabled) { background: var(--ui-control-hover); }
+}
+.texture-raised:active:not(:disabled) { background: var(--ui-control-hover); box-shadow: inset 0 1px 2px var(--ui-artwork-shadow); }
 .texture-primary { background: var(--ui-primary); color: var(--ui-on-primary); border-color: var(--ui-primary); }
 .texture-primary:hover { background: var(--ui-primary-hover); }
 .texture-artwork { filter: drop-shadow(0 5px 4px var(--ui-artwork-shadow)); }
@@ -12,3 +17,4 @@
 
 .texture-highlight-frame path { fill: var(--ui-highlight-surface); stroke: var(--ui-highlight-border); }
 .texture-highlight-frame { filter: drop-shadow(0 2px 2px var(--ui-callout-shadow)); }
+.texture-ground-shadow::before { background: linear-gradient(to top, var(--ui-artwork-shadow), transparent); filter: blur(3px); }

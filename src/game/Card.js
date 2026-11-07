@@ -37,6 +37,7 @@ export class Card extends MoveObject {
 
     setPresentation(area, placement) {
         this.element.dataset.cardArea = area;
+        this.element.classList.toggle('texture-ground-shadow', area === 'hand');
         const { x, y, angle } = placement;
         this.element.style.setProperty('--painting-x', x + 'px');
         this.element.style.setProperty('--painting-y', y + 'px');

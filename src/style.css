@@ -20,10 +20,8 @@ header p { order: 2; }
 .Editor { display: flex; flex-direction: column; min-height: 0; flex: 1; }
 .Toolbar, .Row, .Choices { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .Toolbar { flex-shrink: 0; }
-.Button, input, select { font: inherit; padding: 8px; min-height: 40px; border: 1px solid var(--ui-control-border); border-radius: 5px; }
-.Button { background: var(--ui-surface); color: inherit; cursor: pointer; }
-.Button:hover { background: var(--ui-control-hover); }
-.Button:disabled { opacity: .45; cursor: default; }
+input, select { font: inherit; padding: 8px; min-height: 40px; border: 1px solid var(--ui-control-border); border-radius: 5px; }
+.Button { padding: 8px; min-height: 40px; }
 :focus-visible { outline: 3px solid var(--ui-focus); outline-offset: 2px; }
 .EditorLayout { display: grid; grid-template-columns: 180px minmax(0, 1fr); min-height: 0; flex: 1; gap: 8px; }
 .CardList, .CardDetail { overflow-y: auto; min-height: 0; padding: 16px; overflow-wrap: anywhere; }
@@ -81,7 +79,7 @@ legend { padding: 0 6px; }
 .EvaluationTable .CardIcon canvas { height: 24px; }
 .OverviewTable .CellText { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .Overview.state-wrap .CellText { white-space: normal; overflow-wrap: anywhere; }
-.OverviewTable .Button { min-height: 24px; padding: 2px 3px; border: 0; background: transparent; color: var(--ui-link); text-decoration: underline; }
+.OverviewTable .Button { min-height: 24px; padding: 2px 3px; }
 .OverviewTable tbody tr:nth-child(even) { background: var(--ui-table-stripe); }
 .OverviewTable tbody tr:hover { background: var(--ui-table-hover); }
 .OverviewTable .step-start { border-left: 1px solid var(--ui-group-border); }

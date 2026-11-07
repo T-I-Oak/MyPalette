@@ -5,6 +5,7 @@ import { gameIssues } from './game/engine.js';
 import { mountGame } from './game/view.js';
 import { createLayoutPresentation } from './game/layoutPresentation.js';
 import './ui/theme.css';
+import './ui/layout.css';
 import './ui/textures.css';
 import './ui/states.css';
 import './ui/screenLayout/layout.css';
@@ -28,7 +29,7 @@ async function start() {
         const message = document.createElement('pre');
         message.className = 'StartIssues'; message.textContent = `ゲーム設定を開けませんでした。\n${error.message}`;
         const retry = document.createElement('button');
-        retry.textContent = '再読み込み'; retry.className = 'Button';
+        retry.textContent = '再読み込み'; retry.className = 'Button texture-raised';
         retry.addEventListener('click', start);
         notice.replaceChildren(message, retry);
         return;

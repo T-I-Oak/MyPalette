@@ -5,8 +5,8 @@ import './layout.css';
 function element(tag,className,text){const node=document.createElement(tag);node.className=className;if(text!==undefined)node.textContent=text;return node;}
 export function mountIconLab(root,home){
  const lab=element('section','IconLab');const toolbar=element('nav','Toolbar');
- const back=element('button','Button','入口へ戻る');back.addEventListener('click',home);
- const previous=element('button','Button','前のアイコン');const next=element('button','Button','次のアイコン');
+ const back=element('button','Button texture-raised','入口へ戻る');back.addEventListener('click',home);
+ const previous=element('button','Button texture-raised','前のアイコン');const next=element('button','Button texture-raised','次のアイコン');
  const choices=[];const byKey=new Map();
  const choiceKey=item=>{const effect=item.effect&&{...item.effect};if(effect){delete effect.count;delete effect.amount;}return JSON.stringify(effect??item.condition);};
  for(const item of ICON_REVIEW_CASES){

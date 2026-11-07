@@ -15,7 +15,7 @@ function element(tag, className, text) {
     return node;
 }
 function button(text, action) {
-    const node = element('button', 'Button', text); node.type = 'button'; node.addEventListener('click', action); return node;
+    const node = element('button', 'Button texture-raised', text); node.type = 'button'; node.addEventListener('click', action); return node;
 }
 function select(label, values, value, action) {
     const field = element('label', 'Field', label), input = document.createElement('select');

@@ -13,6 +13,17 @@
     --painting-rim: #bdb3a2;
 }
 .PaintingCard[data-card-area="hand"] { --edge-depth: calc(-1 * var(--painting-thickness)); }
+.PaintingCard[data-card-area="hand"]::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    left: 0;
+    bottom: 0;
+    width: calc(100% + 72px);
+    height: 96px;
+    clip-path: polygon(0 100%, calc(100% - 72px) 100%, 100% 0, 72px 0);
+}
 .PaintingCard[data-grade="B"] { --painting-frame: linear-gradient(150deg, #f5f6f8, #a8aeb7 48%, #e7e9eb 84%); --painting-rim: #797e87; }
 .PaintingCard[data-grade="C"] { --painting-frame: linear-gradient(150deg, #f9e4a9, #c59b56 49%, #efcf88 83%); --painting-rim: #96743e; }
 .PaintingFaces { display: grid; transform-style: preserve-3d; transform: rotateY(var(--painting-flip, 0deg)); }
@@ -26,6 +37,7 @@
     box-shadow: var(--edge-x) var(--edge-y) 0 var(--painting-rim), 1px 6px 10px var(--ui-scrim);
 }
 .PaintingFront { background: var(--painting-frame); transform: translateZ(.75px); }
+.PaintingCard[data-card-area="hand"] .PaintingFront { box-shadow: var(--edge-x) var(--edge-y) 0 var(--painting-rim); }
 .PaintingCard.state-achievable .PaintingFront { outline: 2px solid var(--ui-success-border); }
 .PaintingCard[data-card-area="hand"].state-achievable .PaintingFront::after {
     content: '';

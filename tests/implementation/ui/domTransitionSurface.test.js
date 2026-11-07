@@ -23,6 +23,30 @@ function documentFixture() {
 
 const rect = { x: 10, y: 20, width: 100, height: 60 };
 
+test('スクロールする描画ルートでは画面座標をルート内座標へ戻す', () => {
+    const document = documentFixture();
+    const root = document.createElement();
+    const surface = createDomTransitionSurface(root, { x: 0, y: -80, scale: 1 }, { relativeToRoot: true });
+    const object = { element: document.createElement(), render() {} };
+    surface.renderInArea(object, { x: 10, y: 20, width: 100, height: 60 }, true, { id: 'hand' });
+    assert.equal(object.element.parentNode.style.top, '100px');
+    assert.equal(object.element.parentNode.parentNode.style.position, 'absolute');
+});
+
+test('スクロール通知より前でも現在の原点を取得して描画座標を補正する', () => {
+    const document = documentFixture();
+    const root = document.createElement();
+    let y = 0;
+    const surface = createDomTransitionSurface(root, undefined, {
+        relativeToRoot: true, viewportTransformFor: () => ({ x: 0, y, scale: 1 }),
+    });
+    y = -100;
+    assert.equal(surface.readViewportTransform().y, -100);
+    const object = { element: document.createElement(), render() {} };
+    surface.renderInArea(object, rect, true, { id: 'hand' });
+    assert.equal(object.element.parentNode.style.top, '120px');
+});
+
 test('既定の描画面は所属層より後ろのDOM順に移動層を維持する', () => {
     const document = documentFixture();
     const root = document.createElement();

@@ -31,7 +31,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         await page.screenshot({ path: 'tmp_game_portrait_open.png' });
         await page.locator('#panel-toggle').click();
         await page.waitForTimeout(350);
-        await page.getByRole('button', { name: '場にプレイ', exact: true }).first().click();
+        await page.locator('.HandFixedActions button').first().click();
         await page.waitForTimeout(50);
         assert.equal(await page.locator('[data-game-area="hand"] .PaintingCard').count(), 3);
         assert.equal(await page.locator('[data-game-area="play"] .PaintingCard').count(), 1);
@@ -95,7 +95,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             }
             return count;
         }
-        await page.getByRole('button', { name: '場にプレイ', exact: true }).first().click();
+        await page.locator('.HandFixedActions button').first().click();
         await page.waitForTimeout(30);
         assert.equal(await chooseAll(), 1);
         await page.locator('[data-game-area="palette"] input').first().check();
@@ -104,7 +104,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         assert.equal(await chooseAll(), 4);
         assert.equal(await page.locator('[data-game-area="discard"] .PaintingCard').count(), 2);
         assert.equal(await page.locator('[data-game-area="palette"] .GameDie').count(), 5);
-        await page.locator(`[data-game-area="hand"] .GameCardSlot:has([data-card-id="${changedCard}"])`).getByRole('button', { name: '場にプレイ' }).click();
+        await page.locator(`.HandFixedActions [data-card-id="${changedCard}"] button`).click();
         await page.waitForTimeout(30);
         await chooseAll();
         await page.locator('[data-game-area="palette"] input').first().check();
