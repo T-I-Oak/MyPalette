@@ -11,7 +11,7 @@ const assert = require('node:assert/strict');
         await page.goto(base);
         await page.locator('.LayoutScreen[data-layout="A"]').waitFor();
         assert.equal(await page.locator('.LayoutArea:visible').count(), 7);
-        assert.equal(await page.locator('#app-version').textContent(), '0.12.0');
+        assert.equal(await page.locator('#app-version').textContent(), require('../package.json').version);
         const inspect = () => page.locator('.LayoutArea').evaluateAll(nodes => nodes.map(node => {
             const { x, y, width, height } = node.getBoundingClientRect();
             return { id: node.dataset.area, x, y, width, height, bufferWidth: node.width, bufferHeight: node.height, hidden: node.hidden };

@@ -5,7 +5,20 @@ import { createDomTransitionSurface } from '../areaTransition/index.js';
 export function createLayoutScreen(root, button) {
     const layout = new ScreenLayout();
     // Layout coordinates are CSS pixels; the transition surface applies no extra screen scale.
-    const surface = createDomTransitionSurface(document.body);
+    function createLayer(className) {
+        const layer = document.createElement('div');
+        layer.className = `LayoutComponentLayer ${className}`;
+        root.append(layer);
+        return layer;
+    }
+    const mainLayer = createLayer('LayoutMainLayer');
+    const panelLayer = createLayer('LayoutPanelLayer');
+    const movingLayer = createLayer('LayoutMovingLayer');
+    const panelAreas = new Set(['stock', 'discard', 'deck']);
+    const surface = createDomTransitionSurface(root, { x: 0, y: 0, scale: 1 }, {
+        areaRootFor: area => panelAreas.has(area.id) ? panelLayer : mainLayer,
+        transitionRoot: movingLayer,
+    });
     const areas = new Map(Object.entries(areaDefinitions).map(([id, definition]) => {
         const canvas = document.createElement('canvas');
         canvas.className = 'LayoutArea';
@@ -66,5 +79,5 @@ export function createLayoutScreen(root, button) {
     }
     requestAnimationFrame(watchResolution);
     render();
-    return { areas, render };
+    return { areas, surface, render };
 }

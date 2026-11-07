@@ -11,10 +11,14 @@ html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
 }
 .LayoutArea { position: absolute; display: block; }
 .LayoutArea[hidden] { display: none; }
-.LayoutArea[data-area='stock'], .LayoutArea[data-area='discard'], .LayoutArea[data-area='deck'] { z-index: 1; }
+.LayoutComponentLayer { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
+.LayoutMainLayer { z-index: 1; }
+.LayoutArea[data-area='stock'], .LayoutArea[data-area='discard'], .LayoutArea[data-area='deck'] { z-index: 2; }
+.LayoutPanelLayer { z-index: 3; }
+.LayoutMovingLayer { z-index: 4; }
 .PanelToggle {
     position: absolute;
-    z-index: 2;
+    z-index: 5;
     width: 32px;
     height: 64px;
     padding: 8px 4px;
