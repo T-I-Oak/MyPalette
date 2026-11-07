@@ -3,6 +3,11 @@ import assert from 'node:assert/strict';
 import {setLanguage} from '../../../../GameWorksOAK/src/lib/core/i18n.js';
 import {searchNoticeParts,describeSearchCondition,describeFaceCount} from '../../../src/dice/searchMessages.js';
 
+test('ダイス確認画面のシーンと検索表示の依存を読み込める', async () => {
+    const { DiceScene } = await import('../../../src/dice/DiceScene.js');
+    assert.equal(typeof DiceScene, 'function');
+});
+
 const storage=new Map();
 Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value)}});
 const text=result=>searchNoticeParts(result).map(part=>typeof part==='string'?part:part.label).join('');

@@ -71,7 +71,7 @@ test('1.3 flyer carries odd progress and costs rise 3,5,7; public choice pauses 
     game.nextDay(); s.discard.push(...s.hand.splice(0)); s.flyers = 4;
     game.endDay(); assert.equal(s.orderCost, 7); game.choose([s.public.A]); assert.equal(s.progress, 1);
 });
-test('1.4 temporary specials reserve before removal and trigger after next day draw/roll', () => {
+test('1.3 temporary specials reserve before removal and trigger after next day draw/roll', () => {
     const game = new Game(settings, random(8)), s = game.state;
     s.discard.push(...s.hand.splice(0));
     const die = game.makeDie(Array.from({ length: 6 }, () => ({ special: 'draw1' })), 'temporary'); s.dice.push(die);
