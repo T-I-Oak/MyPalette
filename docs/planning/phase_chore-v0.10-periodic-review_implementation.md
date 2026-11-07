@@ -1,4 +1,4 @@
-# v0.10.1 定期見直しの実装報告
+# v0.10 定期見直しの実装報告
 
 `chore/v0.10-periodic-review` で `package.json` と `package-lock.json` を更新した。実装終了草案への指摘を受けて記述を修正する際に、共通手順に従って 0.10.0 から 0.10.1 に更新した。
 
@@ -28,3 +28,13 @@
 - 既存文書の相対リンクの参照先と見出しを確認した。`git diff --check` は指摘なし。
 
 利用者が個別に判断する挙動の変更がないため、今回のオーナー検証項目は設けていない。
+
+## v0.10.2 レビュー指摘への対応
+
+`package.json` と `package-lock.json` を 0.10.2 に更新した。`DiceScene.js` が削除済みの `describeCondition` を参照していたため、検索文言の定義元である `searchMessages.js` から `describeSearchCondition` を直接読み込むようにした。ダイスシーンと検索表示の依存を読み込む回帰テストを追加し、修正前は名前付きインポートで失敗し、修正後は成功することを確認した。
+
+- `node --test tests/implementation/dice/searchMessages.test.js tests/implementation/dice/faceSearch.test.js tests/spec/rules_01_game_flow.test.js tests/spec/effects_06_change_color.test.js tests/implementation/effectChoices.test.js` は22件成功。
+- `npm.cmd run dev -- --port 5174 --strictPort` で起動し、`node scripts/checkFaceSearchBrowser.cjs http://127.0.0.1:5174/MyPalette/dev.html` を隣接プロジェクトの既存PlaywrightとヘッドレスEdgeで実行した。ダイス確認画面が開き、画材・色・組み合わせの検索、一致面数、0件通知、再検索と期限切れ、面の変更、ダイスの追加・削除、検索解除を確認した。ページエラーは0件で、390×844および844×390の表示にあふれはなかった。
+- `npm.cmd test` は122件成功。`npm.cmd run build` はVite 7.3.7で成功。
+
+既存画面の復旧をブラウザで確認したため、オーナー検証項目は設けていない。

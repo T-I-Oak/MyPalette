@@ -5,9 +5,9 @@ import { createDieGeometry } from './geometry.js';
 import { displayLabel } from '../effectCatalog.js';
 import { specialFrameLayout } from './specialFrameLayout.js';
 import { FaceSearch } from './FaceSearch.js';
-import { conditionCanvas, countCanvas, describeCondition } from './searchIcons.js';
+import { conditionCanvas, countCanvas } from './searchIcons.js';
 import { FaceSearchNotice } from './FaceSearchNotice.js';
-import { describeFaceCount } from './searchMessages.js';
+import { describeFaceCount, describeSearchCondition } from './searchMessages.js';
 
 export class DiceScene {
     constructor(container, group, graphics, onChange) {
@@ -122,7 +122,7 @@ export class DiceScene {
             const hit=searchHits.get(die.id);visual.searchBadge.hidden=!hit;
             if(hit){
                 visual.searchBadge.style.opacity=String(searchOpacity);
-                const key=JSON.stringify([search.condition,hit.count,describeCondition(search.condition)]);
+                const key=JSON.stringify([search.condition,hit.count,describeSearchCondition(search.condition)]);
                 if(key!==visual.searchKey){
                     visual.searchBadge.replaceChildren(conditionCanvas(search.condition),countCanvas(hit.count));
                     visual.searchBadge.setAttribute('aria-label',describeFaceCount(search.condition,hit.count));visual.searchKey=key;
