@@ -1,4 +1,5 @@
 import { MoveObject } from '../ui/areaTransition/MoveObject.js';
+import { releasePaintingIcons } from '../cardIcons.js';
 import './layoutGame.css';
 
 // Each host can later be replaced by an area-specific renderer.
@@ -21,7 +22,11 @@ export function createLayoutPresentation(screen) {
         }
     });
     function clear() {
-        for (const { host } of hosts.values()) host.replaceChildren();
+        for (const { host } of hosts.values()) {
+            // Closed panel hosts are detached, so the screen root cannot release their observers.
+            releasePaintingIcons(host);
+            host.replaceChildren();
+        }
     }
     return {
         clear,
