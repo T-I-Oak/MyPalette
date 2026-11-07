@@ -1,14 +1,25 @@
 import { readTransform } from './geometry.js';
 
-export function createDomTransitionSurface(root, initialTransform = { x: 0, y: 0, scale: 1 }) {
+export function createDomTransitionSurface(root, initialTransform = { x: 0, y: 0, scale: 1 },
+    { areaRootFor = () => root, transitionRoot = root } = {}) {
     const document = root.ownerDocument;
     const window = document.defaultView;
     const mounts = new Map();
     let transform = readTransform(initialTransform);
 
-    const areaLayer = createLayer();
+    const areaLayers = new Map();
     const transitionLayer = createLayer();
-    root.append(areaLayer, transitionLayer);
+    transitionRoot.append(transitionLayer);
+
+    function areaLayerFor(area) {
+        const host = areaRootFor(area);
+        if (!areaLayers.has(host)) {
+            const layer = createLayer();
+            host.insertBefore(layer, host === transitionRoot ? transitionLayer : null);
+            areaLayers.set(host, layer);
+        }
+        return areaLayers.get(host);
+    }
 
     function createLayer() {
         const layer = document.createElement('div');
@@ -21,7 +32,7 @@ export function createDomTransitionSurface(root, initialTransform = { x: 0, y: 0
         return layer;
     }
 
-    function render(object, viewportRect, interactive, layer, scale) {
+    function render(object, viewportRect, interactive, layer, scale, area) {
         let wrapper = mounts.get(object);
         if (!wrapper) {
             wrapper = document.createElement('div');
@@ -40,7 +51,7 @@ export function createDomTransitionSurface(root, initialTransform = { x: 0, y: 0
             pointerEvents: interactive ? 'auto' : 'none',
         });
         wrapper.inert = !interactive;
-        const parent = layer === 'area' ? areaLayer : transitionLayer;
+        const parent = layer === 'area' ? areaLayerFor(area) : transitionLayer;
         if (wrapper.parentNode !== parent) parent.appendChild(wrapper);
         object.render({ layer, viewportRect, interactive, scale });
     }
@@ -62,8 +73,8 @@ export function createDomTransitionSurface(root, initialTransform = { x: 0, y: 0
             if (object.element.contains(focused)) focused.blur();
         },
         scheduleFrame: callback => window.requestAnimationFrame(callback),
-        renderInArea: (object, rect, interactive, area, scale = 1) => render(object, rect, interactive, 'area', scale),
-        removeFromArea: object => remove(object, areaLayer),
+        renderInArea: (object, rect, interactive, area, scale = 1) => render(object, rect, interactive, 'area', scale, area),
+        removeFromArea: (object, area) => remove(object, areaLayerFor(area)),
         renderMoving: (object, rect, scale = 1) => render(object, rect, false, 'transition', scale),
         removeMoving: object => remove(object, transitionLayer),
     };
