@@ -28,6 +28,7 @@ export function createLayoutScreen(root, button) {
         root.append(canvas);
         return [id, new CanvasArea(id, surface, definition, canvas)];
     }));
+    const listeners = new Set();
     let progress = 0;
     let target = 0;
     let animation = 0;
@@ -40,6 +41,7 @@ export function createLayoutScreen(root, button) {
         const frame = layout.calculate(width, height, progress);
         root.dataset.layout = frame.mode;
         for (const [id, area] of areas) area.applyLayout(frame.areas[id], window.devicePixelRatio);
+        for (const listener of listeners) listener(frame);
         button.hidden = frame.mode === 'A';
         button.style.right = `${width - frame.areas.stock.rect.x}px`;
         button.style.top = `${frame.areas.stock.rect.y}px`;
@@ -79,5 +81,5 @@ export function createLayoutScreen(root, button) {
     }
     requestAnimationFrame(watchResolution);
     render();
-    return { areas, surface, render };
+    return { areas, surface, render, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); } };
 }

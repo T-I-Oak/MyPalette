@@ -1,4 +1,5 @@
-import { Game, gameIssues } from './engine.js';
+import { createGameSession } from './session.js';
+import { gameIssues } from './engine.js';
 import { matchingDice, satisfiesSelection } from './goals.js';
 import { displayLabel } from '../effectCatalog.js';
 import { copyPaintingIconDrawers, dieFaceIcon, releasePaintingIcons } from '../cardIcons.js';
@@ -19,7 +20,7 @@ function button(text, action, disabled = false) {
 export const faceLabel = face => face.special ? `特殊面：${displayLabel(face.special)}` : `${displayLabel(face.color)}・${displayLabel(face.material)}`;
 const phaseLabel = { play: '制作中', start: 'ターン開始処理', end: 'ターン終了処理', betweenDays: '一日の仕事を終了', finished: 'ゲーム終了' };
 
-export function mountGame(root, settings, onMenu) {
+export function mountGame(root, settings, onMenu, presentation = null) {
     const issues = gameIssues(settings);
     if (issues.length) {
         root.replaceChildren(el('h2', '設定が制作途中のため開始できません'), el('pre', issues.join('\n'), 'StartIssues'), button('入口へ戻る', onMenu));
@@ -27,16 +28,20 @@ export function mountGame(root, settings, onMenu) {
     }
     const candidateOrigins = new Map();
     let candidateSource;
-    const game = new Game(settings, Math.random, {
+    const session = createGameSession(settings, {
         onCandidateAcquired(id) {
             if (candidateSource) candidateOrigins.set(id, candidateSource);
         },
     });
+    const game = session.game;
+    let disposed = false;
     let selected = new Set();
     let activeTab = 'play';
     let moving = false;
-    const scroll = el('div', undefined, 'GameBoard'); root.replaceChildren(scroll);
-    const transitions = createGameAreaTransitions(root, scroll, {
+    const scroll = el('div', undefined, 'GameBoard');
+    if (presentation) root.append(scroll); else root.replaceChildren(scroll);
+    const scope = presentation ? root : scroll;
+    const transitions = presentation ? { captureCard() {}, captureCandidate() {}, play() {}, refresh() {}, dispose() {} } : createGameAreaTransitions(root, scroll, {
         copyCardDrawing: copyPaintingIconDrawers,
         createCardTransfer(key, element, from, to) {
             const card = new Card(key, element);
@@ -47,7 +52,7 @@ export function mountGame(root, settings, onMenu) {
         },
     });
     function setActionLock(locked) {
-        for (const node of scroll.querySelectorAll('[data-game-action]')) {
+        for (const node of scope.querySelectorAll('[data-game-action]')) {
             if (locked && !node.disabled) {
                 node.dataset.transferLocked = '';
                 node.disabled = true;
@@ -58,7 +63,7 @@ export function mountGame(root, settings, onMenu) {
         }
     }
     function openChoice() {
-        const dialog = scroll.querySelector('.GameChoice');
+        const dialog = scope.querySelector('.GameChoice');
         if (dialog?.isConnected && !dialog.open) dialog.showModal();
     }
     function act(action, source = null) {
@@ -66,7 +71,7 @@ export function mountGame(root, settings, onMenu) {
         const before = cardLocations(game.state);
         candidateSource = source;
         try {
-            action();
+            session.dispatch(action);
         } finally {
             candidateSource = null;
         }
@@ -84,11 +89,12 @@ export function mountGame(root, settings, onMenu) {
         }
         selected = new Set();
         activeTab = 'play';
-        moving = transfers.length > 0;
+        moving = !presentation && transfers.length > 0;
         render();
         if (!moving) return;
         const running = transfers.map(transfer => transitions.play(transfer));
         Promise.allSettled(running).then(results => {
+            if (disposed) return;
             moving = false;
             setActionLock(false);
             openChoice();
@@ -232,19 +238,21 @@ export function mountGame(root, settings, onMenu) {
         }
         const footer = el('div', undefined, 'GameChoiceFooter'); footer.append(count, submit);
         node.append(list, footer);
+        update();
     }
     function render() {
-        const positions = new Map([...scroll.querySelectorAll('[data-pane]')].map(node => [node.dataset.pane, node.scrollTop]));
-        releasePaintingIcons(scroll);
+        const positions = new Map([...scope.querySelectorAll('[data-pane]')].map(node => [node.dataset.pane, node.scrollTop]));
+        releasePaintingIcons(scope);
+        presentation?.clear();
         scroll.replaceChildren(); const s = game.state;
         const status = section(`${s.day}日目 · ${phaseLabel[s.phase]}${s.pending ? '（効果を選択中）' : ''}`, scroll, 'GameStatus');
         status.append(el('p', `名声 ${s.fame} / 信用 ${s.credit} / リロール権 ${s.rerolls} / 出荷 ${s.shipped.length}枚`),
             el('p', `チラシ ${s.flyers}枚 · 制作進捗 ${s.progress}/2 · 次回発注 ${s.orderCost}枚`));
-        const menu = button('入口へ戻る', () => { releasePaintingIcons(scroll); transitions.dispose(); onMenu(); }); status.append(menu);
+        const menu = button('入口へ戻る', () => { dispose(); onMenu(); }); status.append(menu);
         if (s.phase === 'finished') {
             status.append(el('h2', `結果：${s.day}日 · 名声 ${s.fame} · 出荷 ${s.shipped.length}枚`), button('もう一度遊ぶ', () => {
-                releasePaintingIcons(scroll); transitions.dispose();
-                mountGame(root, settings, onMenu);
+                dispose();
+                mountGame(root, settings, onMenu, presentation);
             }));
         }
         const tabs = el('nav', undefined, 'GameTabs'); tabs.setAttribute('aria-label', 'ゲーム情報');
@@ -274,7 +282,9 @@ export function mountGame(root, settings, onMenu) {
         }
         diceSection.append(diceList, gameButton('全未使用ダイスをリロール', () => act(() => game.reroll()), !canPlay || !s.rerolls || !s.dice.some(d => !d.used)));
         diceSection.title = 'ダイスにチェックを付け、制作中の作品の達成ボタンで確定します。';
-        for (const [key, label] of [['field', '制作中'], ['hand', '手札'], ['shipped', '出荷済み作品']]) {
+        const cardZones = [['field', '制作中'], ['hand', '手札'], ['shipped', '出荷済み作品']];
+        if (presentation) cardZones.push(['discard', '捨て札']);
+        for (const [key, label] of cardZones) {
             const zone = section(`${label} ${s[key].length}枚`, workspace, `GameCardsPane ${key}`);
             zone.hidden = key === 'shipped' ? activeTab !== 'shipped' : activeTab !== 'play';
             const list = cardArea(zone, key);
@@ -341,11 +351,20 @@ export function mountGame(root, settings, onMenu) {
                 gameButton('一日の仕事を終える', () => act(() => game.endDay()), !canPlay));
         } else if (s.phase === 'betweenDays') controls.append(gameButton('翌日の仕事を始める', () => act(() => game.nextDay())));
         updateAchievements();
-        for (const node of scroll.querySelectorAll('[data-pane]')) node.scrollTop = positions.get(node.dataset.pane) ?? 0;
         if (s.pending) selectionPanel(s.pending);
+        presentation?.present(scroll, s);
+        for (const node of scope.querySelectorAll('[data-pane]')) node.scrollTop = positions.get(node.dataset.pane) ?? 0;
         transitions.refresh();
         if (moving) setActionLock(true);
         else openChoice();
     }
+    function dispose() {
+        disposed = true;
+        releasePaintingIcons(scope);
+        transitions.dispose();
+        presentation?.clear();
+        scroll.remove();
+    }
     render();
+    return { session, dispose };
 }
