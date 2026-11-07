@@ -69,12 +69,20 @@ test('empty stock exchange returns then exposes same card, resetting step', () =
     game.choose([card.id]); assert.equal(s.public.A, card.id);
     game.choose([card.id]); assert.equal(s.hand.length, 1); assert.equal(card.step, 0);
 });
-test('flyer ordering handles empty stocks and ends at zero credit', () => {
+test('flyer ordering consumes flyers with empty stocks when credit remains', () => {
+    const game = make(), s = game.state;
+    s.hand = []; s.stocks = { A: [], B: [], C: [] }; s.public = { A: null, B: null, C: null };
+    s.flyers = 2; s.progress = 1;
+    game.endDay();
+    assert.equal(s.flyers, 0); assert.equal(s.orderCost, 5); assert.equal(s.progress, 1);
+    assert.equal(s.credit, 2); assert.equal(s.phase, 'betweenDays'); assert.equal(s.pending, null);
+});
+test('flyer ordering keeps flyers with empty stocks when credit reaches zero', () => {
     const game = make(), s = game.state;
     s.hand = []; s.stocks = { A: [], B: [], C: [] }; s.public = { A: null, B: null, C: null };
     s.flyers = 2; s.progress = 1; s.credit = 1;
     s.dice.push({ ...structuredClone(s.dice[0]), id: 'four' });
     game.endDay();
-    assert.equal(s.flyers, 0); assert.equal(s.orderCost, 5); assert.equal(s.progress, 1);
-    assert.equal(s.credit, 0); assert.equal(s.phase, 'finished');
+    assert.equal(s.flyers, 3); assert.equal(s.orderCost, 3); assert.equal(s.progress, 1);
+    assert.equal(s.credit, 0); assert.equal(s.phase, 'finished'); assert.equal(s.pending, null);
 });

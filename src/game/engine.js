@@ -120,12 +120,12 @@ export class Game {
         s.progress += flyerDice.length;
         const made = Math.floor(s.progress / 2); s.flyers += made; s.progress %= 2;
         this.log(`チラシ制作：${flyerDice.map(d => d.id).join('、') || 'なし'}、完成${made}枚、所持${s.flyers}枚、進捗${s.progress}/2`);
-        while (s.flyers >= s.orderCost) {
+        const loss = s.dice.filter(d => !d.used).length;
+        while (loss < s.credit && s.flyers >= s.orderCost) {
             const cost = s.orderCost; s.flyers -= cost; s.orderCost += 2;
             this.log(`自動発注：チラシ${cost}枚消費、次回${s.orderCost}枚`);
             yield* stockCards(this, 1);
         }
-        const loss = s.dice.filter(d => !d.used).length;
         s.credit = Math.max(0, s.credit - loss); this.log(`未使用ダイス${loss}個：信用−${loss} → ${s.credit}`);
         if (!s.credit) { s.phase = 'finished'; this.log(`ゲーム終了：名声${s.fame}、出荷${s.shipped.length}枚`); return; }
         s.dayEndDice = structuredClone(s.dice);
