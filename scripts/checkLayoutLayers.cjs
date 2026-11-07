@@ -8,6 +8,7 @@ const assert = require('node:assert/strict');
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
         await page.goto(process.argv[2] || 'http://127.0.0.1:3001/MyPalette/');
+        await page.locator('[data-game-area="hand"] .PaintingCard').first().waitFor();
         await page.evaluate(async () => {
             const { layoutScreen } = await import('/MyPalette/src/main.js');
             const { MoveObject, createMoveManager } = await import('/MyPalette/src/ui/areaTransition/index.js');
@@ -57,7 +58,8 @@ const assert = require('node:assert/strict');
             play.setSlot('test', { x: (stock.x + 1 - transform.x) / transform.scale,
                 y: (stock.y + 1 - transform.y) / transform.scale, width: 20, height: 20 });
             const top = document.elementFromPoint(stock.x + 3, stock.y + 3);
-            return top?.dataset.area === 'stock' && !pieces.get('play').element.contains(top);
+            const panel = top?.dataset.area === 'stock' || top?.closest('[data-game-area="stock"]');
+            return Boolean(panel) && !pieces.get('play').element.contains(top);
         }));
         await page.evaluate(() => {
             const { manager, areas, pieces } = window.layerTest;

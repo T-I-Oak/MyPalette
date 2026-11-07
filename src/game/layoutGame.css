@@ -1,0 +1,24 @@
+.GameAreaHost { width: 100%; height: 100%; overflow: auto; overscroll-behavior: contain; padding: 6px; font: 14px system-ui, sans-serif; color: var(--ui-text); background: var(--ui-surface); }
+.GameAreaHost .GameSection { border: 0; padding: 4px; }
+.GameAreaHost .GameSection h2, .GameAreaHost > h2 { font-size: 16px; margin: 0 0 4px; }
+.GameAreaHost .Button { min-height: 28px; font: inherit; padding: 3px 6px; }
+.GameAreaHost .GameStatus { display: block; }
+.GameAreaHost .GameStatus p { margin: 2px 0; }
+.GameAreaHost .GameControls { display: block; }
+.GameAreaHost .GameControls p { white-space: normal; }
+.GameAreaHost .GameCardsPane { height: 100%; display: flex; flex-direction: column; }
+.GameAreaHost .GameCardArea { container-type: normal; flex: 1; overflow: visible; }
+.GameAreaHost .GameCardAreaContent { zoom: .48; width: auto; min-height: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.GameAreaHost .GameHandCards > .GameCardSlot { position: relative; top: auto; left: auto; padding: 4px; }
+.GameAreaHost .GameCardsPane.hand .GameHandCards { display: flex; }
+.GameAreaHost .GameStockPane .GameCardAreaContent { display: flex; flex-wrap: wrap; }
+.GameAreaHost .GameStockPile { width: 318px; }
+.GameAreaHost .GameDicePane .GameGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.GameAreaHost input[type='checkbox'] { width: 20px; height: 20px; }
+.LayoutScreen > .GameBoard { display: block; font: 14px system-ui, sans-serif; }
+.GameInspection { width: min(960px, 94vw); max-height: 90dvh; overflow: auto; color: var(--ui-text); background: var(--ui-surface); border: 1px solid var(--ui-border); }
+.GameInspection::backdrop { background: var(--ui-scrim); }
+.GameInspection .GameCardArea { container-type: normal; }
+.GameInspection .GameCardAreaContent { zoom: .6; width: auto; display: flex; flex-wrap: wrap; }
+.GameStartup { position: absolute; inset: 0; z-index: 6; padding: 24px; overflow: auto; background: var(--ui-surface); font-family: system-ui, sans-serif; }
+.GameStartup[hidden] { display: none; }
