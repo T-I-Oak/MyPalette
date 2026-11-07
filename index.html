@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>My Palette</title>
 </head>
-<body>
-    <main>
-        <h1>My Palette</h1>
-        <p>バージョン <output id="app-version"></output></p>
+<body class="theme-atelier texture-layout">
+    <main id="layout-screen" class="LayoutScreen" aria-label="My Palette">
+        <button id="panel-toggle" class="PanelToggle" type="button" aria-label="サイドパネルを開く" aria-expanded="false" hidden>
+            <svg class="PanelIcon" viewBox="0 0 24 24" aria-hidden="true">
+                <path class="panel-chevron" d="m15 5-7 7 7 7" />
+            </svg>
+        </button>
+        <span class="AppVersion">My Palette v<output id="app-version"></output></span>
     </main>
     <script type="module" src="/src/main.js"></script>
 </body>
