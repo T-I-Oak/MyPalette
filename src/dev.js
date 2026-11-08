@@ -10,6 +10,12 @@ const root = document.querySelector('#editor');
 root.textContent = 'ゲーム設定を読み込んでいます…';
 async function start() {
     try {
+        if (location.hash === '#easel') {
+            document.querySelector('header > span').textContent = 'イーゼル確認';
+            const { mountEaselLab } = await import('./game/easel/lab.js');
+            await mountEaselLab(root);
+            return;
+        }
         if (location.hash === '#icons') {
             document.querySelector('header > span').textContent = '共通アイコン確認';
             const { mountIconLab } = await import('./icons/lab.js');
@@ -45,7 +51,9 @@ async function start() {
             dice.addEventListener('click', () => { location.hash = 'dice'; location.reload(); });
             const icons = document.createElement('button'); icons.className = 'Button texture-raised'; icons.textContent = '共通アイコン確認を開く';
             icons.addEventListener('click', () => { location.hash = 'icons'; location.reload(); });
-            menu.append(heading, description, play, editor, dice, icons); root.append(menu);
+            const easel = document.createElement('button'); easel.className = 'Button texture-raised'; easel.textContent = 'イーゼル確認を開く';
+            easel.addEventListener('click', () => { location.hash = 'easel'; location.reload(); });
+            menu.append(heading, description, play, editor, dice, icons, easel); root.append(menu);
         }
     } catch (error) {
         root.textContent = `ゲーム設定を開けませんでした。${error.message}`;

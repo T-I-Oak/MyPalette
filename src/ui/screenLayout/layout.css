@@ -37,8 +37,8 @@ html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
 .PanelIcon { display: block; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .PanelToggle[aria-expanded='true'] .PanelIcon { transform: rotate(180deg); }
 .AppVersion { position: absolute; bottom: max(6px, env(safe-area-inset-bottom)); left: max(8px, env(safe-area-inset-left)); z-index: 2; font: 12px sans-serif; pointer-events: none; }
-.texture-layout { color: var(--ui-text); background: var(--ui-canvas); --area-fill: var(--ui-surface); }
-.texture-layout .LayoutArea[data-area='play'] { --area-fill: var(--ui-selected-surface); }
+.texture-layout { color: var(--ui-text); background: transparent; --area-fill: var(--ui-surface); }
+.texture-layout .LayoutArea[data-area='play'] { --area-fill: transparent; }
 .texture-layout .LayoutArea[data-area='palette'] { --area-fill: var(--ui-goal-surface); }
 .texture-layout .LayoutArea[data-area='stock'] { --area-fill: var(--ui-section-heading); }
 .texture-layout .LayoutArea[data-area='discard'] { --area-fill: var(--ui-inactive-surface); }

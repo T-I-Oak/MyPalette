@@ -1,6 +1,8 @@
 import { MoveObject } from '../ui/areaTransition/MoveObject.js';
 import { releasePaintingIcons } from '../cardIcons.js';
 import { createHandPresentation } from './handPresentation.js';
+import { createPlayPresentation } from './playPresentation.js';
+import { createPlayEffects } from './playEffects.js';
 import './layoutGame.css';
 
 // Each host can later be replaced by an area-specific renderer.
@@ -17,15 +19,19 @@ export function createLayoutPresentation(screen) {
         hosts.set(id, { host, object });
     }
     const handPresentation = createHandPresentation(screen.areas.get('hand'), hosts.get('hand').host);
+    const playPresentation = createPlayPresentation(screen.areas.get('play'), hosts.get('play').host, () => screen.render());
+    const effects = createPlayEffects(screen, hosts.get('play').host, playPresentation, screen.areas.get('play').canvas.closest('.LayoutScreen'));
     const unsubscribe = screen.subscribe(() => {
         for (const [id, { object }] of hosts) {
             const area = screen.areas.get(id);
             area.setSlot(object.id, { x: 0, y: 0, width: area.logicalWidth, height: area.logicalHeight });
         }
         handPresentation.update();
+        playPresentation.update();
     });
     function clear() {
         handPresentation.clear();
+        playPresentation.clear();
         for (const { host } of hosts.values()) {
             // Closed panel hosts are detached, so the screen root cannot release their observers.
             releasePaintingIcons(host);
@@ -34,6 +40,11 @@ export function createLayoutPresentation(screen) {
     }
     return {
         clear,
+        beginAction: effects.begin,
+        field: effects.field,
+        hasAnimation: effects.hasWork,
+        animate: effects.run,
+        cancelEffects: effects.cancel,
         present(board, state) {
             const move = (id, selector) => {
                 const node = board.querySelector(selector);
@@ -44,7 +55,9 @@ export function createLayoutPresentation(screen) {
             move('info', '.GameStatus');
             move('info', '.GameControls');
             move('palette', '.GameDicePane');
-            move('play', '.field');
+            effects.hideDestination(board);
+            const field = move('play', '.field');
+            playPresentation.present(field, { ...state, field: effects.field(state) });
             const hand = move('hand', '.hand');
             hand.querySelector('h2').remove();
             handPresentation.present(hand);
@@ -76,8 +89,10 @@ export function createLayoutPresentation(screen) {
             board.querySelector('.GameWorkspace').remove();
         },
         dispose() {
+            effects.cancel();
             clear(); unsubscribe();
             handPresentation.dispose();
+            playPresentation.dispose();
             for (const { object } of hosts.values()) object.area.remove(object);
         },
     };

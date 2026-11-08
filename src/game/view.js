@@ -4,6 +4,7 @@ import { matchingDice, satisfiesSelection } from './goals.js';
 import { displayLabel } from '../effectCatalog.js';
 import { copyPaintingIconDrawers, dieFaceIcon, releasePaintingIcons } from '../cardIcons.js';
 import { Card } from './Card.js';
+import { showCardDetail } from './cardDetail.js';
 import { cardLocations, changedCardAreas, createGameAreaTransitions } from './areaTransitions.js';
 import './view.css';
 
@@ -38,6 +39,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
     let selected = new Set();
     let activeTab = 'play';
     let moving = false;
+    let animationError = '';
     const scroll = el('div', undefined, 'GameBoard');
     if (presentation) root.append(scroll); else root.replaceChildren(scroll);
     const scope = presentation ? root : scroll;
@@ -66,8 +68,9 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         const dialog = scope.querySelector('.GameChoice');
         if (dialog?.isConnected && !dialog.open) dialog.showModal();
     }
-    function act(action, source = null) {
+    function act(action, source = null, animation = null) {
         if (moving) return;
+        presentation?.beginAction(animation, game.state, game.definitions);
         const before = cardLocations(game.state);
         candidateSource = source;
         try {
@@ -89,9 +92,23 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         }
         selected = new Set();
         activeTab = 'play';
-        moving = !presentation && transfers.length > 0;
+        moving = presentation ? presentation.hasAnimation(game.state) : transfers.length > 0;
         render();
         if (!moving) return;
+        if (presentation) {
+            presentation.animate(game.state, render, () => {
+                session.dispatch(() => game.completeAchievement()); render();
+            }).catch(error => {
+                if (game.state.achievement) session.dispatch(() => game.completeAchievement());
+                presentation.cancelEffects();
+                console.error(error);
+                animationError = '演出を表示できなかったため、現在のゲーム状態を表示しました。';
+            }).finally(() => {
+                if (disposed) return;
+                moving = false; render();
+            });
+            return;
+        }
         const running = transfers.map(transfer => transitions.play(transfer));
         Promise.allSettled(running).then(results => {
             if (disposed) return;
@@ -139,39 +156,8 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         return node;
     }
     function openCardDetail(card, area, source, sourceActions) {
-        const dialog = el('dialog', undefined, 'GameCardDetail');
-        dialog.setAttribute('aria-label', game.definitions[card.id].name);
-        const detail = cardView(card, area, true);
-        const face = detail.querySelector('.PaintingCard');
-        const viewport = el('div', undefined, 'GameCardDetailViewport');
-        face.replaceWith(viewport);
-        viewport.append(face);
-        face.classList.toggle('state-achievable', source.classList.contains('state-achievable'));
-        const actions = detail.querySelector('.GameCardActions');
-        function close() {
-            dialog.close();
-        }
-        face.addEventListener('click', event => {
-            if (!event.target.closest('button, .CardIcon')) close();
-        });
-        for (const action of sourceActions.querySelectorAll('button')) {
-            actions.append(button(action.textContent, () => {
-                close();
-                action.click();
-            }, action.disabled));
-        }
-        actions.append(button('閉じる', close));
-        dialog.addEventListener('close', () => {
-            releasePaintingIcons(dialog);
-            dialog.remove();
-            const selectedTab = face.querySelector('[aria-selected="true"]');
-            const sourceTabs = [...source.querySelectorAll('[role="tab"]')];
-            const sourceTab = sourceTabs.find(tab => tab.textContent === selectedTab?.textContent);
-            if (source.isConnected && sourceTab?.getAttribute('aria-selected') !== 'true') sourceTab?.click();
-        }, { once: true });
-        dialog.append(detail);
-        scroll.append(dialog);
-        dialog.showModal();
+        showCardDetail({ root: scroll, label: game.definitions[card.id].name,
+            createDetail: () => cardView(card, area, true), source, sourceActions });
     }
     function cardArea(section, key) {
         const area = el('div', undefined, 'GameCardArea');
@@ -241,13 +227,16 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         update();
     }
     function render() {
-        const positions = new Map([...scope.querySelectorAll('[data-pane]')].map(node => [node.dataset.pane, node.scrollTop]));
+        const positions = new Map([...scope.querySelectorAll('[data-pane]')].map(node => [node.dataset.pane, { top: node.scrollTop, left: node.scrollLeft }]));
         releasePaintingIcons(scope);
         presentation?.clear();
         scroll.replaceChildren(); const s = game.state;
         const status = section(`${s.day}日目 · ${phaseLabel[s.phase]}${s.pending ? '（効果を選択中）' : ''}`, scroll, 'GameStatus');
         status.append(el('p', `名声 ${s.fame} / 信用 ${s.credit} / リロール権 ${s.rerolls} / 出荷 ${s.shipped.length}枚`),
             el('p', `チラシ ${s.flyers}枚 · 制作進捗 ${s.progress}/2 · 次回発注 ${s.orderCost}枚`));
+        if (animationError) {
+            const notice = el('p', animationError, 'GameAnimationNotice'); notice.setAttribute('role', 'status'); status.append(notice);
+        }
         const menu = button('入口へ戻る', () => { dispose(); onMenu(); }); status.append(menu);
         if (s.phase === 'finished') {
             status.append(el('h2', `結果：${s.day}日 · 名声 ${s.fame} · 出荷 ${s.shipped.length}枚`), button('もう一度遊ぶ', () => {
@@ -262,13 +251,13 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         }
         scroll.append(tabs);
         const workspace = el('div', undefined, 'GameWorkspace'); scroll.append(workspace);
-        const canPlay = s.phase === 'play' && !s.pending;
+        const canPlay = s.phase === 'play' && !s.pending && !s.achievement;
         const visibleDice = s.phase === 'betweenDays' ? s.dayEndDice : s.dice;
         const diceSection = section(`画材ダイス ${visibleDice.length}個${s.phase === 'betweenDays' ? '（仕事終了時）' : ''}`, workspace, 'GameDicePane'), diceList = el('div', undefined, 'GameGrid');
         diceList.dataset.pane = 'dice';
         const achieveButtons = [];
         const updateAchievements = () => {
-            for (const { card, node } of achieveButtons) node.disabled = !canPlay || !satisfiesSelection(game.step(card).goals, s.dice, [...selected]);
+            for (const { card, node } of achieveButtons) node.disabled = !canPlay || card.step === 3 || !satisfiesSelection(game.step(card).goals, s.dice, [...selected]);
         };
         for (const die of visibleDice) {
             const node = diceView(die);
@@ -288,19 +277,27 @@ export function mountGame(root, settings, onMenu, presentation = null) {
             const zone = section(`${label} ${s[key].length}枚`, workspace, `GameCardsPane ${key}`);
             zone.hidden = key === 'shipped' ? activeTab !== 'shipped' : activeTab !== 'play';
             const list = cardArea(zone, key);
-            for (const [index, card] of s[key].entries()) {
+            const visibleCards = key === 'field' && presentation ? presentation.field(s) : s[key];
+            for (const [index, card] of visibleCards.entries()) {
                 const node = cardView(card, key);
-                const match = key === 'hand' || key === 'field' ? matchingDice(game.step(card).goals, s.dice) : null;
+                const match = (key === 'hand' || key === 'field') && card.step < 3 ? matchingDice(game.step(card).goals, s.dice) : null;
                 const face = node.querySelector('.PaintingCard');
                 face.classList.toggle('state-achievable', !!match);
                 if (match) face.setAttribute('aria-label', '達成可能');
                 if (key === 'hand') {
                     const intervals = Math.max(3, s.hand.length - 1);
                     node.style.setProperty('--hand-position', index / intervals);
-                    node.querySelector('.GameCardActions').prepend(gameButton('場にプレイ', () => act(() => game.play(card.id)), !canPlay || s.hand.length < 2));
+                    node.querySelector('.GameCardActions').prepend(gameButton('場にプレイ', () => act(() => game.play(card.id), null, { kind: 'play', id: card.id }), !canPlay || s.hand.length < 2));
                 }
                 if (key === 'field') {
-                    const action = gameButton('選択ダイスで達成', () => act(() => game.achieve(card.id, [...selected])), true);
+                    const action = gameButton('選択ダイスで達成', () => act(() => {
+                        if (presentation && !matchMedia('(prefers-reduced-motion: reduce)').matches) game.beginAchievement(card.id, [...selected]);
+                        else game.achieve(card.id, [...selected]);
+                    }, null, { kind: 'achieve', id: card.id }), true);
+                    if (presentation) {
+                        action.textContent = '達成'; action.setAttribute('aria-label', '選択ダイスで達成');
+                        action.hidden = !canPlay || !match;
+                    }
                     achieveButtons.push({ card, node: action }); node.querySelector('.GameCardActions').prepend(action);
                 }
                 list.append(node);
@@ -353,13 +350,17 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         updateAchievements();
         if (s.pending) selectionPanel(s.pending);
         presentation?.present(scroll, s);
-        for (const node of scope.querySelectorAll('[data-pane]')) node.scrollTop = positions.get(node.dataset.pane) ?? 0;
+        for (const node of scope.querySelectorAll('[data-pane]')) {
+            const position = positions.get(node.dataset.pane);
+            node.scrollTop = position?.top ?? 0; node.scrollLeft = position?.left ?? 0;
+        }
         transitions.refresh();
         if (moving) setActionLock(true);
         else openChoice();
     }
     function dispose() {
         disposed = true;
+        presentation?.cancelEffects();
         releasePaintingIcons(scope);
         transitions.dispose();
         presentation?.clear();

@@ -19,7 +19,7 @@ export class Game {
         this.sequence = 0; this.task = null;
         this.state = {
             day: 0, fame: 0, credit: 3, flyers: 0, progress: 0, orderCost: 3, rerolls: 0,
-            phase: 'betweenDays', pending: null, dice: [], deck: [], hand: [], field: [], discard: [], shipped: [],
+            phase: 'betweenDays', pending: null, achievement: null, dice: [], deck: [], hand: [], field: [], discard: [], shipped: [],
             stocks: {}, public: {}, reserved: [], logs: [], dayEndDice: null,
         };
         const s = this.state;
@@ -53,7 +53,7 @@ export class Game {
         this.advance(ids);
     }
     assertPlay() {
-        if (this.task || this.state.phase !== 'play') throw new Error('現在この操作はできません。');
+        if (this.task || this.state.achievement || this.state.phase !== 'play') throw new Error('現在この操作はできません。');
     }
     draw(count) {
         const s = this.state; let drawn = 0;
@@ -85,11 +85,21 @@ export class Game {
         this.log(`${id}をプレイ`); this.run(this.effects(this.step(card).playEffects));
     }
     achieve(id, ids) {
+        this.beginAchievement(id, ids); this.completeAchievement();
+    }
+    beginAchievement(id, ids) {
         this.assertPlay(); const s = this.state;
         const card = s.field.find(c => c.id === id);
         if (!card || !satisfiesSelection(this.step(card).goals, s.dice, ids)) throw new Error('選択したダイスでは目標を満たしません。');
         for (const die of s.dice.filter(d => ids.includes(d.id))) die.used = true;
-        this.log(`${id}達成：${ids.join('、')}を消費`); this.run(this.finishAchievement(card));
+        this.log(`${id}達成：${ids.join('、')}を消費`);
+        s.achievement = { id };
+    }
+    completeAchievement() {
+        const s = this.state;
+        if (!s.achievement) throw new Error('達成処理は開始されていません。');
+        const card = s.field.find(card => card.id === s.achievement.id);
+        s.achievement = null; this.run(this.finishAchievement(card));
     }
     *finishAchievement(card) {
         const s = this.state;

@@ -1,0 +1,20 @@
+.GameAreaHost.PlayArea { position: relative; padding: 0; background: transparent; }
+.PlayPaintingSurface { position: absolute; inset: 0; width: 100%; height: 100%; background: transparent; pointer-events: none; }
+.PlayPaintings { position: absolute; inset: 0; background: transparent; }
+.PlayPainting { position: absolute; top: 0; }
+.PlayCard { position: absolute; z-index: 1; top: 0; left: 0; width: 294px; transform-origin: 0 0; }
+.PlayCard > .GameCardSlot { padding: 0; filter: blur(.25px); }
+.PlayCard .PaintingCard { margin: 0; perspective: none; transform: none; }
+.PlayCard .PaintingFaces { transform-style: flat; }
+.PlayCard .PaintingFront { transform: none; backface-visibility: visible; }
+.PlayCard .PaintingBack { display: none; }
+.PlayCard :is(.PaintingFront, .PaintingSheet, .PaintingArtwork, .PaintingTab, .PaintingBlock) { border-width: 1.5px; }
+.PlayCard .PaintingBlockLabel { border-inline-end-width: 1.5px; }
+.PlayPaintingViewport { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; padding: 0; background: transparent; color: var(--ui-text); cursor: pointer; }
+.PlayPaintingViewport:focus-visible { outline: 2px solid var(--ui-success-border); outline-offset: -2px; }
+.PlayFixedActions { position: absolute; left: 0; right: 0; height: 18px; }
+.PlayFixedActions > .GameCardActions { position: absolute; margin: 0; width: max-content; height: 18px; transform: translateX(-50%); pointer-events: auto; }
+.PlayFixedActions .Button { box-sizing: border-box; width: auto; max-width: 100%; min-width: 0; height: 18px; min-height: 0; padding: 0 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 12px/16px system-ui, sans-serif; }
+.PlayFixedActions .Button[hidden] { display: none; }
+.PlayFlyingCard { margin: 0; pointer-events: none; }
+.PlayPainting[data-effect] .PlayCard, .PlayPainting[data-effect] .PlayPaintingViewport { pointer-events: none; }

@@ -9,6 +9,10 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
     try {
         const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
         const errors = [];
+        const waitForGameReady = () => page.waitForFunction(() => {
+            const stage = document.querySelector('.PlayArea')?.dataset.playEffect;
+            return !stage || (stage === 'effects' && !!document.querySelector('.GameChoice[open]'));
+        });
         page.on('pageerror', error => errors.push(error.message));
         await page.addInitScript(() => { Math.random = () => .4; });
         await page.goto(base);
@@ -32,7 +36,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         await page.locator('#panel-toggle').click();
         await page.waitForTimeout(350);
         await page.locator('.HandFixedActions button').first().click();
-        await page.waitForTimeout(50);
+        await waitForGameReady();
         assert.equal(await page.locator('[data-game-area="hand"] .PaintingCard').count(), 3);
         assert.equal(await page.locator('[data-game-area="play"] .PaintingCard').count(), 1);
         if (await page.locator('.GameChoice[open]').count()) {
@@ -91,25 +95,25 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
                 assert.equal(await choice.locator('input:checked').count(), 1);
                 await page.setViewportSize({ width: 1200, height: 800 });
                 await choice.getByRole('button', { name: '選択を確定' }).click();
-                await page.waitForTimeout(30);
+                await waitForGameReady();
             }
             return count;
         }
         await page.locator('.HandFixedActions button').first().click();
-        await page.waitForTimeout(30);
+        await waitForGameReady();
         assert.equal(await chooseAll(), 1);
         await page.locator('[data-game-area="palette"] input').first().check();
         await page.getByRole('button', { name: '選択ダイスで達成', exact: true }).click();
-        await page.waitForTimeout(30);
+        await waitForGameReady();
         assert.equal(await chooseAll(), 4);
         assert.equal(await page.locator('[data-game-area="discard"] .PaintingCard').count(), 2);
         assert.equal(await page.locator('[data-game-area="palette"] .GameDie').count(), 5);
         await page.locator(`.HandFixedActions [data-card-id="${changedCard}"] button`).click();
-        await page.waitForTimeout(30);
+        await waitForGameReady();
         await chooseAll();
         await page.locator('[data-game-area="palette"] input').first().check();
         await page.getByRole('button', { name: '選択ダイスで達成', exact: true }).click();
-        await page.waitForTimeout(30);
+        await waitForGameReady();
         await chooseAll();
         assert.match(await info.innerText(), /出荷 1枚/);
         await page.getByRole('button', { name: '出荷済み作品を確認', exact: true }).click();

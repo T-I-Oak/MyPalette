@@ -1,0 +1,6 @@
+.EaselLab { padding: 16px; }
+.EaselLab h2 { margin: 0 0 8px; }
+.EaselToolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+.EaselToolbar a { color: inherit; }
+.EaselViewport { position: relative; width: 100%; height: min(76dvh, 840px); min-height: 480px; overflow: hidden; }
+.EaselViewport canvas { display: block; touch-action: none; }
