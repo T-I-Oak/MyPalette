@@ -10,6 +10,7 @@ const assert = require('node:assert/strict');
         const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         await page.goto(base);
         await page.locator('.LayoutScreen[data-layout="A"]').waitFor();
+        await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
         assert.equal(await page.locator('.LayoutArea:visible').count(), 7);
         assert.equal(await page.locator('#app-version').textContent(), require('../package.json').version);
         const inspect = () => page.locator('.LayoutArea').evaluateAll(nodes => nodes.map(node => {
@@ -37,9 +38,11 @@ const assert = require('node:assert/strict');
         assert.equal(await page.locator('.LayoutArea:visible').count(), 7);
         const openToggle = await page.locator('#panel-toggle').boundingBox();
         const stock = (await inspect()).find(area => area.id === 'stock');
-        assert.ok(Math.abs(openToggle.x + openToggle.width - stock.x) < 0.1);
-        assert.equal(openToggle.y, stock.y);
-        assert.equal(stock.y, before.find(area => area.id === 'play').y);
+        const stockFrame=await page.locator('.LayoutAreaFixed[data-area="stock"]').boundingBox();
+        assert.ok(Math.abs(openToggle.x + openToggle.width - stockFrame.x) < 0.1);
+        assert.equal(openToggle.y, stockFrame.y);
+        assert.equal(stockFrame.y, before.find(area => area.id === 'play').y);
+        assert.equal(stock.y-stockFrame.y,36);
         await page.screenshot({ path: 'tmp_layout_portrait_open.png' });
         await page.locator('#panel-toggle').click();
         await page.waitForTimeout(350);
@@ -55,15 +58,15 @@ const assert = require('node:assert/strict');
         await session.send('Emulation.setDeviceMetricsOverride', { width: 600, height: 600, deviceScaleFactor: 1, mobile: false });
         await page.waitForFunction(() => document.querySelector('canvas[data-area="play"]').width === 300);
         await page.goto(base + 'dev.html');
-        await page.getByRole('button', { name: 'ゲームを始める', exact: true }).click();
-        await page.locator('.GameBoard').waitFor();
-        for (const [hash, selector] of [['settings', '.Overview'], ['icons', '.IconLab'], ['dice', '.DiceLab']]) {
+        await page.getByRole('button', { name: 'カード設定を開く', exact: true }).waitFor();
+        assert.equal(await page.getByRole('button', { name: 'ゲームを始める', exact: true }).count(),0);
+        for (const [hash, selector] of [['settings', '.Overview'], ['icons', '.IconLab']]) {
             await page.goto(base + 'dev.html#' + hash);
             await page.reload();
             await page.locator(selector).waitFor();
         }
         assert.deepEqual(errors, []);
-        console.log(JSON.stringify({ viewports: 5, deviceScaleFactors: [2, 1], panelAnimation: 'passed', developerScreens: 4, errors }));
+        console.log(JSON.stringify({ viewports: 5, deviceScaleFactors: [2, 1], panelAnimation: 'passed', developerScreens: 2, errors }));
     } finally {
         await browser.close();
     }

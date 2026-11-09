@@ -1,5 +1,6 @@
 const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE||'playwright');
-(async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{const page=await browser.newPage({viewport:{width:1280,height:700}});await page.goto('http://127.0.0.1:3000/MyPalette/dev.html#dice');await page.locator('.DiceViewport').waitFor();const result=await page.evaluate(async()=>{
+(async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{const page=await browser.newPage({viewport:{width:1280,height:700}});await page.goto((process.argv[2]||'http://127.0.0.1:3000/MyPalette/dev.html'));await page.getByRole('button',{name:'カード設定を開く',exact:true}).waitFor();const result=await page.evaluate(async()=>{
+await import('/MyPalette/src/dice/layout.css');await import('/MyPalette/src/dice/states.css');
 const {DiceGroup}=await import('/MyPalette/src/dice/DiceGroup.js'),{DiceScene}=await import('/MyPalette/src/dice/DiceScene.js'),{loadResultGraphics}=await import('/MyPalette/src/dice/resultGraphics.js');
 const view=document.createElement('div');view.className='DiceViewport';view.style.width=innerWidth+'px';view.style.height=Math.round(innerHeight*.9)+'px';document.querySelector('#editor').replaceChildren(view);
 const group=new DiceGroup({random:()=>.37});for(const [i,special] of ['fame1','temporaryBrush1'].entries()){const die=group.add({id:String(i),faces:Array.from({length:6},()=>({special})),position:{x:-3+i*7,y:.5,z:0}});die.begin();die.settle(0);}

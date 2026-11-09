@@ -1,0 +1,21 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {Game} from '../../../src/game/engine.js';
+const settings=JSON.parse(readFileSync(new URL('../../../public/data/cards.json',import.meta.url)));
+test('仕事開始まではドローせず、翌日も持ち越し効果と権利付与を待つ',()=>{
+ const game=new Game(settings,()=>.4,{manualDayStart:true,manualRolls:true}),s=game.state;
+ const settle=()=>{const r=s.rollRequest;game.beginRoll(r.id);game.completeRoll(r.id,r.ids.map(id=>({id,index:0,status:'settled'})));};
+ assert.equal(s.phase,'awaitingStart');assert.equal(s.day,1);
+ assert.equal(s.hand.length,0);assert.equal(s.deck.length,7);assert.equal(s.rerolls,0);assert.equal(s.rollRequest,null);
+ assert(s.dice.every(die=>die.current===null));
+ assert.throws(()=>game.play(s.deck[0].id));assert.throws(()=>game.endDay());
+ game.beginDay();assert.equal(s.day,1);assert.equal(s.hand.length,4);assert.equal(s.rerolls,1);
+ assert.equal(s.phase,'start');assert.throws(()=>game.beginDay());settle();
+ assert.equal(s.phase,'play');game.endDay();
+ assert.equal(s.phase,'awaitingStart');assert.equal(s.day,2);assert.equal(s.hand.length,0);assert.equal(s.rerolls,0);
+ s.reserved=[{type:'changeFame',amount:5}];const fame=s.fame;
+ assert.equal(s.fame,fame);assert.equal(s.rollRequest,null);
+ game.beginDay();assert.equal(s.day,2);assert.equal(s.hand.length,4);assert.equal(s.fame,fame+5);
+ assert.equal(s.rerolls,1);settle();assert.equal(s.phase,'play');
+});

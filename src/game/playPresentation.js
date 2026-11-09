@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import { createEasel } from './easel/createEasel.js';
 import { createPaintingCamera, cardPlaneMatrix, orientPainting } from './easel/paintingView.js';
 import { playMetrics, playOffsets, playStandardSize, layoutPlay, playButtonCenter } from './playLayout.js';
-import './easel/paintingInfo.css';
 import './play.css';
 import { createPlayCanvasEffects, mountEffectCanvas } from './playCanvasEffects.js';
+import { releasePaintingIcons } from '../cardIcons.js';
 
 export function createPlayPresentation(area, host, relayout) {
     host.classList.add('PlayArea');
@@ -12,6 +12,7 @@ export function createPlayPresentation(area, host, relayout) {
     const areaName = area.fixedLayer.querySelector('.LayoutAreaName');
     areaName.hidden = true;
     const controls = document.createElement('div'); controls.className = 'PlayFixedActions'; area.fixedLayer.append(controls);
+    const endDay = document.createElement('div'); endDay.className = 'PlayEndDayAction'; area.fixedLayer.append(endDay);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setClearColor(0, 0); renderer.domElement.className = 'PlayPaintingSurface';
     renderer.domElement.setAttribute('aria-hidden', 'true');
@@ -53,13 +54,31 @@ export function createPlayPresentation(area, host, relayout) {
             entry.painting?.dispose();
             entry.easel.object.removeFromParent(); entry.easel.dispose();
         }
-        entries = []; controls.replaceChildren(); row?.remove(); row = null; renderer.domElement.remove();
+        entries = []; controls.replaceChildren(); endDay.replaceChildren(); row?.remove(); row = null; renderer.domElement.remove();
     }
     return {
         update, clear,
         ...canvasEffects,
         setEffect(value) { effect = value; },
+        setEndDayButton(button) { endDay.replaceChildren(); if (button) endDay.append(button); },
         cardTarget(id) { return find(id).info; },
+        canvasCorners(id) {
+            const entry = find(id), painting = entry.painting, rect = host.getBoundingClientRect();
+            const scale = rect.width / area.logicalWidth;
+            painting.object.updateWorldMatrix(true, true); camera.updateMatrixWorld();
+            const {width,height,depth} = painting.placement;
+            return [[-1,1],[1,1],[1,-1],[-1,-1]].map(([x,y]) => {
+                const point = painting.object.localToWorld(new THREE.Vector3(x*width/2,y*height/2,depth/2)).project(camera);
+                return {x:rect.left+(entry.slot.x+(point.x+1)*playMetrics.width/2)*scale,
+                    y:rect.top+(entry.slot.y+(1-point.y)*playMetrics.height/2)*scale};
+            });
+        },
+        remove(id) {
+            const entry = find(id); if (!entry) return;
+            releasePaintingIcons(entry.info); entry.painting?.dispose();
+            entry.easel.object.removeFromParent(); entry.easel.dispose(); entry.pair.remove(); entry.actions.remove();
+            entries = entries.filter(item => item !== entry); update();
+        },
         present(section, state) {
             const size = playStandardSize(state.field.length);
             area.standardWidth = size.width; area.standardHeight = size.height;
@@ -74,7 +93,7 @@ export function createPlayPresentation(area, host, relayout) {
                 face.style.setProperty('--painting-x', '0px'); face.style.setProperty('--painting-y', '0px'); face.style.setProperty('--painting-tilt', '0deg');
                 const actions = source.querySelector('.GameCardActions'); actions.dataset.cardId = card.id; controls.append(actions);
                 info.append(source);
-                const viewport = document.createElement('button'); viewport.type = 'button'; viewport.className = 'PlayPaintingViewport';
+                const viewport = document.createElement('button'); viewport.tabIndex = -1; viewport.type = 'button'; viewport.className = 'PlayPaintingViewport';
                 viewport.setAttribute('aria-label', `${card.id}のイーゼル・カードを拡大`);
                 viewport.addEventListener('click', () => face.click()); pair.append(viewport, info); row.append(pair);
                 const easel = createEasel();
@@ -87,6 +106,6 @@ export function createPlayPresentation(area, host, relayout) {
             }
             host.append(renderer.domElement, row); section.remove(); relayout();
         },
-        dispose() { clear(); controls.remove(); renderer.dispose(); areaName.hidden = false; },
+        dispose() { clear(); controls.remove(); endDay.remove(); renderer.dispose(); areaName.hidden = false; },
     };
 }

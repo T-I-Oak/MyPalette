@@ -17,6 +17,8 @@ test('日本語で該当件数と0件を通知し、条件名も翻訳する',()
     assert.equal(text({condition,diceCount:2}),'絵筆・橙 を含むダイスが2個あります');
     assert.equal(text({condition,diceCount:0}),'絵筆・橙 を含むダイスはありません');
     assert.equal(describeFaceCount(condition,2),'絵筆・橙：2面');
+    const parts=searchNoticeParts({condition,diceCount:0},{palette:true});
+    assert.equal(parts.map(part=>typeof part==='string'?part:part.label).join(''),'絵筆・橙 を含む画材ダイスはありません');
 });
 test('英語ではアイコンの位置と単数・複数形を翻訳文で決める',()=>{
     setLanguage('en');

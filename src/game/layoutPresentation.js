@@ -3,6 +3,7 @@ import { releasePaintingIcons } from '../cardIcons.js';
 import { createHandPresentation } from './handPresentation.js';
 import { createPlayPresentation } from './playPresentation.js';
 import { createPlayEffects } from './playEffects.js';
+import { createPalettePresentation } from './palettePresentation.js';
 import './layoutGame.css';
 
 // Each host can later be replaced by an area-specific renderer.
@@ -19,20 +20,25 @@ export function createLayoutPresentation(screen) {
         hosts.set(id, { host, object });
     }
     const handPresentation = createHandPresentation(screen.areas.get('hand'), hosts.get('hand').host);
+    const palettePresentation = createPalettePresentation(screen.areas.get('palette'), hosts.get('palette').host, () => screen.render());
     const playPresentation = createPlayPresentation(screen.areas.get('play'), hosts.get('play').host, () => screen.render());
-    const effects = createPlayEffects(screen, hosts.get('play').host, playPresentation, screen.areas.get('play').canvas.closest('.LayoutScreen'));
+    const effects = createPlayEffects(screen, hosts.get('play').host, playPresentation, screen.areas.get('play').canvas.closest('.LayoutScreen'), palettePresentation);
     const unsubscribe = screen.subscribe(() => {
         for (const [id, { object }] of hosts) {
             const area = screen.areas.get(id);
             area.setSlot(object.id, { x: 0, y: 0, width: area.logicalWidth, height: area.logicalHeight });
         }
         handPresentation.update();
+        palettePresentation.update();
         playPresentation.update();
     });
     function clear() {
         handPresentation.clear();
+        palettePresentation.clear();
         playPresentation.clear();
-        for (const { host } of hosts.values()) {
+        for (const [id, { host }] of hosts) {
+            // Keep the palette connected so unrelated renders do not restart its CSS animations.
+            if (id === 'palette') continue;
             // Closed panel hosts are detached, so the screen root cannot release their observers.
             releasePaintingIcons(host);
             host.replaceChildren();
@@ -40,12 +46,14 @@ export function createLayoutPresentation(screen) {
     }
     return {
         clear,
+        reset: palettePresentation.reset,
+        searchFaces: palettePresentation.searchFaces,
         beginAction: effects.begin,
         field: effects.field,
         hasAnimation: effects.hasWork,
         animate: effects.run,
         cancelEffects: effects.cancel,
-        present(board, state) {
+        present(board, state, actions) {
             const move = (id, selector) => {
                 const node = board.querySelector(selector);
                 node.hidden = false;
@@ -53,11 +61,13 @@ export function createLayoutPresentation(screen) {
                 return node;
             };
             move('info', '.GameStatus');
-            move('info', '.GameControls');
-            move('palette', '.GameDicePane');
+            const infoControls = move('info', '.GameControls');
+            const palette = move('palette', '.GameDicePane');
+            palettePresentation.present(palette, state, actions);
             effects.hideDestination(board);
             const field = move('play', '.field');
             playPresentation.present(field, { ...state, field: effects.field(state) });
+            playPresentation.setEndDayButton(infoControls.querySelector('[data-game-end-day]'));
             const hand = move('hand', '.hand');
             hand.querySelector('h2').remove();
             handPresentation.present(hand);
@@ -77,11 +87,11 @@ export function createLayoutPresentation(screen) {
                 const dialog = document.createElement('dialog');
                 dialog.className = 'GameInspection';
                 dialog.setAttribute('aria-label', label);
-                const close = document.createElement('button');
+                const close = document.createElement('button'); close.tabIndex = -1;
                 close.className = 'Button texture-raised'; close.textContent = '閉じる';
                 close.addEventListener('click', () => dialog.close());
                 dialog.append(close, content); board.append(dialog);
-                const open = document.createElement('button');
+                const open = document.createElement('button'); open.tabIndex = -1;
                 open.className = 'Button texture-raised'; open.textContent = label;
                 open.addEventListener('click', () => dialog.showModal()); info.append(open);
             }
@@ -92,6 +102,7 @@ export function createLayoutPresentation(screen) {
             effects.cancel();
             clear(); unsubscribe();
             handPresentation.dispose();
+            palettePresentation.dispose();
             playPresentation.dispose();
             for (const { object } of hosts.values()) object.area.remove(object);
         },

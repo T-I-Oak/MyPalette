@@ -7,13 +7,6 @@ export function createPaintingCamera(aspect) {
     return camera;
 }
 
-export function paintingInfoAnchor(painting, camera, width, height) {
-    painting.object.updateWorldMatrix(true, false);
-    const anchor = new THREE.Vector3(0, painting.placement.top + .04, .3);
-    painting.object.parent.localToWorld(anchor); anchor.project(camera);
-    return { x: (anchor.x + 1) * width / 2, y: (1 - anchor.y) * height / 2 };
-}
-
 export function orientPainting(easel, centerX, areaWidth, id) {
     const facing = paintingFacing(centerX, areaWidth);
     const jitter = ((id.charCodeAt(0) + Number(id.slice(1))) % 5 - 2) * .003;

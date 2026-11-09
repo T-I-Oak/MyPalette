@@ -11,7 +11,7 @@ import { goalChoices, goalMetadataIssues } from './goalChoices.js';
 import { effectChoices } from './effectChoices.js';
 
 function el(tag, text, className) {
-    const item = document.createElement(tag);
+    const item = document.createElement(tag); if (tag === 'button') item.tabIndex = -1;
     if (text !== undefined) item.textContent = text;
     if (className) item.className = className;
     return item;

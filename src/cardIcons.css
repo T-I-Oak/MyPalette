@@ -19,3 +19,4 @@
 .DialogFields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
 .EditorDialog .Field { font-size: 13px; }
 .EditorDialog .Row .Field { flex-basis: 130px; }
+.CardIcon[data-goal-condition] { cursor: pointer; }

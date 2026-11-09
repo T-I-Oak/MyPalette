@@ -9,7 +9,7 @@ import { cardLocations, changedCardAreas, createGameAreaTransitions } from './ar
 import './view.css';
 
 const el = (tag, text, className) => {
-    const node = document.createElement(tag);
+    const node = document.createElement(tag); if (tag === 'button') node.tabIndex = -1;
     if (text !== undefined) node.textContent = text;
     if (className) node.className = className;
     return node;
@@ -19,7 +19,7 @@ function button(text, action, disabled = false) {
     node.addEventListener('click', action); return node;
 }
 export const faceLabel = face => face.special ? `特殊面：${displayLabel(face.special)}` : `${displayLabel(face.color)}・${displayLabel(face.material)}`;
-const phaseLabel = { play: '制作中', start: 'ターン開始処理', end: 'ターン終了処理', betweenDays: '一日の仕事を終了', finished: 'ゲーム終了' };
+const phaseLabel = { awaitingStart: '仕事の開始待ち', play: '制作中', start: 'ターン開始処理', end: 'ターン終了処理', betweenDays: '一日の仕事を終了', finished: 'ゲーム終了' };
 
 export function mountGame(root, settings, onMenu, presentation = null) {
     const issues = gameIssues(settings);
@@ -30,6 +30,8 @@ export function mountGame(root, settings, onMenu, presentation = null) {
     const candidateOrigins = new Map();
     let candidateSource;
     const session = createGameSession(settings, {
+        manualRolls: Boolean(presentation),
+        manualDayStart: Boolean(presentation),
         onCandidateAcquired(id) {
             if (candidateSource) candidateOrigins.set(id, candidateSource);
         },
@@ -43,6 +45,13 @@ export function mountGame(root, settings, onMenu, presentation = null) {
     const scroll = el('div', undefined, 'GameBoard');
     if (presentation) root.append(scroll); else root.replaceChildren(scroll);
     const scope = presentation ? root : scroll;
+    function searchGoal(event) {
+        const icon = event.target.closest?.('[data-goal-condition]');
+        if (!icon || !presentation) return;
+        event.stopPropagation(); event.preventDefault();
+        presentation.searchFaces(JSON.parse(icon.dataset.goalCondition));
+    }
+    if (presentation) root.addEventListener('click', searchGoal, true);
     const transitions = presentation ? { captureCard() {}, captureCandidate() {}, play() {}, refresh() {}, dispose() {} } : createGameAreaTransitions(root, scroll, {
         copyCardDrawing: copyPaintingIconDrawers,
         createCardTransfer(key, element, from, to) {
@@ -251,7 +260,8 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         }
         scroll.append(tabs);
         const workspace = el('div', undefined, 'GameWorkspace'); scroll.append(workspace);
-        const canPlay = s.phase === 'play' && !s.pending && !s.achievement;
+        const canPlay = s.phase === 'play' && !s.pending && !s.achievement && !s.rollRequest;
+        const selectingReroll = Boolean(presentation && s.pending?.kind === 'dice' && s.pending.effectType === 'reroll');
         const visibleDice = s.phase === 'betweenDays' ? s.dayEndDice : s.dice;
         const diceSection = section(`画材ダイス ${visibleDice.length}個${s.phase === 'betweenDays' ? '（仕事終了時）' : ''}`, workspace, 'GameDicePane'), diceList = el('div', undefined, 'GameGrid');
         diceList.dataset.pane = 'dice';
@@ -280,7 +290,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
             const visibleCards = key === 'field' && presentation ? presentation.field(s) : s[key];
             for (const [index, card] of visibleCards.entries()) {
                 const node = cardView(card, key);
-                const match = (key === 'hand' || key === 'field') && card.step < 3 ? matchingDice(game.step(card).goals, s.dice) : null;
+                const match = !s.rollRequest && (key === 'hand' || key === 'field') && card.step < 3 ? matchingDice(game.step(card).goals, s.dice) : null;
                 const face = node.querySelector('.PaintingCard');
                 face.classList.toggle('state-achievable', !!match);
                 if (match) face.setAttribute('aria-label', '達成可能');
@@ -293,7 +303,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
                     const action = gameButton('選択ダイスで達成', () => act(() => {
                         if (presentation && !matchMedia('(prefers-reduced-motion: reduce)').matches) game.beginAchievement(card.id, [...selected]);
                         else game.achieve(card.id, [...selected]);
-                    }, null, { kind: 'achieve', id: card.id }), true);
+                    }, null, { kind: 'achieve', id: card.id, diceIds: [...selected] }), true);
                     if (presentation) {
                         action.textContent = '達成'; action.setAttribute('aria-label', '選択ダイスで達成');
                         action.hidden = !canPlay || !match;
@@ -343,13 +353,41 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         const logText = el('pre', s.logs.join('\n'), 'GameLog'); logText.dataset.pane = 'logs'; logs.append(logText);
         const controls = section('仕事の進行', scroll, 'GameControls');
         controls.append(el('p', s.logs.at(-1), 'GameLatestLog'));
-        if (s.phase === 'play') {
+        if (s.phase === 'play' || (presentation && ['awaitingStart', 'start', 'end'].includes(s.phase))) {
+            const awaitingStart = s.phase === 'awaitingStart';
+            const endDay = gameButton(awaitingStart ? '今日の仕事を始める' : '今日の仕事を終える',
+                () => act(() => awaitingStart ? game.beginDay() : game.endDay()), !awaitingStart && !canPlay);
+            endDay.classList.toggle('state-attention', awaitingStart);
+            endDay.dataset.gameEndDay = '';
             controls.append(el('p', '任意のタイミングで仕事を終了できます。余った画材はチラシ制作・信用更新に使われます。'),
-                gameButton('一日の仕事を終える', () => act(() => game.endDay()), !canPlay));
+                endDay);
         } else if (s.phase === 'betweenDays') controls.append(gameButton('翌日の仕事を始める', () => act(() => game.nextDay())));
         updateAchievements();
-        if (s.pending) selectionPanel(s.pending);
-        presentation?.present(scroll, s);
+        if (s.pending && !selectingReroll) selectionPanel(s.pending);
+        presentation?.present(scroll, s, {
+            selectedDice: [...selected],
+            rerollSelection: selectingReroll,
+            canConfirmReroll: () => !disposed && !moving && selectingReroll && selected.size >= s.pending.min &&
+                selected.size <= s.pending.max && [...selected].every(id => s.pending.options.some(option => option.id === id)),
+            confirmReroll: () => act(() => game.choose([...selected])),
+            canStartRoll: () => !disposed && !moving && s.rollRequest?.status === 'ready',
+            canChangeAll: () => canPlay && !moving && s.rerolls > 0 && s.dice.some(die => !die.used),
+            canChangeOne: () => canPlay && !moving && s.rerolls > 0 && selected.size === 1 && s.dice.some(die => selected.has(die.id) && !die.used),
+            changeAll: () => act(() => game.reroll()),
+            changeOne: () => { if (selected.size === 1) act(() => game.reroll([...selected][0])); },
+            toggleDie: id => {
+                const die = s.dice.find(die => die.id === id);
+                const allowed = canPlay || (selectingReroll && s.pending.options.some(option => option.id === id));
+                if (!disposed && !moving && allowed && die && !die.used && Number.isInteger(die.current)) {
+                    if (selected.has(id)) selected.delete(id); else selected.add(id);
+                    updateAchievements();
+                }
+                return [...selected];
+            },
+            beginRoll: id => act(() => game.beginRoll(id)),
+            completeRoll: (id, results) => { if (!disposed) act(() => game.completeRoll(id, results)); },
+            failRoll: id => { if (!disposed) act(() => game.failRoll(id)); },
+        });
         for (const node of scope.querySelectorAll('[data-pane]')) {
             const position = positions.get(node.dataset.pane);
             node.scrollTop = position?.top ?? 0; node.scrollLeft = position?.left ?? 0;
@@ -360,11 +398,13 @@ export function mountGame(root, settings, onMenu, presentation = null) {
     }
     function dispose() {
         disposed = true;
+        root.removeEventListener('click', searchGoal, true);
         presentation?.cancelEffects();
         releasePaintingIcons(scope);
         transitions.dispose();
         presentation?.clear();
         scroll.remove();
+        presentation?.reset?.();
     }
     render();
     return { session, dispose };

@@ -24,5 +24,22 @@ export default defineConfig({
             ]
         }
     },
-    build: { outDir: 'dist' }
+    build: {
+        outDir: 'dist',
+        rollupOptions: {
+            input: {
+                game: fileURLToPath(new URL('./index.html', import.meta.url)),
+                dev: fileURLToPath(new URL('./dev.html', import.meta.url)),
+            },
+            output: {
+                manualChunks(id) {
+                    const path = id.replaceAll('\\', '/');
+                    if (path.includes('/node_modules/three/')) {
+                        return path.endsWith('/three.core.js') ? 'three-core' : 'three-renderer';
+                    }
+                    if (path.includes('/node_modules/cannon-es/')) return 'dice-physics';
+                },
+            },
+        },
+    }
 });

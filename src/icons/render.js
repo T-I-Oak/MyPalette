@@ -110,5 +110,6 @@ function canvasFor(plan,height){
     return canvas;
 }
 export function effectIconCanvas(effect,height=192){return canvasFor(effectIconPlan(effect),height);}
+export function rerollTicketCanvas(height=192){return canvasFor({nodes:[{kind:'ticket'}]},height);}
 export function goalIconCanvas(condition,height=192){return canvasFor(goalIconPlan(condition),height);}
 export function iconAspect(plan){return (planWidth(plan)+12)/112;}

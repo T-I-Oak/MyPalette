@@ -1,0 +1,74 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { Game } from '../../../src/game/engine.js';
+const settings = JSON.parse(readFileSync(new URL('../../../public/data/cards.json', import.meta.url)));
+const make = () => new Game(settings, () => .4, { manualStartRoll: true });
+const results = game => game.state.rollRequest.ids.map((id, index) => ({ id, status: 'settled', index: index % 6 }));
+
+test('ターン開始は空中待機し、開始ボタンと全物理結果の確定まで後続処理を止める', () => {
+    const game = make(), s = game.state;
+    assert.equal(s.phase, 'start');
+    assert.equal(s.rollRequest.status, 'ready');
+    assert(s.dice.every(die => die.current === null));
+    assert.equal(s.pending, null);
+    assert.throws(() => game.endDay());
+    assert.throws(() => game.reroll());
+    assert.throws(() => game.completeStartRoll(s.rollRequest.id, results(game)));
+    const id = s.rollRequest.id;
+    game.beginStartRoll(id);
+    assert.throws(() => game.beginStartRoll(id));
+    assert.throws(() => game.completeStartRoll(id, results(game).slice(1)));
+    assert(s.dice.every(die => die.current === null));
+    const settled = results(game);
+    game.completeStartRoll(id, settled);
+    assert.equal(s.phase, 'play');
+    assert.equal(s.rollRequest, null);
+    assert.deepEqual(s.dice.map(die => die.current), settled.map(result => result.index));
+    assert.throws(() => game.completeStartRoll(id, settled));
+});
+
+test('失敗時は出目を偽装せず再試行し、翌日の予約効果はロール待機前に解決する', () => {
+    const game = make(), s = game.state;
+    const id = s.rollRequest.id;
+    game.beginStartRoll(id); game.failStartRoll(id);
+    assert.equal(s.rollRequest.status, 'ready');
+    assert(s.dice.every(die => die.current === null));
+    game.beginStartRoll(id); game.completeStartRoll(id, results(game));
+    game.endDay();
+    s.reserved = [{ type: 'changeFame', amount: 5 }];
+    const fame = s.fame;
+    game.nextDay();
+    assert.equal(s.fame, fame + 5);
+    assert.notEqual(s.rollRequest.id, id);
+    assert.throws(() => game.beginStartRoll(id));
+    game.beginStartRoll(s.rollRequest.id);
+    game.completeStartRoll(s.rollRequest.id, results(game));
+    assert.equal(s.fame, fame + 5);
+    assert.equal(s.phase, 'play');
+});
+
+test('予約された獲得効果の選択を先に解決し、獲得分を含めた全ダイスを待機する', () => {
+    const game = make(), s = game.state;
+    game.beginStartRoll(s.rollRequest.id);
+    game.completeStartRoll(s.rollRequest.id, results(game));
+    game.endDay();
+    s.reserved = [{ type: 'gainNormalDice', count: 1, lifetime: 'temporary' }];
+    game.nextDay();
+    assert.equal(s.phase, 'start');
+    assert.equal(s.pending.kind, 'candidates');
+    assert.equal(s.rollRequest, null);
+    game.choose([s.pending.options[0].id]);
+    assert.equal(s.pending, null);
+    assert.equal(s.dice.length, 4);
+    assert.equal(s.rollRequest.reason, 'acquire');
+    assert.equal(s.rollRequest.ids.length, 1);
+    game.beginStartRoll(s.rollRequest.id);
+    game.completeStartRoll(s.rollRequest.id, results(game));
+    assert.equal(s.rollRequest.reason, 'start');
+    assert.equal(s.rollRequest.ids.length, 4);
+    assert(s.dice.every(die => die.current === null));
+    game.beginStartRoll(s.rollRequest.id);
+    game.completeStartRoll(s.rollRequest.id, results(game));
+    assert.equal(s.phase, 'play');
+});

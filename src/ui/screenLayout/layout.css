@@ -17,7 +17,7 @@ html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
 .LayoutMainFixedLayer { z-index: 1; }
 .LayoutAreaFixed { position: absolute; overflow: hidden; pointer-events: none; }
 .LayoutAreaFixed[hidden] { display: none; }
-.LayoutAreaName { position: absolute; top: 0; left: 0; max-width: 100%; font: 12px sans-serif; color: var(--ui-text); }
+.LayoutAreaName { position: absolute; top: 0; left: 0; max-width: 100%; font: 24px sans-serif; color: var(--ui-text); }
 .LayoutArea[data-area='stock'], .LayoutArea[data-area='discard'], .LayoutArea[data-area='deck'] { z-index: 2; }
 .LayoutPanelLayer { z-index: 3; }
 .LayoutPanelFixedLayer { z-index: 3; }
@@ -39,7 +39,7 @@ html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
 .AppVersion { position: absolute; bottom: max(6px, env(safe-area-inset-bottom)); left: max(8px, env(safe-area-inset-left)); z-index: 2; font: 12px sans-serif; pointer-events: none; }
 .texture-layout { color: var(--ui-text); background: transparent; --area-fill: var(--ui-surface); }
 .texture-layout .LayoutArea[data-area='play'] { --area-fill: transparent; }
-.texture-layout .LayoutArea[data-area='palette'] { --area-fill: var(--ui-goal-surface); }
+.texture-layout .LayoutArea[data-area='palette'] { --area-fill: transparent; }
 .texture-layout .LayoutArea[data-area='stock'] { --area-fill: var(--ui-section-heading); }
 .texture-layout .LayoutArea[data-area='discard'] { --area-fill: var(--ui-inactive-surface); }
 .texture-layout .LayoutArea[data-area='deck'] { --area-fill: var(--ui-surface-muted); }

@@ -20,7 +20,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             };
         });
         await page.goto(base);
-        await page.locator('[data-game-area="hand"] .PaintingCard').first().waitFor();
+        await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).waitFor();
         async function rememberHosts() {
             await page.locator('#panel-toggle').click();
             await page.locator('[data-game-area="stock"]').waitFor();
@@ -48,9 +48,9 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             if (await page.getByRole('button', { name: 'もう一度遊ぶ', exact: true }).count()) {
                 await page.getByRole('button', { name: 'もう一度遊ぶ', exact: true }).click();
                 replays++;
-            } else if (await page.getByRole('button', { name: '一日の仕事を終える', exact: true }).count()) {
-                await page.getByRole('button', { name: '一日の仕事を終える', exact: true }).click();
-            } else await page.getByRole('button', { name: '翌日の仕事を始める', exact: true }).click();
+            } else if (await page.getByRole('button', { name: '今日の仕事を終える', exact: true }).count()) {
+                await page.getByRole('button', { name: '今日の仕事を終える', exact: true }).click();
+            } else { await page.getByRole('button', { name: '今日の仕事を始める', exact: true }).click({force:true});await page.waitForFunction(()=>document.querySelector('[data-game-end-day]')?.disabled===false,null,{timeout:60000}); }
             counts.push(await checkOwnership(`update ${step + 1}`));
         }
         assert.ok(replays > 0, 'must cover replay with the panel closed');
@@ -68,7 +68,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         assert.equal(await page.locator('[data-game-area]').count(), 0);
         await page.unroute('**/data/cards.json');
         await page.getByRole('button', { name: '再読み込み', exact: true }).click();
-        await page.locator('[data-game-area="hand"] .PaintingCard').first().waitFor();
+        await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).waitFor();
         await rememberHosts();
         await checkOwnership('new presentation');
         assert.deepEqual(errors, []);

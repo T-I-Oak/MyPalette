@@ -3,7 +3,7 @@
 .GameSection[hidden] { display: none; }
 .GameSection h2 { margin: 0 0 6px; font-size: .95rem; }
 .GameSection h3 { font-size: .9rem; margin: 4px 0 8px; }
-.GameBoard .Button { min-height: 30px; padding: 4px 8px; font-size: inherit; }
+.GameBoard .Button { min-height: 30px; padding: 4px 12px; font-size: 24px; }
 .GameStatus { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: center; }
 .GameStatus h2, .GameStatus p { margin: 0; }
 .GameStatus > .Button { margin-left: auto; }

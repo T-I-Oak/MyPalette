@@ -6,7 +6,7 @@ function assign(goals, dice) {
     const [goal, ...rest] = goals;
     for (const die of dice) {
         const face = currentFace(die);
-        if (die.used || face.special || (!goal.color && !goal.material)) continue;
+        if (die.used || !face || face.special || (!goal.color && !goal.material)) continue;
         if (goal.color && goal.color !== face.color) continue;
         if (goal.material && goal.material !== face.material) continue;
         const tail = assign(rest, dice.filter(other => other !== die));

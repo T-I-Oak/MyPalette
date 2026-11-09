@@ -22,7 +22,7 @@ export class Die {
         this.consumed = false;
         this.current = null;
         this.revision = 0;
-        this.body = new Body({ mass: 0, shape: new Box(new Vec3(.5, .5, .5)),
+        this.body = new Body({ mass: 0, shape: new Box(new Vec3(1, 1, 1)),
             position: new Vec3(position.x, position.y, position.z),
             linearDamping: .22, angularDamping: .3, allowSleep: true,
             sleepSpeedLimit: .16, sleepTimeLimit: .6 });
@@ -49,11 +49,13 @@ export class Die {
         const safe=this.owner?this.owner.constrainPosition({x,y,z}):{x,y,z};
         this.body.position.set(safe.x, safe.y, safe.z); this.body.aabbNeedsUpdate = true;
     }
-    prepare() {
+    prepare({ animated = false } = {}) {
         this.assertMutable();
+        this.readyMotion = animated && this.result ? { elapsed: 0, height: this.body.position.y, result: this.result } : null;
+        this.smoothReady = true;
         this.state = 'ready'; this.current = null;
         this.body.type = Body.STATIC; this.body.mass = 0; this.body.updateMassProperties();
-        this.body.position.y = READY_HEIGHT;
+        if (!this.readyMotion) this.body.position.y = READY_HEIGHT;
         this.body.velocity.setZero(); this.body.angularVelocity.setZero();
         this.body.force.setZero(); this.body.torque.setZero();
         this.body.aabbNeedsUpdate = true;

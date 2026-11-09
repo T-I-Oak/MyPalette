@@ -10,17 +10,19 @@ export function gameIssues(settings) {
     return settings.cards.flatMap(card => draftIssues(card).map(issue => `${card.id}：${issue}`));
 }
 export class Game {
-    constructor(settings, random = Math.random, { onCandidateAcquired } = {}) {
+    constructor(settings, random = Math.random, { onCandidateAcquired, manualStartRoll = false, manualRolls = manualStartRoll, manualDayStart = false } = {}) {
         const issues = gameIssues(settings);
         if (issues.length) throw new Error(issues.join('\n'));
         this.random = random;
         this.onCandidateAcquired = onCandidateAcquired;
+        this.manualRolls = manualRolls; this.rollSequence = 0;
+        this.manualDayStart = manualDayStart;
         this.definitions = Object.fromEntries(structuredClone(settings.cards).map(card => [card.id, card]));
         this.sequence = 0; this.task = null;
         this.state = {
             day: 0, fame: 0, credit: 3, flyers: 0, progress: 0, orderCost: 3, rerolls: 0,
             phase: 'betweenDays', pending: null, achievement: null, dice: [], deck: [], hand: [], field: [], discard: [], shipped: [],
-            stocks: {}, public: {}, reserved: [], logs: [], dayEndDice: null,
+            stocks: {}, public: {}, reserved: [], logs: [], dayEndDice: null, rollRequest: null,
         };
         const s = this.state;
         for (const grade of ['A', 'B', 'C']) s.stocks[grade] = shuffle(settings.cards.filter(c => c.id[0] === grade)
@@ -28,6 +30,7 @@ export class Game {
         s.deck = s.stocks.A.splice(0, 7);
         for (const grade of ['A', 'B', 'C']) s.public[grade] = s.stocks[grade][0]?.id ?? null;
         s.dice = initialFaces(random).map(faces => this.makeDie(faces, 'permanent'));
+        if (this.manualDayStart) for (const die of s.dice) die.current = null;
         this.nextDay();
     }
     effectLabel(effect) { return describeEffect(effect); }
@@ -41,7 +44,7 @@ export class Game {
     }
     advance(value) {
         const result = this.task.next(value);
-        this.state.pending = result.done ? null : result.value;
+        this.state.pending = result.done || result.value.kind === 'roll' ? null : result.value;
         if (result.done) this.task = null;
     }
     choose(ids) {
@@ -55,6 +58,38 @@ export class Game {
     assertPlay() {
         if (this.task || this.state.achievement || this.state.phase !== 'play') throw new Error('現在この操作はできません。');
     }
+    beginStartRoll(id) { return this.beginRoll(id); }
+    failStartRoll(id) { return this.failRoll(id); }
+    completeStartRoll(id, results) { return this.completeRoll(id, results); }
+    beginRoll(id) {
+        const request = this.state.rollRequest;
+        if (!request || request.id !== id || request.status !== 'ready') throw new Error('ロール待機中ではありません。');
+        request.status = 'rolling';
+    }
+    failRoll(id) {
+        const request = this.state.rollRequest;
+        if (!request || request.id !== id || request.status !== 'rolling') throw new Error('ロール中ではありません。');
+        request.status = 'ready';
+    }
+    completeRoll(id, results) {
+        const request = this.state.rollRequest;
+        if (!request || request.id !== id || request.status !== 'rolling' || !Array.isArray(results) ||
+            results.length !== request.ids.length || new Set(results.map(result => result.id)).size !== results.length ||
+            results.some(result => !request.ids.includes(result.id) || result.status !== 'settled' ||
+                !Number.isInteger(result.index) || result.index < 0 || result.index > 5)) {
+            throw new Error('全対象の物理ロール結果が必要です。');
+        }
+        for (const result of results) this.state.dice.find(die => die.id === result.id).current = result.index;
+        this.state.rollRequest = null;
+        this.advance();
+    }
+    *rollDice(dice, reason) {
+        if (!dice.length) return;
+        if (!this.manualRolls) { for (const die of dice) roll(die, this.random); return; }
+        for (const die of dice) die.current = null;
+        this.state.rollRequest = { id: ++this.rollSequence, ids: dice.map(die => die.id), status: 'ready', reason };
+        yield { kind: 'roll' };
+    }
     draw(count) {
         const s = this.state; let drawn = 0;
         for (let i = 0; i < count; i++) {
@@ -67,15 +102,23 @@ export class Game {
     nextDay() {
         const s = this.state;
         if (this.task || s.phase !== 'betweenDays') throw new Error('翌日を開始できません。');
+        if (this.manualDayStart) { s.day++; s.phase = 'awaitingStart'; return; }
+        this.run(this.startDay());
+    }
+    beginDay() {
+        if (this.task || this.state.phase !== 'awaitingStart') throw new Error('仕事の開始待ちではありません。');
         this.run(this.startDay());
     }
     *startDay() {
-        const s = this.state; s.phase = 'start'; s.day++; s.dayEndDice = null;
+        const s = this.state;
+        if (s.phase !== 'awaitingStart') s.day++;
+        s.phase = 'start'; s.dayEndDice = null;
         for (const die of s.dice) die.used = false;
         s.rerolls++; this.draw(4);
-        for (const die of s.dice) roll(die, this.random);
         const reserved = s.reserved; s.reserved = [];
-        yield* this.effects(reserved); s.phase = 'play'; this.log('プレイ開始');
+        yield* this.effects(reserved);
+        yield* this.rollDice(s.dice, 'start');
+        s.phase = 'play'; this.log('プレイ開始');
     }
     play(id) {
         this.assertPlay(); const s = this.state;
@@ -113,7 +156,11 @@ export class Game {
         this.assertPlay(); const s = this.state;
         const dice = s.dice.filter(die => !die.used && (id === null || die.id === id));
         if (!s.rerolls || !dice.length) throw new Error('リロール権と未使用ダイスが必要です。');
-        s.rerolls--; for (const die of dice) roll(die, this.random);
+        s.rerolls--;
+        this.run(this.rerollDice(dice));
+    }
+    *rerollDice(dice) {
+        yield* this.rollDice(dice, 'reroll');
         this.log(`リロール：${dice.map(d => d.id).join('、')}`);
     }
     endDay() {
@@ -146,5 +193,6 @@ export class Game {
             s.public[grade] = s.stocks[grade][0]?.id ?? null;
         }
         s.phase = 'betweenDays'; this.log('一日の仕事を終了');
+        if (this.manualDayStart) { s.day++; s.phase = 'awaitingStart'; }
     }
 }
