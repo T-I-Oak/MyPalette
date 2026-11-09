@@ -1,5 +1,4 @@
 import { Vec3 } from 'cannon-es';
-import { constrainToField } from './field.js';
 
 const cross = (a,b,c) => (b.x-a.x)*(c.z-a.z)-(b.z-a.z)*(c.x-a.x);
 function footprint(die, position) {
@@ -32,7 +31,7 @@ function overlaps(a,b) {
 
 // Only the destination is tested: crossing another die on the way is permitted.
 export function dragPosition(group, die, desired) {
-    const candidate=constrainToField(desired), shape=footprint(die,candidate);
+    const candidate=group.constrainPosition(desired), shape=footprint(die,candidate);
     if(group.dice.some(other=>other!==die && overlaps(shape,footprint(other,other.body.position)))) {
         return {...die.body.position};
     }

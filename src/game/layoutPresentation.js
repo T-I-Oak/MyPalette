@@ -20,7 +20,7 @@ export function createLayoutPresentation(screen) {
         hosts.set(id, { host, object });
     }
     const handPresentation = createHandPresentation(screen.areas.get('hand'), hosts.get('hand').host);
-    const palettePresentation = createPalettePresentation(screen.areas.get('palette'), hosts.get('palette').host);
+    const palettePresentation = createPalettePresentation(screen.areas.get('palette'), hosts.get('palette').host, () => screen.render());
     const playPresentation = createPlayPresentation(screen.areas.get('play'), hosts.get('play').host, () => screen.render());
     const effects = createPlayEffects(screen, hosts.get('play').host, playPresentation, screen.areas.get('play').canvas.closest('.LayoutScreen'), palettePresentation);
     const unsubscribe = screen.subscribe(() => {

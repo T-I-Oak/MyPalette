@@ -35,6 +35,7 @@ export class DiceScene {
         this.scene.add(new THREE.HemisphereLight('#fffaf0', '#677970', 2.7));
         const light = new THREE.DirectionalLight('#fff5de', 3.4);
         light.position.set(-4, 12, 5); light.castShadow = true;
+        this.fieldLight = light;
         Object.assign(light.shadow.camera, { left: -15, right: 15, top: 12, bottom: -12 });
         light.shadow.mapSize.set(1024, 1024); light.shadow.normalBias = .04; this.scene.add(light);
         const texture=new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}assets/field/palette.png`);
@@ -53,15 +54,23 @@ export class DiceScene {
         const { width, height, pixelRatio } = this.readSize?.() ?? this.container.getBoundingClientRect();
         if (!width || !height) return;
         this.width = width; this.height = height;
+        const scale=this.group.fieldScale;
+        this.fieldScale=scale;
+        this.floor.scale.set(scale,scale,1);this.floorShadow.scale.set(scale,scale,1);
+        this.camera.position.set(...FIELD_CAMERA_POSITION.map(value=>value*scale));this.camera.far=100*scale;this.camera.lookAt(0,0,0);
+        const shadow=this.fieldLight.shadow.camera;
+        this.fieldLight.position.set(-4*scale,12*scale,5*scale);
+        Object.assign(shadow,{left:-15*scale,right:15*scale,top:12*scale,bottom:-12*scale,far:500*scale});shadow.updateProjectionMatrix();
         this.renderer.setPixelRatio(pixelRatio ?? Math.min(devicePixelRatio, 2));
         this.renderer.setSize(width, height, !this.readSize);
         const aspect = width / height, vertical = Math.max(12.5, 28 / aspect);
-        if (this.bottomAligned) Object.assign(this.camera, paletteCameraBounds(width, height));
+        if (this.bottomAligned) Object.assign(this.camera, paletteCameraBounds(width, height,scale));
         else {
-            this.camera.left = -vertical * aspect / 2; this.camera.right = vertical * aspect / 2;
-            this.camera.top = vertical / 2; this.camera.bottom = -vertical / 2;
+            this.camera.left = -vertical * aspect*scale / 2; this.camera.right = vertical * aspect*scale / 2;
+            this.camera.top = vertical*scale / 2; this.camera.bottom = -vertical*scale / 2;
         }
         this.camera.updateProjectionMatrix();
+        this.camera.updateMatrixWorld();
     }
     materials(die) {
         return die.faces.map(face => {
@@ -139,6 +148,7 @@ export class DiceScene {
     clearFaceSearch() { this.faceSearch.clear();this.searchNotice.render(null);this.onChange(); }
     frame(now) {
         if (this.disposed) return;
+        if(this.fieldScale!==this.group.fieldScale)this.resize();
         if (this.group.rolling) this.drag?.cancel();
         this.group.step((now - this.last) / 1000); this.last = now;
         for (const id of this.visuals.keys()) if (!this.group.items.has(id)) this.deleteVisual(id);

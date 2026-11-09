@@ -3,11 +3,13 @@ import { DiceScene } from '../dice/DiceScene.js';
 import { loadResultGraphics } from '../dice/resultGraphics.js';
 import { syncPaletteSnapshot } from './paletteSnapshot.js';
 import { rerollTicketCanvas } from '../icons/render.js';
+import {paletteScaleForCount} from '../dice/field.js';
+import {paletteSizeForScale} from '../dice/paletteLayout.js';
 import '../dice/layout.css';
 import '../dice/states.css';
 import './palette.css';
 
-export function createPalettePresentation(area, host) {
+export function createPalettePresentation(area, host, relayout) {
     host.classList.add('PaletteArea');
     area.bottomRightOffset = { x: 0, y: 40 };
     const controls = document.createElement('div');
@@ -172,6 +174,9 @@ export function createPalettePresentation(area, host) {
             request = state.rollRequest ? structuredClone(state.rollRequest) : null;
             actions = callbacks;
             snapshot = structuredClone(state.phase === 'betweenDays' ? state.dayEndDice ?? [] : state.dice);
+            const size=paletteSizeForScale(paletteScaleForCount(snapshot.length));
+            const resized=area.standardWidth!==size.width||area.standardHeight!==size.height;
+            area.standardWidth=size.width;area.standardHeight=size.height;
             viewport.setAttribute('aria-label', `パレット：${snapshot.map(die =>
                 `${die.lifetime === 'permanent' ? '永続' : '一時'}ダイス、${die.used ? '消費済み' : '未使用'}、${die.current === null ? 'ロール待ち' : `面${die.current + 1}`}`).join('。')}`);
             if (viewport.parentNode !== host) host.append(viewport);
@@ -179,6 +184,7 @@ export function createPalettePresentation(area, host) {
             if (group) syncSnapshot();
             else if (!started) initialize();
             scene?.setSelected(actions.selectedDice);
+            if(resized)relayout?.();
             updateActions(); update();
         },
         update,
