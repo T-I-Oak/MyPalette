@@ -1,4 +1,4 @@
-export const achievementTiming = Object.freeze({ fade: 900, beforeRepaint: 1200 });
+export const achievementTiming = Object.freeze({ fade: 900 });
 
 export function animateProgress(duration, draw, signal) {
     return new Promise((resolve, reject) => {

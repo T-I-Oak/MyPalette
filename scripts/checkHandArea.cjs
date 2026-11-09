@@ -30,8 +30,16 @@ for (const card of settings.cards) for (const step of card.steps) {
             const presentation=createLayoutPresentation(screen);
             const settings=${JSON.stringify(settings)};
             window.handCheck={screen,...mountGame(root,settings,()=>{},presentation)};
+            const game=window.handCheck.session.game,complete=game.completeRoll.bind(game);
+            let configured=false;
+            game.completeRoll=(...args)=>{complete(...args);if(!configured&&game.state.phase==='play'){
+                const die=game.state.dice.find(d=>!d.faces[d.current].special),face=die.faces[die.current];
+                for(const card of Object.values(game.definitions))for(const step of card.steps)step.goals=[{color:face.color,material:face.material}];configured=true;
+            }};
             </script>` }));
         await page.goto(base);
+        await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});
+        await page.waitForFunction(()=>document.querySelector('[data-game-end-day]')?.disabled===false,null,{timeout:60000});
         const hand = page.locator('.HandArea .PaintingCard');
         await hand.first().waitFor();
         async function checkGlow(label) {
@@ -87,10 +95,13 @@ for (const card of settings.cards) for (const step of card.steps) {
             }
             await checkGlow('resize');
         }
-        await page.locator('[data-game-area="palette"] input').first().check();
+        const target=await page.evaluate(()=>{const g=window.handCheck.session.game,goal=g.step(g.state.field[0]).goals[0];return g.state.dice.find(d=>!d.used&&d.faces[d.current].color===goal.color&&d.faces[d.current].material===goal.material).id;});
+        const icon=await page.locator(`.PaletteViewport .DiceResult[data-die-id="${target}"]`).boundingBox();
+        await page.mouse.click(icon.x+icon.width/2,icon.y+icon.height/2);
         await page.getByRole('button', { name: '選択ダイスで達成', exact: true }).click();
         await checkGlow('consumption');
-        await page.locator('[data-game-area="palette"] .GameDie button').nth(1).click();
+        await page.getByRole('button',{name:'すべての画材を更新する',exact:true}).click();
+        await page.waitForFunction(()=>!window.handCheck.session.game.state.rollRequest,null,{timeout:60000});
         await checkGlow('reroll');
         await page.evaluate(() => {
             const game = window.handCheck.session.game;
@@ -110,10 +121,11 @@ for (const card of settings.cards) for (const step of card.steps) {
         await choice.waitFor();
         await choice.locator('input').first().check();
         await choice.getByRole('button', { name: '選択を確定' }).click();
+        await page.waitForFunction(()=>!window.handCheck.session.game.state.rollRequest,null,{timeout:60000});
         await checkGlow('discard, refresh, acquisition');
         assert.equal(await page.evaluate(() => window.handCheck.session.game.state.dice.length), 3);
         assert.equal(await page.evaluate(() => window.handCheck.session.game.state.dice.some(die => die.used)), false);
-        await page.getByRole('button', { name: '一日の仕事を終える', exact: true }).click();
+        await page.getByRole('button', { name: '今日の仕事を終える', exact: true }).click();
         assert.equal(await hand.count(), 0);
         assert.equal(await page.locator('.HandFixedActions button').count(), 0);
         assert.deepEqual(errors, []);

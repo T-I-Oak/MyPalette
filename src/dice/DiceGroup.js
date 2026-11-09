@@ -1,6 +1,6 @@
 import { World, Body, Box, Vec3, Material, ContactMaterial } from 'cannon-es';
 import { FIELD_WIDTH, FIELD_DEPTH, fieldEdges, fieldSpawn, constrainToField } from './field.js';
-import { READY_HEIGHT } from './pose.js';
+import { READY_HEIGHT, advanceReadyPose } from './pose.js';
 import { Die } from './Die.js';
 import { validateFaceCondition } from './faceConditions.js';
 
@@ -55,7 +55,11 @@ export class DiceGroup {
     throwDie(die) {
         const random = this.random;
         die.body.type = Body.DYNAMIC; die.body.mass = 1; die.body.updateMassProperties(); die.body.wakeUp();
-        die.body.position.y = 3 + random() * 2;
+        die.body.position.y = 5 + random() * 2;
+        if (die.attempts > 0) {
+            const spawn = fieldSpawn((die.slot + die.attempts * 5) % 12);
+            die.body.position.x = spawn.x; die.body.position.z = spawn.z;
+        }
         const safe=constrainToField(die.body.position);
         die.body.position.x=safe.x;die.body.position.z=safe.z;
         die.body.quaternion.setFromEuler(random() * Math.PI * 2, random() * Math.PI * 2, random() * Math.PI * 2);
@@ -68,7 +72,7 @@ export class DiceGroup {
         if (this.rolling) throw new Error('rolling');
         if (!ids.length || new Set(ids).size !== ids.length) throw new Error('Select unique targets');
         const targets = ids.map(id => this.get(id));
-        targets.forEach(die => { die.assertMutable(); if (die.consumed) throw new Error('consumed'); });
+        targets.forEach(die => { die.assertMutable(); if (die.consumed) throw new Error('consumed'); if (die.readyMotion) throw new Error('preparing'); });
         this.rolling = true;
         targets.forEach(die => { die.begin(); die.attempts = 0; this.throwDie(die); });
         try { return await Promise.all(targets.map(die => die.pending)); }
@@ -80,7 +84,8 @@ export class DiceGroup {
         this.world.step(1 / 120, dt, 6);
         for (const die of this.dice) {
             if (die.state === 'ready') {
-                die.body.quaternion.setFromEuler(this.clock * .37 + die.slot, this.clock * .29, this.clock * .23);
+                if (die.smoothReady) advanceReadyPose(die, dt);
+                else die.body.quaternion.setFromEuler(this.clock * .37 + die.slot, this.clock * .29, this.clock * .23);
                 die.body.aabbNeedsUpdate = true;
             }
             if (die.state !== 'rolling') continue;
@@ -91,10 +96,10 @@ export class DiceGroup {
             die.elapsed += dt;
             const quiet = die.body.velocity.length() < .13 && die.body.angularVelocity.length() < .13;
             die.quiet = quiet ? die.quiet + dt : 0;
-            if (die.quiet > .5 && die.top.alignment > .99 && die.body.position.y < .8) {
+            if (die.quiet > .5 && die.top.alignment > .99 && die.body.position.y < 5.3) {
                 die.settle(die.top.index);
             } else if (die.quiet > .8 || die.elapsed > 12) {
-                if (++die.attempts > 3) { die.cancel('failed'); die.body.position.y = READY_HEIGHT; }
+                if (++die.attempts > 8) { die.cancel('failed'); die.body.position.y = READY_HEIGHT; }
                 else this.throwDie(die);
             }
         }

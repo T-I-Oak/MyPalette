@@ -1,5 +1,5 @@
 import { COLORS, MATERIALS, SPECIAL_FACE_EFFECTS } from '../effectCatalog.js';
-import { currentFace, normalCandidates, specifiedFaces, roll } from './dice.js';
+import { currentFace, normalCandidates, specifiedFaces } from './dice.js';
 
 export function specialEffects(dice) {
     const order = { changeFame: 0, gainRerolls: 1, drawCards: 2, gainNormalDice: 3, gainColorDice: 3, gainMaterialDice: 3 };
@@ -7,9 +7,10 @@ export function specialEffects(dice) {
         .map(die => ({ ...SPECIAL_FACE_EFFECTS[currentFace(die).special] }))
         .sort((a, b) => order[a.type] - order[b.type]);
 }
-function* select(game, kind, title, options, min = 1, max = min) {
+function* select(game, kind, title, options, min = 1, max = min, effectType = null) {
     if (!options.length) { game.log(`${title}：対象なし`); return []; }
-    const ids = yield { kind, title, options, min: Math.min(min, options.length), max: Math.min(max, options.length) };
+    const ids = yield { kind, title, options, min: Math.min(min, options.length), max: Math.min(max, options.length),
+        ...(effectType ? { effectType } : {}) };
     return ids;
 }
 export function* acquire(game, effect) {
@@ -23,9 +24,9 @@ export function* acquire(game, effect) {
             game.onCandidateAcquired?.(die.id);
         } else gained.push(game.makeDie(specifiedFaces(effect), effect.lifetime));
     }
-    for (const die of gained) roll(die, game.random);
     game.state.dice.push(...gained);
     game.log(`ダイス獲得：${gained.map(die => die.id).join('、')}（${effect.lifetime === 'temporary' ? '一時' : '永続'}）`);
+    yield* game.rollDice(gained, 'acquire');
 }
 export function* stockCards(game, count, destination = 'discard') {
     for (let i = 0; i < count; i++) {
@@ -71,12 +72,12 @@ export function* resolveEffects(game, effects) {
             const options = s.dice.filter(die => discard || !die.used).map(die => ({ id: die.id }));
             const count = discard ? effect.count : 1;
             const max = effect.type === 'reroll' ? options.length : count;
-            const ids = yield* select(game, 'dice', game.effectLabel(effect), options, count, max);
+            const ids = yield* select(game, 'dice', game.effectLabel(effect), options, count, max, effect.type);
             if (discard) s.dice = s.dice.filter(die => !ids.includes(die.id));
+            else if (effect.type === 'reroll') yield* game.rollDice(s.dice.filter(die => ids.includes(die.id)), 'effect');
             else for (const die of s.dice.filter(die => ids.includes(die.id))) {
                 const face = currentFace(die);
-                if (effect.type === 'reroll') roll(die, game.random);
-                else if (effect.type === 'changeSpecialFace') die.faces[die.current] = { special: effect.face };
+                if (effect.type === 'changeSpecialFace') die.faces[die.current] = { special: effect.face };
                 else if (effect.type === 'changeColor') die.faces[die.current] = {
                     color: effect.color, material: face.special ? MATERIALS[Math.floor(game.random() * 3)] : face.material,
                 };

@@ -2,7 +2,7 @@ const { chromium } = require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwri
 const assert = require('node:assert/strict');
 (async () => {
     const browser = await chromium.launch({ channel: process.env.MYPALETTE_BROWSER_CHANNEL || 'msedge', headless: true });
-    const page = await browser.newPage(); await page.goto('http://127.0.0.1:3000/MyPalette/dev.html#dice');
+    const page = await browser.newPage(); await page.goto((process.argv[2]||'http://127.0.0.1:3000/MyPalette/dev.html'));
     const checks = await page.evaluate(async () => {
         const { loadResultGraphics } = await import('/MyPalette/src/dice/resultGraphics.js');
         const { INKS } = await import('/MyPalette/src/dice/icons.js');

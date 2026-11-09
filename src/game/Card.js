@@ -10,7 +10,7 @@ const shapes = {
     reward: '<circle cx="12" cy="9" r="6.5"/><path d="m9.5 9 1.7 1.7 3.4-3.4M7.5 14l-2 7 4.5-2 2 2 2-2 4.5 2-2-7"/>',
 };
 const make = (tag, className, text) => {
-    const node = document.createElement(tag);
+    const node = document.createElement(tag); if (tag === 'button') node.tabIndex = -1;
     node.className = className;
     if (text !== undefined) node.textContent = text;
     return node;
@@ -112,10 +112,12 @@ export class Card extends MoveObject {
             if (index === 3) {
                 const completion = make('div', 'PaintingCompletion');
                 const certificate = make('div', 'PaintingCertificate');
+                const signature = make('span', 'PaintingAtelierSignature');
+                signature.append(make('span', 'PaintingAtelierLabel', 'Atelier'), ' My Palette');
                 certificate.append(
                     make('span', 'PaintingCertificateNumber', root.dataset.cardId),
                     make('strong', 'PaintingCertificateTitle', definition.name),
-                    make('span', 'PaintingAtelierSignature', 'My Palette Atelier'),
+                    signature,
                 );
                 completion.append(certificate);
                 panel.replaceChildren(completion);

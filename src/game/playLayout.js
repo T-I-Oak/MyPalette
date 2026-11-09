@@ -1,5 +1,5 @@
 export const playMetrics = Object.freeze({ width: 400, height: 640 });
-export const playOffsets = Object.freeze({ topLeftOffset: { x: 0, y: 0 }, bottomRightOffset: { x: 0, y: 18 } });
+export const playOffsets = Object.freeze({ topLeftOffset: { x: 0, y: 0 }, bottomRightOffset: { x: 0, y: 40 } });
 export function playStandardSize(count) {
     return { width: playMetrics.width * Math.max(1, count), height: playMetrics.height };
 }

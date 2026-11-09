@@ -8,13 +8,28 @@
 .PlayCard .PaintingFaces { transform-style: flat; }
 .PlayCard .PaintingFront { transform: none; backface-visibility: visible; }
 .PlayCard .PaintingBack { display: none; }
+.PlayCard .PaintingCard.state-achievable .PaintingFront::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    box-shadow: 0 0 0 3px var(--ui-success-border), 0 0 14px 5px var(--ui-success-border);
+    pointer-events: none; animation: hand-achievable-glow 1.6s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+    .PlayCard .PaintingCard.state-achievable .PaintingFront::after { animation: none; }
+}
 .PlayCard :is(.PaintingFront, .PaintingSheet, .PaintingArtwork, .PaintingTab, .PaintingBlock) { border-width: 1.5px; }
 .PlayCard .PaintingBlockLabel { border-inline-end-width: 1.5px; }
 .PlayPaintingViewport { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; padding: 0; background: transparent; color: var(--ui-text); cursor: pointer; }
 .PlayPaintingViewport:focus-visible { outline: 2px solid var(--ui-success-border); outline-offset: -2px; }
-.PlayFixedActions { position: absolute; left: 0; right: 0; height: 18px; }
-.PlayFixedActions > .GameCardActions { position: absolute; margin: 0; width: max-content; height: 18px; transform: translateX(-50%); pointer-events: auto; }
-.PlayFixedActions .Button { box-sizing: border-box; width: auto; max-width: 100%; min-width: 0; height: 18px; min-height: 0; padding: 0 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 12px/16px system-ui, sans-serif; }
+.PlayFixedActions { position: absolute; left: 0; right: 0; height: 36px; }
+.PlayFixedActions > .GameCardActions { position: absolute; margin: 0; width: max-content; height: 36px; transform: translateX(-50%); pointer-events: auto; }
+.PlayFixedActions .Button { box-sizing: border-box; width: auto; max-width: 100%; min-width: 0; height: 36px; min-height: 0; padding: 0 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 24px/32px system-ui, sans-serif; }
 .PlayFixedActions .Button[hidden] { display: none; }
+.PlayEndDayAction { position: absolute; top: 0; right: 0; pointer-events: none; }
+.PlayEndDayAction .Button { pointer-events: auto; height: 36px; min-height: 0; padding: 0 12px; font: 24px/32px system-ui, sans-serif; }
 .PlayFlyingCard { margin: 0; pointer-events: none; }
+.AchievementMaterial { position: relative; width: 100%; height: 100%; pointer-events: none; }
+.AchievementMaterialContents { position: absolute; inset: 0; }
+.AchievementMaterial img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.AchievementMaterial.state-special img { position: absolute; left: 25%; top: 25%; width: 50%; height: 50%; }
 .PlayPainting[data-effect] .PlayCard, .PlayPainting[data-effect] .PlayPaintingViewport { pointer-events: none; }
+.PlayEndDayAction > .Button { transform-origin: top right; }

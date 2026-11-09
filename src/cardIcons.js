@@ -22,7 +22,7 @@ const paintingObserver = typeof ResizeObserver === 'undefined' ? null : new Resi
 });
 function icon(value, description, render, edit, plan) {
     const node = el(undefined, 'CardIcon');
-    if (!plan) node.tabIndex = 0;
+    if (edit || !plan) node.tabIndex = edit ? -1 : 0;
     node.setAttribute('role', edit ? 'button' : 'img'); node.setAttribute('aria-label', description);
     if (edit) {
         node.classList.add('state-editable');
@@ -97,7 +97,10 @@ export function paintingIcons(values, kind, describe) {
         if (kind === 'goal') {
             const condition = Object.fromEntries(Object.entries({ material: value.material, color: value.color })
                 .filter(([, entry]) => entry !== null));
-            row.append(icon(condition, describe(value), goalIconCanvas, null, goalIconPlan(condition)));
+            const goal = icon(condition, describe(value), goalIconCanvas, null, goalIconPlan(condition));
+            goal.dataset.goalCondition = JSON.stringify(condition);
+            goal.setAttribute('role', 'button'); goal.tabIndex = -1;
+            row.append(goal);
         } else {
             row.append(icon(value, describe(value), effectIconCanvas, null, effectIconPlan(value)));
         }

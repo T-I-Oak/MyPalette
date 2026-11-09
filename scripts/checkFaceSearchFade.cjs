@@ -3,9 +3,9 @@ const assert=require('node:assert/strict');
 (async()=>{
     const browser=await chromium.launch({channel:process.env.MYPALETTE_BROWSER_CHANNEL || 'msedge',headless:true});
     const page=await browser.newPage({viewport:{width:800,height:600}});
-    await page.goto(process.argv[2] || 'http://127.0.0.1:3000/MyPalette/dev.html');await page.getByRole('button',{name:'ダイス動作確認を開く',exact:true}).waitFor();
+    await page.goto(process.argv[2] || 'http://127.0.0.1:3000/MyPalette/dev.html');await page.getByRole('button',{name:'カード設定を開く',exact:true}).waitFor();
     const samples=await page.evaluate(async()=>{
-        await import('/MyPalette/src/dice/lab.js');
+        await import('/MyPalette/src/dice/layout.css');await import('/MyPalette/src/dice/states.css');
         const {DiceGroup}=await import('/MyPalette/src/dice/DiceGroup.js');const {DiceScene}=await import('/MyPalette/src/dice/DiceScene.js');
         const notice=document.createElement('output');notice.id='dice-search-notice';notice.className='DiceSearchSummary';
         const view=document.createElement('div');view.className='DiceViewport';view.style.width='800px';view.style.height='500px';document.body.replaceChildren(notice,view);

@@ -2,7 +2,7 @@ import { effectIconCanvas, goalIconCanvas } from './render.js';
 import { ICON_REVIEW_CASES } from './reviewCases.js';
 import './layout.css';
 
-function element(tag,className,text){const node=document.createElement(tag);node.className=className;if(text!==undefined)node.textContent=text;return node;}
+function element(tag,className,text){const node=document.createElement(tag);if(tag==='button')node.tabIndex=-1;node.className=className;if(text!==undefined)node.textContent=text;return node;}
 export function mountIconLab(root,home){
  const lab=element('section','IconLab');const toolbar=element('nav','Toolbar');
  const back=element('button','Button texture-raised','入口へ戻る');back.addEventListener('click',home);

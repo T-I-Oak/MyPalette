@@ -2,8 +2,10 @@ import { beginPlayEffect, effectField } from './playEffectState.js';
 import { captureHandCard, flyHandCard } from './playCardFlight.js';
 import { paintingPreview } from './easel/paintingPreview.js';
 import { animateProgress, achievementTiming } from './playAnimation.js';
+import { flyAchievementMaterials } from './achievementMaterials.js';
+import { materialTiming } from './achievementMotion.js';
 
-export function createPlayEffects(screen, host, play, root) {
+export function createPlayEffects(screen, host, play, root, palette) {
     let effect = null, controller = new AbortController(), definitions;
     function stage(value) {
         effect.stage = value; host.dataset.playEffect = value;
@@ -12,6 +14,7 @@ export function createPlayEffects(screen, host, play, root) {
     }
     function cancel() {
         controller.abort(); controller = new AbortController(); effect = null;
+        palette.endAchievement();
         play.setEffect(null); delete host.dataset.playEffect;
     }
     return {
@@ -22,6 +25,7 @@ export function createPlayEffects(screen, host, play, root) {
             definitions = cards; effect = beginPlayEffect(action, state); play.setEffect(effect);
             host.dataset.playEffect = effect.stage;
             if (action.kind === 'play') effect.source = captureHandCard(root, effect.id);
+            else palette.beginAchievement(effect.diceIds);
         },
         hasWork(state) {
             return !!effect && (effect.kind === 'play' || effect.stage === 'card'
@@ -47,19 +51,23 @@ export function createPlayEffects(screen, host, play, root) {
                     current.images = await Promise.all([paintingPreview(current.id, current.card.step), paintingPreview(current.id, Math.min(3, current.card.step + 1))]);
                     if (signal.aborted) return;
                     stage('canvas'); await play.fadeOut(current.id, current.images[0], signal);
-                    if (!await pause(achievementTiming.beforeRepaint)) return;
-                    stage('repaint'); await play.repaint(current.id, current.images[0], current.images[1], signal);
                     if (signal.aborted) return;
-                    stage('effects'); current.image = current.images[1];
+                    stage('repaint');
+                    const duration = Math.max(520, materialTiming.outbound+materialTiming.orbit+Math.max(0,current.diceIds.length-1)*materialTiming.stagger);
+                    await Promise.all([
+                        flyAchievementMaterials(screen, palette, play, current, signal),
+                        play.repaint(current.id, current.images[0], current.images[1], signal, duration),
+                    ]);
+                    if (signal.aborted) return;
+                    current.image = current.images[1]; current.card.step = Math.min(3,current.card.step+1);
+                    stage('next-card'); await play.fadeIn(current.id, definitions[current.id], current.card.step, signal);
+                    if (!await pause(160)) return;
+                    stage('empty'); play.empty(current.id); play.remove(current.id);
+                    stage('effects'); palette.endAchievement(); render();
                     completeAchievement();
                 }
                 if (state.field.some(card => card.id === current.id)) return;
-                const next = [...state.discard, ...state.shipped].find(card => card.id === current.id);
-                current.card.step = next.step;
-                stage('next-card'); await play.fadeIn(current.id, definitions[current.id], next.step, signal);
-                if (!await pause(160)) return;
-                stage('empty'); current.showDestination = true; play.empty(current.id); render();
-                if (!await pause(160)) return;
+                current.showDestination = true;
             }
             if (signal.aborted) return;
             effect = null; play.setEffect(null); delete host.dataset.playEffect; render();

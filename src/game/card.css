@@ -101,6 +101,7 @@
 .PaintingCertificateNumber { color: var(--ui-text-muted); font: 700 11px/1.25 system-ui, sans-serif; letter-spacing: .15em; }
 .PaintingCertificateTitle { min-width: 0; max-width: 100%; overflow-wrap: anywhere; font: 650 16px/1.4 system-ui, sans-serif; }
 .PaintingAtelierSignature { border-top: 1px solid var(--ui-separator); padding: 4px 8px 0; font: italic 16px/1.2 Georgia, serif; }
+.PaintingAtelierLabel { font-size: .75em; vertical-align: top; }
 .PaintingBlock { display: grid; grid-template-columns: 23px minmax(0, 1fr); align-items: center; overflow: hidden; border: 1px solid var(--block-border); border-radius: 6px; }
 .PaintingBlock.goal { grid-column: 1 / -1; align-items: stretch; --block-border: var(--ui-goal-border); --block-label: var(--ui-goal-surface); --block-text: var(--ui-goal-text); }
 .PaintingBlock.play { --block-border: var(--ui-action-border); --block-label: var(--ui-action-surface); --block-text: var(--ui-action-text); }

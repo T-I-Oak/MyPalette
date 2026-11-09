@@ -59,3 +59,11 @@ test('0件も返し、面変更・追加・削除を検索結果に反映する'
     group.remove('b');assert.equal(search.result.diceCount,0);
     group.dispose();
 });
+test('ロール中と消費済みも面構成検索の対象とし、状態を変えない',async()=>{
+ const group=new DiceGroup();
+ const faces=Array.from({length:6},()=>({material:'brush',color:'orange'}));
+ const used=group.add({id:'used',faces});used.setConsumed(true);
+ group.add({id:'rolling',faces});const pending=group.roll(['rolling']);
+ assert.deepEqual(group.findFaces({material:'brush',color:'orange'}).map(hit=>[hit.id,hit.count]),[['used',6],['rolling',6]]);
+ assert(used.consumed);assert(group.rolling);group.dispose();await pending;
+});

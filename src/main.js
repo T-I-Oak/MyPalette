@@ -28,7 +28,7 @@ async function start() {
     } catch (error) {
         const message = document.createElement('pre');
         message.className = 'StartIssues'; message.textContent = `ゲーム設定を開けませんでした。\n${error.message}`;
-        const retry = document.createElement('button');
+        const retry = document.createElement('button'); retry.tabIndex = -1;
         retry.textContent = '再読み込み'; retry.className = 'Button texture-raised';
         retry.addEventListener('click', start);
         notice.replaceChildren(message, retry);

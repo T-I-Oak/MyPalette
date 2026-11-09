@@ -12,7 +12,7 @@ export function showCardDetail({ root, label, createDetail, source, sourceAction
     const close = () => dialog.close();
     face.addEventListener('click', event => { if (!event.target.closest('button, .CardIcon')) close(); });
     function actionButton(text, action, disabled = false) {
-        const button = document.createElement('button'); button.type = 'button';
+        const button = document.createElement('button'); button.tabIndex = -1; button.type = 'button';
         button.className = 'Button texture-raised'; button.textContent = text; button.disabled = disabled;
         button.addEventListener('click', action); actions.append(button);
     }

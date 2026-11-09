@@ -1,3 +1,0 @@
-.DiceLabIds { position: absolute; inset: 0; pointer-events: none; }
-.DiceLabId { position: absolute; width: 76px; padding: 2px 5px; border-radius: 12px; text-align: center; font-size: 11px; transform: translateX(-50%); }
-.DiceLabId.state-consumed { text-decoration: line-through; }

@@ -1,59 +1,16 @@
-.DiceLab { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
-.DiceWorkspace { display: grid; grid-template-columns: minmax(0, 1fr) 365px; gap: 12px; flex: 1; min-height: 0; }
 .DiceViewport { position: relative; overflow: hidden; min-height: 0; border-radius: 12px; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .DiceViewport > canvas { display: block; width: 100%; height: 100%; }
-.DiceControls { overflow-y: auto; min-height: 0; padding: 14px; }
-.DiceControls h2, .DiceControls h3 { margin: 0 0 10px; }
-.DiceHint { font-size: 12px; }
-.DiceMessage { font-size: 13px; min-height: 20px; overflow-wrap: anywhere; }
-.DiceList { display: flex; flex-direction: column; gap: 8px; }
-.DiceRow { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 4px 8px; padding: 8px; border-width: 1px; border-style: solid; border-radius: 8px; }
-.DiceSelection { grid-column: 2; display: flex; align-items: center; gap: 4px; font-size: 13px; }
-.DiceRow > .Button { grid-column: 3; grid-row: 1 / 3; font-size: 12px; }
-.DiceReadout { grid-column: 2; font-size: 11px; }
-.DiceMiniFace { grid-column: 1; grid-row: 1 / 3; width: 36px; height: 36px; }
-.DiceAdd { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin: 18px 0; }
-.DiceAdd .Field { flex: 1 1 130px; font-size: 12px; }
-.DiceFaceEditor { display: grid; grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1fr); gap: 6px; padding: 8px; }
-.DiceFaceEditor > .Field { font-size: 11px; }
-.DiceFaceEditor > .Field:first-of-type { grid-column: 2 / 4; }
-.DiceFaceEditor > .Field:nth-of-type(2) { grid-column: 2; }
-.DiceFacePreview { width: 48px; height: 48px; grid-row: 1 / 3; }
-.DiceGallery { flex-shrink: 0; max-height: 35%; overflow-y: auto; padding: 10px; }
-.DiceGallery summary { cursor: pointer; min-height: 24px; font-size: 13px; }
-.DiceIconGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 12px; margin-top: 12px; }
-.DiceSample { display: flex; flex-direction: column; align-items: center; gap: 5px; margin: 0; text-align: center; font-size: 11px; }
-.DiceSample canvas { width: 80px; height: 80px; }
 .DiceOverlay { position: absolute; inset: 0; pointer-events: none; }
 .DiceAnchor { position: absolute; width: 0; height: 0; text-align: center; }
 .DiceResult { position: absolute; width: 76px; height: 96px; margin-left: -38px; }
 .DiceResult img { width: 100%; height: 100%; object-fit: contain; }
 .DiceResultMotion { position: absolute; inset: 0; }
+.DiceDraggable { touch-action: none; user-select: none; -webkit-user-select: none; }
+.DiceDraggable .DiceResult { pointer-events: auto; cursor: grab; }
 .DiceSpecialFrame { display: none; position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.DiceSearchControls { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-bottom: 18px; }
-.DiceSearchControls h3 { flex-basis: 100%; }
-.DiceSearchControls .Field { flex: 1 1 90px; font-size: 12px; }
 .DiceSearchSummary { display: flex; align-items: center; gap: 8px; flex-shrink: 0; min-height: 40px; padding: 4px 10px; font-size: 13px; }
 .DiceSearchMessage .DiceConditionIcon { vertical-align: middle; margin-inline: 4px; }
 .DiceConditionIcon { width: 32px; height: 32px; flex-shrink: 0; }
 .DiceSearchBadge { position: absolute; display: flex; align-items: center; gap: 2px; height: 48px; padding: 3px 6px; transform: translateX(-50%); border-width: 1px; border-style: solid; border-radius: 24px; }
 .DiceSearchBadge .DiceConditionIcon { width: 36px; height: 36px; }
 .DiceSearchCount { width: 48px; height: 40px; }
-@media (max-width: 900px) {
-    .DiceWorkspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(210px, 1fr) minmax(180px, .85fr); gap: 8px; }
-    .DiceLab > .Toolbar { gap: 5px; }
-    .DiceLab > .Toolbar .Button { font-size: 12px; min-height: 40px; }
-    .DiceLab > .Toolbar .Field { font-size: 11px; }
-    .DiceControls { padding: 10px; }
-}
-@media (max-height: 580px) and (min-width: 700px) {
-    .DiceLab { gap: 7px; }
-    .DiceWorkspace { grid-template-columns: minmax(0, 1fr) 320px; grid-template-rows: minmax(0, 1fr); }
-}
-
-.DiceSpecialFrame path { stroke-width: 1.5; stroke-linejoin: round; }
-.DiceResult { animation: dice-emerge .7s ease-out both; }
-.DiceResultMotion { animation: dice-float 3s ease-in-out .7s infinite; }
-@keyframes dice-emerge { from { opacity: 0; transform: translateY(45px) scale(.45); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes dice-float { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-7px) rotate(3deg); } }
-@media (prefers-reduced-motion: reduce) { .DiceResult, .DiceResultMotion { animation-duration: .01s; animation-iteration-count: 1; } }

@@ -2,6 +2,6 @@
 .HandArea, .HandArea * { box-sizing: border-box; }
 .HandArea > .GameCardSlot { position: absolute; width: 294px; height: 414px; padding: 0; }
 .HandArea .PaintingCard { margin: 0; }
-.HandFixedActions { position: absolute; left: 0; right: 0; height: 18px; }
-.HandFixedActions > .GameCardActions { position: absolute; margin: 0; width: max-content; height: 18px; transform: translateX(-50%); pointer-events: auto; }
-.HandFixedActions .Button { box-sizing: border-box; width: auto; max-width: 100%; min-width: 0; height: 18px; min-height: 0; padding: 0 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 12px/16px system-ui, sans-serif; }
+.HandFixedActions { position: absolute; left: 0; right: 0; height: 36px; }
+.HandFixedActions > .GameCardActions { position: absolute; margin: 0; width: max-content; height: 36px; transform: translateX(-50%); pointer-events: auto; }
+.HandFixedActions .Button { box-sizing: border-box; width: auto; max-width: 100%; min-width: 0; height: 36px; min-height: 0; padding: 0 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 24px/32px system-ui, sans-serif; }

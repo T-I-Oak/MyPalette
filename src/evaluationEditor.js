@@ -2,7 +2,7 @@ import { evaluationRows, evaluationTimings } from './effectEvaluation.js';
 import { effectTypeIcon } from './cardIcons.js';
 
 const el = (tag, text, className) => {
-    const node = document.createElement(tag);
+    const node = document.createElement(tag); if (tag === 'button') node.tabIndex = -1;
     if (text !== undefined) node.textContent = text;
     if (className) node.className = className;
     return node;
