@@ -2,7 +2,7 @@
 
 ## 対象と範囲
 
-- ブランチ: feature/v0.19-stock-area。確認バージョン: 0.19.0。
+- ブランチ: feature/v0.19-stock-area。初回実装・オーナー確認対象: 0.19.0。SR-01・SR-02対応の記録更新版: 0.19.1。
 - 合意済み計画に沿い、ストックの正式表示・取得操作・手札交換・公開と日末更新の演出を実装した。
 - GameWorksOAKは参照のみ。要求仕様・保存済みカード設定・公開設定・引継ぎ書は変更していない。
 - 情報・捨て札・デッキの正式化、効果別UI全体の正式化は対象外。初日の7枚配分はオーナーが具体的に指示した演出として実装した。
@@ -37,16 +37,13 @@
 
 ## オーナー検証と対応
 
-- 表示案、各15枚基準、上部の持ち上げ余白、物理的で連続した演出を相談し、実装指示を受けた。
-- 背景削除、山間隔の上限、グレードを拡縮層へ移す案と文字拡大を反映。「いったんこれで行きましょう」の判断を受けた。
-- 日末と朝の公開タイミング、縦軸回転、最下段への差し込み、A/B/Cの時間差をオーナー指定どおり反映。
-- 取得操作案と手札との移動案は「この案で進める」と合意。返却も正式な手札下部ボタンとする指定、選択待ちボタンへの注目属性指定を反映。
-- 初日配分のz-index指摘を修正し、元の積み順を維持するよう変更。オーナーからokを受けた。
-- 手札交換を発動しづらい指摘に対し、生成式の確認ページtmp_stock_review.htmlを用意。ページ内だけで全カードの着手効果を手札交換に変え、保存済み設定と本番入口には影響しない。
-- 確認ページでの「取得ボタンの拡縮中心」「山の下端の見え方」の指摘を修正。中央寄せをボタン外側へ分離し、通常と移動中のborder-boxを統一、下端の影の余白を確保した。原因を説明し、オーナーからokを受けた。
-- 未対応のオーナー指摘・明示的な保留はない。実装終了と次フェーズへの移行は、提示した引継ぎ草案に対するオーナーのokで承認された。
+- SR-01に対応し、[オーナー検証記録](phase_feature_v0.19-stock-area_owner_verification.md)へSV-01〜SV-07を整理した。各項目に理由、再現手順、期待結果、対象バージョン、発言の根拠、案への合意と結果判断、対応結果を記録。
+- 当時はIDを付けていなかったため、IDは0.19.1で付与した整理用IDと明記。過去にID付きで提示したようには記録していない。
+- 配分時の積み順、ボタン中心、山の下端は既存の修正後のokを照合し、再検証を依頼していない。グレードの表示試案は「いったんこれで行きましょう」による採用判断として記録。
+- SV-02（初日・朝・日末）、SV-04（取得・補充・B）、SV-05（正式返却と往復移動）は、過去の案への合意・作業継続指示・フェーズ終了承認を個別の目視承認に読み替えず、今回の記録整理で判断を質問。オーナーの「3項目とも確認済み」を今回得た判断として記録した。確認対象の実装は0.19.0、記録更新版は0.19.1。
+- 現時点で確認しないと指定された項目はなく、オーナー検証の保留をバックログへ追加していない。過去の0.19.0の終了草案へのokは、その草案への承認として別記した。
 
-## 検証結果
+## 0.19.0の検証結果（既存の実装記録）
 
 - npm.cmd test: 最終195件成功。ゲーム開始・日末・効果・配置・前後関係・手札交換追跡・最後の1枚の除去を含む。
 - npm.cmd run build: 成功。
@@ -58,6 +55,105 @@
 - checkHandArea.cjs: 0/4/6枚、重なりタップ、詳細、ステップ、A/B・パネル、ドロー・ダイス関連・効果・終了の回帰確認成功。
 - checkScreenLayout.cjs: 5画面寸法、DPR 1/2、パネル、開発者2画面の回帰確認成功。
 - git diff --check: 成功。
+
+## 0.19.1のSR-01・SR-02対応
+
+- SR-01: [オーナー検証記録](phase_feature_v0.19-stock-area_owner_verification.md)を追加し、当時未付与だったIDを整理用として付与。案への合意・結果判断・終了草案承認を分離した。過去に個別判断を特定できなかったSV-02・SV-04・SV-05は今回質問し、オーナーの「3項目とも確認済み」を今回の判断として記録した。
+- SR-02: 以下に0.19.1で実際に再実行したコマンド・環境・結果を記録する。前節の0.19.0の結果を、この環境で実行した結果へ遡って置き換えない。
+- 機能・描画・演出・テストコードは変更していない。変更対象は検証記録とpackage.json/package-lock.jsonの0.19.1への更新。レビュー報告の未解決指摘欄はレビュー担当が判定するため編集していない。
+
+### 再検証環境（2026-11-09、JST）
+
+- 作業ディレクトリ: `C:/Users/tioak/Documents/Games/Projects/GameWorksOAK/MyPalette`。PowerShellで実行。
+- Node.js `v25.6.1`、npm `11.9.0`、Vite `7.3.7`。
+- 外部Playwright `1.62.1`。解決先: `C:/Users/tioak/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright`。
+- Microsoft Edge `157.0.4341.42`、実体: `C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe`。Chromium API、channel=`msedge`、headless=`true`。checkStockReview.cjsはchannelをmsedgeに固定し、他は環境変数で指定した。
+- 確認URL: `http://127.0.0.1:3011/MyPalette/`。確認ページ: `http://127.0.0.1:3011/MyPalette/tmp_stock_review.html`。
+- サーバーとブラウザーは同じサンドボックス外の環境で、ツールのrequire_escalatedを使用して起動した。0.19.0で失敗したサンドボックス内Edge起動や、外側のブラウザーから内側のサーバーへの接続は再現手順に使わない。
+- ストック・手札検証はページ内の検証用状態/設定を使用し、保存済み設定を書き換えない。確認ページも保存設定のコピーのみをページ内で変更する。
+
+サーバーは別のターミナルで次を実行した。固定ポートのため、使用中なら自動的に別ポートへ移らず失敗する。
+
+```powershell
+npm.cmd run dev -- --host 127.0.0.1 --port 3011 --strictPort
+```
+
+ブラウザー検証の各コマンドの前に、同じPowerShellプロセスで次の環境変数を設定した。
+
+```powershell
+$env:MYPALETTE_PLAYWRIGHT_MODULE='C:/Users/tioak/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'
+$env:MYPALETTE_BROWSER_CHANNEL='msedge'
+```
+
+### 対象テスト・全テスト・ビルド
+
+実際に実行したコマンドと結果:
+
+```powershell
+node --test tests/implementation/ui/stockLayout.test.js tests/implementation/game/stockMotion.test.js tests/implementation/game/stockHandMotion.test.js tests/implementation/game/dayStart.test.js tests/spec/rules_01_game_flow.test.js tests/spec/effects_07_game_other.test.js
+npm.cmd test
+npm.cmd run build
+```
+
+| 検証ID | コマンド | 0.19.1での結果 |
+| --- | --- | --- |
+| RT-01 | 上記node --test（6ファイル） | 23件成功・失敗0 |
+| RT-02 | npm.cmd test | 195件成功・失敗0 |
+| RT-03 | npm.cmd run build | 成功、Vite 7.3.7 |
+
+### ブラウザー検証の実行コマンド
+
+以下はそれぞれ上記の環境変数を設定したプロセスで実行した。MYPALETTE_STOCK_MOTIONは値が存在すれば演出ありになるため、演出省略では`0`を代入せず削除する。
+
+```powershell
+# RT-04: 表示・詳細・配置。スクリプトがreduceを指定。
+node scripts/checkStockArea.cjs http://127.0.0.1:3011/MyPalette/
+
+# RT-05: 初日・日末・翌朝。スクリプトがno-preferenceを指定。
+node scripts/checkStockMotion.cjs http://127.0.0.1:3011/MyPalette/
+
+# RT-06: 取得・交換・補充、演出あり。
+$env:MYPALETTE_STOCK_MOTION='1'
+node scripts/checkStockAcquisition.cjs http://127.0.0.1:3011/MyPalette/
+
+# RT-07: 空ストック・連続交換、演出あり。
+$env:MYPALETTE_STOCK_MOTION='1'
+node scripts/checkStockEdgeCases.cjs http://127.0.0.1:3011/MyPalette/
+
+# RT-08: 取得・交換・補充、reduce。
+Remove-Item Env:MYPALETTE_STOCK_MOTION -ErrorAction SilentlyContinue
+node scripts/checkStockAcquisition.cjs http://127.0.0.1:3011/MyPalette/
+
+# RT-09: 空ストック・連続交換、reduce。
+Remove-Item Env:MYPALETTE_STOCK_MOTION -ErrorAction SilentlyContinue
+node scripts/checkStockEdgeCases.cjs http://127.0.0.1:3011/MyPalette/
+
+# RT-10: 手札回帰。スクリプトがreduceを指定。
+node scripts/checkHandArea.cjs http://127.0.0.1:3011/MyPalette/
+
+# RT-11: レイアウト回帰。reducedMotionの明示指定なし。
+node scripts/checkScreenLayout.cjs http://127.0.0.1:3011/MyPalette/
+
+# RT-12: 確認ページを0.19.1で再生成し、その実ページを検証。reduce指定。
+node scripts/createStockReview.cjs
+node scripts/checkStockReview.cjs http://127.0.0.1:3011/MyPalette/tmp_stock_review.html
+```
+
+| 検証ID | ブラウザーの表示条件と対象 | 0.19.1での結果 |
+| --- | --- | --- |
+| RT-04 | 1200×700、390×844、768×1024、1400×700、固定倍率1.25、DPR既定1 | 成功 |
+| RT-05 | 1200×700→390×844、固定倍率1.25、パネル開閉、DPR既定1 | 成功 |
+| RT-06 | 1200×700→390×844、注目中心・裏面寸法・往復移動・発注連鎖、DPR既定1 | 成功 |
+| RT-07 | 1200×700→390×844、返却途中に固定倍率1.25、空の山と同じ1枚の再取得、DPR既定1 | 成功 |
+| RT-08 | RT-06と同じ操作、移動演出省略、DPR既定1 | 成功 |
+| RT-09 | 1200×700で演出省略、連続交換と全ストック空の進行、DPR既定1 | 成功 |
+| RT-10 | 手札0/4/6枚、A/B・タブレット・パネルとゲーム操作の回帰、DPR既定1 | 成功 |
+| RT-11 | 5画面寸法、DPR 2/1、パネル・開発者2画面、画面バージョンとpackage.jsonの一致 | 成功 |
+| RT-12 | 実際の確認ページ、1200×800、仕事開始→着手→返却→取得、DPR既定1 | 成功 |
+
+`git diff --check`も実行し成功した。今回の再検証で失敗・未実行の項目はない。SR-01・SR-02の対応内容を本報告へ記録し、指摘の解消判定は再レビューで行う。
+
+RT-12で生成したtmp_stock_review.htmlはGit追跡・本番ビルドの対象外。全ブラウザー検証はオーナーの目視判断の代わりに扱わず、SVの判断とは分けて記録する。
 
 ## 検出した問題と扱い
 
