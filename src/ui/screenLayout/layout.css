@@ -40,7 +40,7 @@ html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
 .texture-layout { color: var(--ui-text); background: transparent; --area-fill: var(--ui-surface); }
 .texture-layout .LayoutArea[data-area='play'] { --area-fill: transparent; }
 .texture-layout .LayoutArea[data-area='palette'] { --area-fill: transparent; }
-.texture-layout .LayoutArea[data-area='stock'] { --area-fill: var(--ui-section-heading); }
+.texture-layout .LayoutArea[data-area='stock'] { --area-fill: transparent; }
 .texture-layout .LayoutArea[data-area='discard'] { --area-fill: var(--ui-inactive-surface); }
 .texture-layout .LayoutArea[data-area='deck'] { --area-fill: var(--ui-surface-muted); }
 .texture-layout .LayoutArea[data-area='hand'] { --area-fill: transparent; }

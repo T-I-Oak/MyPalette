@@ -7,6 +7,7 @@ const resources = {
     descriptions: effectDescriptionResources,
     effectNoticeTitle: translated('獲得効果', 'Gained effects'),
     startPainting: translated('着手', 'Start'),
+    returnToStock: translated('返却', 'Return'),
     goal: translated('目標', 'Goal'),
     play: translated('プレイ時効果', 'On play'),
     reward: translated('達成時効果', 'On completion'),

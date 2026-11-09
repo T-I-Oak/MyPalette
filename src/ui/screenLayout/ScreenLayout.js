@@ -1,5 +1,6 @@
 import { handStandardSize, handOffsets } from '../../game/handLayout.js';
 import { paletteStandardSize } from '../../dice/paletteLayout.js';
+import { stockStandardSize, stockOffsets } from '../../game/stockLayout.js';
 
 const panelWidthRatio = 0.85;
 const panelHeightRatio = 0.6;
@@ -8,7 +9,7 @@ export const areaDefinitions = Object.freeze({
     info: { name: '情報表示エリア', width: 600, height: 300, topLeftOffset: { x: 0, y: 36 } },
     play: { name: 'プレイエリア', width: 600, height: 300 },
     palette: { name: 'パレットエリア', ...paletteStandardSize },
-    stock: { name: 'ストックエリア', width: 600, height: 200, topLeftOffset: { x: 0, y: 36 } },
+    stock: { name: 'ストック', ...stockStandardSize, ...stockOffsets },
     discard: { name: '捨て札エリア', width: 300, height: 200, topLeftOffset: { x: 0, y: 36 } },
     deck: { name: 'デッキエリア', width: 300, height: 200, topLeftOffset: { x: 0, y: 36 } },
     hand: { name: '手札', ...handStandardSize, ...handOffsets },

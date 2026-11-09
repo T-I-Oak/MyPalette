@@ -27,8 +27,7 @@ export class Game {
         const s = this.state;
         for (const grade of ['A', 'B', 'C']) s.stocks[grade] = shuffle(settings.cards.filter(c => c.id[0] === grade)
             .map(c => ({ id: c.id, step: 0 })), random);
-        s.deck = s.stocks.A.splice(0, 7);
-        for (const grade of ['A', 'B', 'C']) s.public[grade] = s.stocks[grade][0]?.id ?? null;
+        for (const grade of ['A', 'B', 'C']) s.public[grade] = null;
         s.dice = initialFaces(random).map(faces => this.makeDie(faces, 'permanent'));
         if (this.manualDayStart) for (const die of s.dice) die.current = null;
         this.nextDay();
@@ -119,6 +118,8 @@ export class Game {
         const s = this.state;
         if (s.phase !== 'awaitingStart') s.day++;
         s.phase = 'start'; s.dayEndDice = null;
+        if (s.day === 1) s.deck = s.stocks.A.splice(0, 7);
+        for (const grade of ['A', 'B', 'C']) s.public[grade] = s.stocks[grade][0]?.id ?? null;
         for (const die of s.dice) die.used = false;
         s.rerolls++; this.draw(4);
         const reserved = s.reserved; s.reserved = [];
@@ -198,7 +199,7 @@ export class Game {
         s.dice = s.dice.filter(d => d.lifetime === 'permanent');
         for (const grade of ['A', 'B', 'C']) {
             if (s.public[grade]) s.stocks[grade].push(s.stocks[grade].shift());
-            s.public[grade] = s.stocks[grade][0]?.id ?? null;
+            s.public[grade] = null;
         }
         s.phase = 'betweenDays'; this.log('一日の仕事を終了');
         if (this.manualDayStart) { s.day++; s.phase = 'awaitingStart'; }
