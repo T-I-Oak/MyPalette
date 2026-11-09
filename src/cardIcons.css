@@ -20,3 +20,11 @@
 .EditorDialog .Field { font-size: 13px; }
 .EditorDialog .Row .Field { flex-basis: 130px; }
 .CardIcon[data-goal-condition] { cursor: pointer; }
+.EffectDetails.is-pinned { pointer-events: auto; }
+.EffectBody { display: grid; gap: 8px; min-width: 0; }
+.EffectBodyRow { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.EffectBodyRow > .CardIcon { flex-shrink: 0; }
+.EffectBodyText { min-width: 0; line-height: 1.6; }
+.EffectBody .PaintingIconFrame { --painting-icon-size: 28px; height: 28px; }
+.EffectBody .PaintingIconFrame canvas { width: 100%; height: 100%; }
+.EffectBodyText > .CardIcon { vertical-align: middle; cursor: pointer; margin-inline: 4px; }

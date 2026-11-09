@@ -70,14 +70,20 @@ test('6.4 face rewrites persist, retain other normal attribute and convert speci
     for (const item of [{ type: 'changeColor', color: 'red' }, { type: 'changeMaterial', material: 'brush' },
         { type: 'changeSpecialFace', face: 'fame1' }]) { effect(game, item); assert.equal(game.state.pending, null); }
 });
-test('6.5 discard includes consumed and temporary dice, clamps count and handles zero', () => {
+test('6.5 discard excludes consumed dice, includes unused temporary dice and clamps count', () => {
     const game = make(), s = game.state;
     s.dice[0].used = true; s.dice[1].lifetime = 'temporary';
     effect(game, { type: 'discardDice', count: 2 });
-    assert.equal(s.pending.options.length, 3);
-    const removed = s.dice.slice(0, 2).map(d => d.id); game.choose(removed);
+    assert.equal(s.pending.options.length, 2);
+    assert.throws(() => game.choose(s.dice.slice(0, 2).map(d => d.id)));
+    const consumed = s.dice[0];
+    game.choose(s.dice.slice(1).map(d => d.id));
     assert.equal(s.dice.length, 1);
+    effect(game, { type: 'discardDice', count: 5 }); assert.equal(s.pending, null);
+    assert.deepEqual(s.dice, [consumed]);
+    consumed.used = false;
     effect(game, { type: 'discardDice', count: 5 }); assert.equal(s.pending.min, 1);
-    game.choose([s.dice[0].id]); assert.equal(s.dice.length, 0);
+    assert.equal(s.pending.max, 1);
+    game.choose([consumed.id]); assert.equal(s.dice.length, 0);
     effect(game, { type: 'discardDice', count: 1 }); assert.equal(s.pending, null);
 });

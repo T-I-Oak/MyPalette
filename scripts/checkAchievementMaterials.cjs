@@ -40,7 +40,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
   const sample=()=>{
    const g=window.achievementCheck.session.game,s=window.achievementScene;
    window.achievementSamples.push({time:performance.now(),stage:document.querySelector('.PlayArea').dataset.playEffect,
-    fame:g.state.fame,painting:!!document.querySelector('[data-painting-id="'+chosen.card+'"]'),
+    fame:g.state.fame,painting:!!document.querySelector('[data-painting-id="'+chosen.card+'"]'),notice:!!document.querySelector('.EffectNotice'),
     step:document.querySelector('[data-painting-id="'+chosen.card+'"] [aria-current="step"]')?.textContent,
     consumed:chosen.ids.map(id=>s.group.get(id).consumed),
     flights:[...document.querySelectorAll('.AchievementMaterial')].map(n=>({id:n.dataset.dieId,stage:n.dataset.materialStage}))});
@@ -55,6 +55,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  const samples=await page.evaluate(()=>{window.stopAchievementSamples=true;return window.achievementSamples;});
  for(const stage of ['canvas','repaint','next-card'])assert(samples.some(s=>s.stage===stage),stage);
  assert(samples.filter(s=>['canvas','repaint','next-card'].includes(s.stage)).every(s=>s.fame===0));
+ assert(samples.filter(s=>['canvas','repaint','next-card'].includes(s.stage)).every(s=>!s.notice));
  assert(samples.some(s=>s.stage==='next-card'&&s.step==='Step 1'));
  assert(samples.filter(s=>s.fame>0).every(s=>!s.painting));
  const first=chosen.ids.map(id=>samples.find(s=>s.flights.some(f=>f.id===id))?.time);assert(first[1]-first[0]>=100);
@@ -62,6 +63,14 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  assert(samples.some(s=>s.consumed[0]&&!s.consumed[1]));
  assert.equal(await page.locator('.AchievementMaterial').count(),0);
  assert.equal(await page.locator(`[data-painting-id="${chosen.card}"]`).count(),0);
+ await page.locator('.EffectNotice.reward').waitFor();
+ assert(await page.evaluate(id=>window.achievementCheck.session.game.state.discard.some(card=>card.id===id),chosen.card));
+ await page.locator('#panel-toggle').click();
+ assert.equal(await page.locator(`.discard .PaintingCard[data-card-id="${chosen.card}"]`).evaluate(node=>node.closest('.GameCardSlot').hidden),false);
+ await page.locator('#panel-toggle').click();
+ assert.equal(await page.locator('.EffectNotice.reward .EffectBodyRow').count(),2);
+ assert.equal(await page.evaluate(()=>window.achievementCheck.session.game.state.rollRequest.status),'ready');
+ await page.locator('.EffectNotice.reward').waitFor({state:'detached'});
  await page.waitForFunction(()=>window.achievementCheck.session.game.state.rollRequest===null,{},{timeout:60000});
  await page.waitForFunction(()=>!document.querySelector('.PlayArea').dataset.playEffect);
  assert.equal(await page.locator(`[data-painting-id="${chosen.card}"]`).count(),0);

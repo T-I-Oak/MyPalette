@@ -23,16 +23,35 @@ test('effect sequence pauses, blocks unrelated actions, validates choices and re
     assert.equal(s.dice[0].faces[s.dice[0].current].color, 'red');
     assert.equal(s.fame, 7); assert.equal(s.pending, null);
 });
-test('achievement consumes before effects, updates steps and ships with increased credit', () => {
+test('achievement consumes dice and ships with increased credit before reward selection', () => {
     const game = make(), s = game.state, card = s.hand.pop();
     card.step = 2; s.field = [card];
     game.definitions[card.id].steps[2] = { goals: [{ color: 'red', material: null }], playEffects: [],
         achievementEffects: [{ type: 'discardDice', count: 1 }] };
     s.dice[0].faces[s.dice[0].current] = { color: 'red', material: 'brush' };
     game.achieve(card.id, [s.dice[0].id]);
-    assert.equal(s.dice[0].used, true); assert.equal(card.step, 2);
-    game.choose([s.dice[0].id]);
+    assert.equal(s.dice[0].used, true); assert.equal(card.step, 3);
+    assert.equal(s.field.length, 0); assert.equal(s.shipped[0], card); assert.equal(s.credit, 4);
+    assert.throws(() => game.choose([s.dice[0].id]));
+    game.choose([s.dice[1].id]);
     assert.equal(card.step, 3); assert.equal(s.shipped.length, 1); assert.equal(s.credit, 4);
+});
+
+test('achievement discards before rewards and can draw the achieved card on deck refill', () => {
+    const game = make(), s = game.state, card = s.hand.pop();
+    s.field = [card]; s.deck = []; s.discard = [];
+    const die = s.dice[0];
+    const goals = [{ ...die.faces[die.current] }];
+    game.definitions[card.id].steps[0] = { goals, playEffects: [], achievementEffects: [{ type: 'drawCards', count: 1 }] };
+    game.definitions[card.id].steps[1].achievementEffects = [{ type: 'changeFame', amount: 99 }];
+    game.achieve(card.id, [die.id]);
+    assert.equal(card.step, 1); assert.equal(s.field.length, 0);
+    assert.equal(s.hand.at(-1), card); assert.equal(s.discard.length, 0);
+    assert.equal(s.fame, 0, 'rewards come from the achieved step, not the next step');
+    assert.deepEqual(s.effectNotices.at(-1).effects, [{ type: 'drawCards', count: 1 }]);
+    const moved = s.logs.findIndex(line => line.includes(`${card.id}をステップ1で捨て札へ`));
+    const reward = s.logs.findIndex(line => line.includes('効果：'));
+    assert.ok(moved >= 0 && moved < reward);
 });
 test('turn end consumes specials then two flyer dice, reduces credit and removes temporary dice', () => {
     const game = make(), s = game.state;

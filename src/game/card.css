@@ -113,7 +113,7 @@
 .PaintingOr::before, .PaintingOr::after { content: ''; height: 1px; background: var(--ui-control-border); }
 .PaintingBlock .CardIconSequence { flex-wrap: nowrap; justify-content: center; gap: 3px; min-width: 0; }
 .PaintingBlock > .CardIconSequence { padding-inline: 3px; }
-.PaintingBlock .CardIcon { min-width: 0; min-height: 0; flex: 0 1 auto; }
+.PaintingBlock .CardIconSequence > .CardIcon { min-width: 0; min-height: 0; flex: 0 1 auto; }
 .PaintingIconFrame { display: block; position: relative; max-width: 100%; }
 .PaintingBlock .PaintingIconFrame canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .PaintingEmpty { align-self: center; text-align: center; color: var(--ui-text-muted); }

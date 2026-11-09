@@ -18,11 +18,11 @@ export class Game {
         this.manualRolls = manualRolls; this.rollSequence = 0;
         this.manualDayStart = manualDayStart;
         this.definitions = Object.fromEntries(structuredClone(settings.cards).map(card => [card.id, card]));
-        this.sequence = 0; this.task = null;
+        this.sequence = 0; this.task = null; this.noticeSequence = 0;
         this.state = {
             day: 0, fame: 0, credit: 3, flyers: 0, progress: 0, orderCost: 3, rerolls: 0,
             phase: 'betweenDays', pending: null, achievement: null, dice: [], deck: [], hand: [], field: [], discard: [], shipped: [],
-            stocks: {}, public: {}, reserved: [], logs: [], dayEndDice: null, rollRequest: null,
+            stocks: {}, public: {}, reserved: [], logs: [], dayEndDice: null, rollRequest: null, effectNotices: [],
         };
         const s = this.state;
         for (const grade of ['A', 'B', 'C']) s.stocks[grade] = shuffle(settings.cards.filter(c => c.id[0] === grade)
@@ -37,7 +37,13 @@ export class Game {
     log(text) { this.state.logs.push(`${this.state.day}日目：${text}`); }
     makeDie(faces, lifetime) { return { id: `D${++this.sequence}`, faces, current: 0, used: false, lifetime }; }
     step(card) { return this.definitions[card.id].steps[card.step]; }
-    effects(items) { return resolveEffects(this, items); }
+    notifyEffects(timing, effects) {
+        if (effects.length) this.state.effectNotices.push({ id: ++this.noticeSequence, timing, effects: structuredClone(effects) });
+    }
+    *effects(items, timing = null) {
+        if (timing) this.notifyEffects(timing, items);
+        yield* resolveEffects(this, items);
+    }
     run(task) {
         if (this.task) throw new Error('効果の選択を完了してください。');
         this.task = task; this.advance();
@@ -125,7 +131,7 @@ export class Game {
         const index = s.hand.findIndex(c => c.id === id);
         if (s.hand.length < 2 || index < 0) throw new Error('手札が2枚以上のときにプレイできます。');
         const card = s.hand.splice(index, 1)[0]; s.field.push(card);
-        this.log(`${id}をプレイ`); this.run(this.effects(this.step(card).playEffects));
+        this.log(`${id}をプレイ`); this.run(this.effects(this.step(card).playEffects, 'play'));
     }
     achieve(id, ids) {
         this.beginAchievement(id, ids); this.completeAchievement();
@@ -146,11 +152,12 @@ export class Game {
     }
     *finishAchievement(card) {
         const s = this.state;
-        yield* this.effects(this.step(card).achievementEffects);
+        const effects = this.step(card).achievementEffects;
         card.step++; s.field.splice(s.field.indexOf(card), 1);
         if (card.step === 3) {
             s.shipped.push(card); s.credit++; this.log(`${card.id}を出荷、信用＋1`);
         } else { s.discard.push(card); this.log(`${card.id}をステップ${card.step}で捨て札へ`); }
+        yield* this.effects(effects, 'reward');
     }
     reroll(id = null) {
         this.assertPlay(); const s = this.state;
@@ -170,6 +177,7 @@ export class Game {
     *finishDay() {
         const s = this.state; s.phase = 'end'; s.rerolls = 0;
         s.reserved = specialEffects(s.dice);
+        this.notifyEffects('special', s.reserved);
         for (const die of s.dice) if (!die.used && currentFace(die).special) die.used = true;
         this.log(`特殊面予約：${s.reserved.length}件`);
         const flyerDice = s.dice.filter(d => !d.used).slice(0, 2);
