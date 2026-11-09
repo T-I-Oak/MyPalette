@@ -1,0 +1,10 @@
+.EffectNoticeLayer { position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center; pointer-events: none; }
+.EffectNoticeGroup { width: min(720px, calc(100vw - 32px)); }
+.EffectNoticeTitle { box-sizing: border-box; width: fit-content; max-width: 100%; margin: 0 auto 8px; padding: 6px 18px; border: 1px solid var(--ui-control-border); border-radius: 6px; background: var(--ui-surface); color: var(--ui-text); box-shadow: 0 2px 8px var(--ui-scrim); font: 700 24px/1.4 system-ui, sans-serif; text-align: center; }
+.EffectNotice { --painting-paper: var(--ui-surface); box-sizing: border-box; width: 100%; grid-template-columns: 52px minmax(0, 1fr); align-items: stretch; background: var(--ui-surface); color: var(--ui-text); box-shadow: 0 4px 16px var(--ui-scrim); font: 20px/1.6 system-ui, sans-serif; }
+.EffectNotice .EffectBody { padding: 20px; gap: 14px; }
+.EffectNotice .EffectBodyRow { gap: 16px; }
+.EffectNotice .EffectBodyText { overflow-wrap: anywhere; }
+.EffectNotice .PaintingIconFrame { --painting-icon-size: 40px; height: 40px; }
+.EffectNotice .PaintingBlockLabel svg { width: 30px; height: 30px; }
+.PaintingBlock.special { --block-border: var(--ui-control-border); --block-label: var(--ui-inactive-surface); --block-text: var(--ui-text); }

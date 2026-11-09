@@ -53,7 +53,7 @@ export function* resolveEffects(game, effects) {
         else if (effect.type === 'gainRerolls') s.rerolls += effect.count;
         else if (effect.type === 'drawCards') game.draw(effect.count);
         else if (effect.type === 'gainStockCards') yield* stockCards(game, effect.count);
-        else if (effect.type === 'activateSpecialFaces') yield* resolveEffects(game, specialEffects(s.dice));
+        else if (effect.type === 'activateSpecialFaces') yield* game.effects(specialEffects(s.dice), 'special');
         else if (effect.type === 'changeCardStep') {
             const [id] = yield* select(game, 'cards', `手札をステップ${effect.step}へ変更`, s.hand.map(c => ({ id: c.id })));
             if (id) s.hand.find(c => c.id === id).step = effect.step;
@@ -69,7 +69,7 @@ export function* resolveEffects(game, effects) {
             }
         } else {
             const discard = effect.type === 'discardDice';
-            const options = s.dice.filter(die => discard || !die.used).map(die => ({ id: die.id }));
+            const options = s.dice.filter(die => !die.used).map(die => ({ id: die.id }));
             const count = discard ? effect.count : 1;
             const max = effect.type === 'reroll' ? options.length : count;
             const ids = yield* select(game, 'dice', game.effectLabel(effect), options, count, max, effect.type);

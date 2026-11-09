@@ -2,13 +2,9 @@ import { MoveObject } from '../ui/areaTransition/index.js';
 import { drawPaintingIcons, paintingIcons, releasePaintingIcons } from '../cardIcons.js';
 import { goalGroups } from '../goalGroups.js';
 import { cardMessages } from './cardMessages.js';
+import { paintingBlock } from './paintingBlock.js';
 import './card.css';
 
-const shapes = {
-    goal: '<path d="M5 21V3m0 1h13l-3 4 3 4H5m-3 9h7"/>',
-    play: '<path d="M11 4h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-7m-8-8h12m-4-4 4 4-4 4"/>',
-    reward: '<circle cx="12" cy="9" r="6.5"/><path d="m9.5 9 1.7 1.7 3.4-3.4M7.5 14l-2 7 4.5-2 2 2 2-2 4.5 2-2-7"/>',
-};
 const make = (tag, className, text) => {
     const node = document.createElement(tag); if (tag === 'button') node.tabIndex = -1;
     node.className = className;
@@ -95,12 +91,7 @@ export class Card extends MoveObject {
         });
 
         function block(kind, content) {
-            const row = make('div', 'PaintingBlock ' + kind);
-            const label = make('span', 'PaintingBlockLabel');
-            label.innerHTML = `<svg viewBox="0 0 24 24" role="img" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${shapes[kind]}</svg>`;
-            label.firstElementChild.setAttribute('aria-label', text[kind]);
-            row.append(label, content);
-            return row;
+            return paintingBlock(kind, content, text[kind]);
         }
         function select(index) {
             releasePaintingIcons(panel);

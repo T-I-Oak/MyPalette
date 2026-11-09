@@ -4,6 +4,8 @@ import { faceCanvas } from './dice/icons.js';
 import { describeEffect, describeGoals } from './cardSummary.js';
 import './cardIcons.css';
 import { EFFECTS } from './effectCatalog.js';
+import { cardMessages } from './game/cardMessages.js';
+import { createIconPopovers } from './iconPopovers.js';
 
 const el = (text, className) => {
     const node = document.createElement('span'); node.className = className;
@@ -12,6 +14,31 @@ const el = (text, className) => {
 };
 let tooltip;
 let active;
+const effectPopovers = createIconPopovers({
+    createPopup(effect) {
+        const tip = document.createElement('div');
+        tip.className = 'IconTooltip EffectDetails texture-paper';
+        tip.setAttribute('role', 'tooltip'); tip.append(effectBody([effect]));
+        return tip;
+    },
+    releasePopup: releasePaintingIcons,
+});
+function effectGraphic(effect, interactive = true) {
+    const node = icon(effect, cardMessages().describeEffect(effect), effectIconCanvas, null, effectIconPlan(effect), false);
+    if (interactive) effectPopovers.bind(node, effect);
+    return node;
+}
+export function effectBody(effects) {
+    const body = el(undefined, 'EffectBody');
+    const text = cardMessages();
+    for (const effect of effects) {
+        const row = el(undefined, 'EffectBodyRow');
+        const content = el(undefined, 'EffectBodyText');
+        for (const part of text.effectParts(effect)) content.append(typeof part === 'string' ? part : effectGraphic(part.effect));
+        row.append(effectGraphic(effect, false), content); body.append(row);
+    }
+    return body;
+}
 const paintingDrawers = new WeakMap();
 const paintingObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(entries => {
     for (const { target, contentRect } of entries) {
@@ -20,7 +47,7 @@ const paintingObserver = typeof ResizeObserver === 'undefined' ? null : new Resi
         paintingDrawers.get(target)?.(target, contentRect.height, scale);
     }
 });
-function icon(value, description, render, edit, plan) {
+function icon(value, description, render, edit, plan, withTooltip = true) {
     const node = el(undefined, 'CardIcon');
     if (edit || !plan) node.tabIndex = edit ? -1 : 0;
     node.setAttribute('role', edit ? 'button' : 'img'); node.setAttribute('aria-label', description);
@@ -62,6 +89,7 @@ function icon(value, description, render, edit, plan) {
         tooltip.style.left = `${Math.max(8, Math.min(rect.left, innerWidth - tooltip.offsetWidth - 8))}px`;
         tooltip.style.top = `${Math.max(8, rect.bottom + tooltip.offsetHeight + 12 < innerHeight ? rect.bottom + 6 : rect.top - tooltip.offsetHeight - 6)}px`;
     };
+    if (!withTooltip) return node;
     node.addEventListener('mouseenter', show);
     if (plan) node.addEventListener('click', show);
     else node.addEventListener('focus', show);
@@ -70,11 +98,13 @@ function icon(value, description, render, edit, plan) {
     node.addEventListener('keydown', event => { if (event.key === 'Escape') hide(); });
     return node;
 }
-window.addEventListener('scroll', () => { if (tooltip) tooltip.hidden = true; }, true);
+window.addEventListener('scroll', () => { if (tooltip) tooltip.hidden = true; effectPopovers.clearHover(); }, true);
 document.addEventListener('pointerdown', event => {
+    effectPopovers.outside(event.target);
     if (active && !active.contains(event.target)) { tooltip.hidden = true; active = undefined; }
 });
 export function releasePaintingIcons(root) {
+    effectPopovers.release(root);
     for (const frame of root.querySelectorAll('.PaintingIconFrame')) {
         if (active?.contains(frame)) { tooltip.hidden = true; active = undefined; }
         paintingObserver?.unobserve(frame);
@@ -102,7 +132,7 @@ export function paintingIcons(values, kind, describe) {
             goal.setAttribute('role', 'button'); goal.tabIndex = -1;
             row.append(goal);
         } else {
-            row.append(icon(value, describe(value), effectIconCanvas, null, effectIconPlan(value)));
+            row.append(effectGraphic(value));
         }
     }
     return row;

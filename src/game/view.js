@@ -5,6 +5,7 @@ import { displayLabel } from '../effectCatalog.js';
 import { copyPaintingIconDrawers, dieFaceIcon, releasePaintingIcons } from '../cardIcons.js';
 import { Card } from './Card.js';
 import { showCardDetail } from './cardDetail.js';
+import { createEffectNotices } from './effectNotices.js';
 import { cardLocations, changedCardAreas, createGameAreaTransitions } from './areaTransitions.js';
 import './view.css';
 
@@ -45,6 +46,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
     const scroll = el('div', undefined, 'GameBoard');
     if (presentation) root.append(scroll); else root.replaceChildren(scroll);
     const scope = presentation ? root : scroll;
+    const notices = createEffectNotices(root, () => { if (!disposed) render(); });
     function searchGoal(event) {
         const icon = event.target.closest?.('[data-goal-condition]');
         if (!icon || !presentation) return;
@@ -74,6 +76,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         }
     }
     function openChoice() {
+        if (notices.busy) return;
         const dialog = scope.querySelector('.GameChoice');
         if (dialog?.isConnected && !dialog.open) dialog.showModal();
     }
@@ -122,8 +125,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         Promise.allSettled(running).then(results => {
             if (disposed) return;
             moving = false;
-            setActionLock(false);
-            openChoice();
+            render();
             for (const result of results) {
                 if (result.status === 'rejected') console.error(result.reason);
             }
@@ -236,6 +238,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         update();
     }
     function render() {
+        notices.sync(game.state, moving);
         const positions = new Map([...scope.querySelectorAll('[data-pane]')].map(node => [node.dataset.pane, { top: node.scrollTop, left: node.scrollLeft }]));
         releasePaintingIcons(scope);
         presentation?.clear();
@@ -261,7 +264,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         scroll.append(tabs);
         const workspace = el('div', undefined, 'GameWorkspace'); scroll.append(workspace);
         const canPlay = s.phase === 'play' && !s.pending && !s.achievement && !s.rollRequest;
-        const selectingReroll = Boolean(presentation && s.pending?.kind === 'dice' && s.pending.effectType === 'reroll');
+        const selectingReroll = Boolean(presentation && !notices.busy && s.pending?.kind === 'dice' && s.pending.effectType === 'reroll');
         const visibleDice = s.phase === 'betweenDays' ? s.dayEndDice : s.dice;
         const diceSection = section(`画材ダイス ${visibleDice.length}個${s.phase === 'betweenDays' ? '（仕事終了時）' : ''}`, workspace, 'GameDicePane'), diceList = el('div', undefined, 'GameGrid');
         diceList.dataset.pane = 'dice';
@@ -363,14 +366,14 @@ export function mountGame(root, settings, onMenu, presentation = null) {
                 endDay);
         } else if (s.phase === 'betweenDays') controls.append(gameButton('翌日の仕事を始める', () => act(() => game.nextDay())));
         updateAchievements();
-        if (s.pending && !selectingReroll) selectionPanel(s.pending);
+        if (s.pending && !selectingReroll && !notices.busy) selectionPanel(s.pending);
         presentation?.present(scroll, s, {
             selectedDice: [...selected],
             rerollSelection: selectingReroll,
             canConfirmReroll: () => !disposed && !moving && selectingReroll && selected.size >= s.pending.min &&
                 selected.size <= s.pending.max && [...selected].every(id => s.pending.options.some(option => option.id === id)),
             confirmReroll: () => act(() => game.choose([...selected])),
-            canStartRoll: () => !disposed && !moving && s.rollRequest?.status === 'ready',
+            canStartRoll: () => !disposed && !moving && !notices.busy && s.rollRequest?.status === 'ready',
             canChangeAll: () => canPlay && !moving && s.rerolls > 0 && s.dice.some(die => !die.used),
             canChangeOne: () => canPlay && !moving && s.rerolls > 0 && selected.size === 1 && s.dice.some(die => selected.has(die.id) && !die.used),
             changeAll: () => act(() => game.reroll()),
@@ -398,6 +401,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
     }
     function dispose() {
         disposed = true;
+        notices.dispose();
         root.removeEventListener('click', searchGoal, true);
         presentation?.cancelEffects();
         releasePaintingIcons(scope);
