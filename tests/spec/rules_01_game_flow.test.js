@@ -60,12 +60,15 @@ test('1.3 refresh rotates public cards, including replacements exposed after acq
     game.endDay();
     assert.equal(s.stocks.A.at(-1).id, oldA);
     assert.equal(s.stocks.B.at(-1).id, newB);
+    assert.equal(s.public.B, null);
+    assert.equal(s.stocks.B[0].id, afterRefreshB);
+    game.nextDay();
     assert.equal(s.public.B, afterRefreshB);
 });
 test('1.3 flyer ordering proceeds when flyer dice are consumed and credit remains', () => {
     const game = new Game(settings, random(9)), s = game.state;
     s.discard.push(...s.hand.splice(0)); s.flyers = 2; s.progress = 1; s.credit = 2;
-    game.endDay(); assert.equal(s.phase, 'end'); assert.equal(s.pending.kind, 'cards');
+    game.endDay(); assert.equal(s.phase, 'end'); assert.equal(s.pending.kind, 'stock');
     assert.equal(s.orderCost, 5); assert.equal(s.flyers, 0); assert.equal(s.progress, 1); assert.equal(s.credit, 2);
     const chosen = s.public.C; game.choose([chosen]); assert.equal(s.discard.some(c => c.id === chosen), true);
     assert.equal(s.credit, 1);

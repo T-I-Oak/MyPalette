@@ -4,6 +4,8 @@ import { createHandPresentation } from './handPresentation.js';
 import { createPlayPresentation } from './playPresentation.js';
 import { createPlayEffects } from './playEffects.js';
 import { createPalettePresentation } from './palettePresentation.js';
+import { createStockPresentation } from './stockPresentation.js';
+import { createStockEffects } from './stockEffects.js';
 import './layoutGame.css';
 
 // Each host can later be replaced by an area-specific renderer.
@@ -20,6 +22,9 @@ export function createLayoutPresentation(screen) {
         hosts.set(id, { host, object });
     }
     const handPresentation = createHandPresentation(screen.areas.get('hand'), hosts.get('hand').host);
+    const stockPresentation = createStockPresentation(screen.areas.get('stock'), hosts.get('stock').host);
+    const stockEffects = createStockEffects(screen, hosts.get('stock').host);
+    let stockChoice = null;
     const palettePresentation = createPalettePresentation(screen.areas.get('palette'), hosts.get('palette').host, () => screen.render());
     const playPresentation = createPlayPresentation(screen.areas.get('play'), hosts.get('play').host, () => screen.render());
     const effects = createPlayEffects(screen, hosts.get('play').host, playPresentation, screen.areas.get('play').canvas.closest('.LayoutScreen'), palettePresentation);
@@ -29,11 +34,13 @@ export function createLayoutPresentation(screen) {
             area.setSlot(object.id, { x: 0, y: 0, width: area.logicalWidth, height: area.logicalHeight });
         }
         handPresentation.update();
+        stockPresentation.update();
         palettePresentation.update();
         playPresentation.update();
     });
     function clear() {
         handPresentation.clear();
+        stockPresentation.clear();
         palettePresentation.clear();
         playPresentation.clear();
         for (const [id, { host }] of hosts) {
@@ -48,11 +55,14 @@ export function createLayoutPresentation(screen) {
         clear,
         reset: palettePresentation.reset,
         searchFaces: palettePresentation.searchFaces,
-        beginAction: effects.begin,
+        beginAction(action,state,definitions) { effects.begin(action,state,definitions);stockEffects.begin(action,state,definitions); },
         field: effects.field,
-        hasAnimation: effects.hasWork,
-        animate: effects.run,
-        cancelEffects: effects.cancel,
+        hasAnimation(state) { const stock=stockEffects.hasWork(state);return effects.hasWork(state)||stock; },
+        async animate(state,render,completeAchievement) {
+            await stockEffects.run();
+            if(effects.hasWork(state)) await effects.run(state,render,completeAchievement);
+        },
+        cancelEffects() { effects.cancel();stockEffects.cancel(); },
         present(board, state, actions) {
             const move = (id, selector) => {
                 const node = board.querySelector(selector);
@@ -71,7 +81,11 @@ export function createLayoutPresentation(screen) {
             const hand = move('hand', '.hand');
             hand.querySelector('h2').remove();
             handPresentation.present(hand);
-            move('stock', '.GameStockPane');
+            stockPresentation.present(move('stock', '.GameStockPane'), state, actions);
+            const choice = actions.stockSelection ? JSON.stringify(state.pending) : null;
+            if (choice && choice !== stockChoice) screen.openPanel();
+            stockChoice = choice;
+            stockEffects.present();
             move('discard', '.discard');
             const deck = hosts.get('deck').host;
             const title = document.createElement('h2');
@@ -99,9 +113,11 @@ export function createLayoutPresentation(screen) {
             board.querySelector('.GameWorkspace').remove();
         },
         dispose() {
+            stockEffects.cancel();
             effects.cancel();
             clear(); unsubscribe();
             handPresentation.dispose();
+            stockPresentation.dispose();
             palettePresentation.dispose();
             playPresentation.dispose();
             for (const { object } of hosts.values()) object.area.remove(object);

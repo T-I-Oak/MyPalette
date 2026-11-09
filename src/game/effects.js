@@ -32,7 +32,7 @@ export function* stockCards(game, count, destination = 'discard') {
     for (let i = 0; i < count; i++) {
         const options = Object.values(game.state.public).filter(Boolean).map(id => ({ id }));
         if (!options.length) { game.log('ストック取得：公開カードなし'); return; }
-        const [id] = yield* select(game, 'cards', `公開カードを取得 ${i + 1}/${count}`, options);
+        const [id] = yield* select(game, 'stock', `公開カードを取得 ${i + 1}/${count}`, options);
         const grade = id[0];
         const card = game.state.stocks[grade].shift();
         game.state.public[grade] = game.state.stocks[grade][0]?.id ?? null;
@@ -59,7 +59,7 @@ export function* resolveEffects(game, effects) {
             if (id) s.hand.find(c => c.id === id).step = effect.step;
         } else if (effect.type === 'exchangeCards') {
             for (let i = 0; i < effect.count; i++) {
-                const [id] = yield* select(game, 'cards', `ストックへ戻す手札 ${i + 1}/${effect.count}`, s.hand.map(c => ({ id: c.id })));
+                const [id] = yield* select(game, 'handReturn', `ストックへ戻す手札 ${i + 1}/${effect.count}`, s.hand.map(c => ({ id: c.id })));
                 if (!id) break;
                 const card = s.hand.splice(s.hand.findIndex(c => c.id === id), 1)[0];
                 card.step = 0; s.stocks[id[0]].push(card);

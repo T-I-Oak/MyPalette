@@ -265,6 +265,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         const workspace = el('div', undefined, 'GameWorkspace'); scroll.append(workspace);
         const canPlay = s.phase === 'play' && !s.pending && !s.achievement && !s.rollRequest;
         const selectingReroll = Boolean(presentation && !notices.busy && s.pending?.kind === 'dice' && s.pending.effectType === 'reroll');
+        const selectingReturn = Boolean(presentation && s.pending?.kind === 'handReturn');
         const visibleDice = s.phase === 'betweenDays' ? s.dayEndDice : s.dice;
         const diceSection = section(`画材ダイス ${visibleDice.length}個${s.phase === 'betweenDays' ? '（仕事終了時）' : ''}`, workspace, 'GameDicePane'), diceList = el('div', undefined, 'GameGrid');
         diceList.dataset.pane = 'dice';
@@ -300,7 +301,17 @@ export function mountGame(root, settings, onMenu, presentation = null) {
                 if (key === 'hand') {
                     const intervals = Math.max(3, s.hand.length - 1);
                     node.style.setProperty('--hand-position', index / intervals);
-                    node.querySelector('.GameCardActions').prepend(gameButton('場にプレイ', () => act(() => game.play(card.id), null, { kind: 'play', id: card.id }), !canPlay || s.hand.length < 2));
+                    const action = selectingReturn
+                        ? gameButton('返却', () => {
+                            if (!moving && !notices.busy && game.state.pending?.kind === 'handReturn' &&
+                                game.state.pending.options.some(option => option.id === card.id)) act(() => game.choose([card.id]));
+                        }, moving || notices.busy || !s.pending.options.some(option => option.id === card.id))
+                        : gameButton('場にプレイ', () => act(() => game.play(card.id), null, { kind: 'play', id: card.id }), !canPlay || s.hand.length < 2);
+                    if (selectingReturn) {
+                        action.dataset.handReturn = card.id;
+                        action.classList.toggle('state-attention', !action.disabled);
+                    }
+                    node.querySelector('.GameCardActions').prepend(action);
                 }
                 if (key === 'field') {
                     const action = gameButton('選択ダイスで達成', () => act(() => {
@@ -329,7 +340,8 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         for (const grade of ['A', 'B', 'C']) {
             const cards = s.stocks[grade];
             const node = el('div');
-            node.append(el('h3', `グレード${grade} 残り${cards.length}枚`));
+            node.dataset.stockGrade = grade;
+            node.append(el('h3', `グレード${grade} ${cards.length}枚`));
             if (cards.length) {
                 const pile = el('div', undefined, 'GameStockPile');
                 pile.style.setProperty('--stack-layers', cards.length - 1);
@@ -345,11 +357,11 @@ export function mountGame(root, settings, onMenu, presentation = null) {
                         face = component.element;
                     }
                     face.style.setProperty('--stack-layer', cards.length - 1 - index);
+                    face.dataset.stockCardId = card.id;
                     pile.append(face);
                 }
                 node.append(pile);
             }
-            if (!s.public[grade]) node.append(el('p', '公開カードなし'));
             stockList.append(node);
         }
         const logs = section('進行記録', workspace, 'GameLogsPane'); logs.hidden = activeTab !== 'logs';
@@ -366,9 +378,15 @@ export function mountGame(root, settings, onMenu, presentation = null) {
                 endDay);
         } else if (s.phase === 'betweenDays') controls.append(gameButton('翌日の仕事を始める', () => act(() => game.nextDay())));
         updateAchievements();
-        if (s.pending && !selectingReroll && !notices.busy) selectionPanel(s.pending);
+        const selectingStock = Boolean(presentation && s.pending?.kind === 'stock');
+        if (s.pending && !selectingReroll && !selectingStock && !selectingReturn && !notices.busy) selectionPanel(s.pending);
         presentation?.present(scroll, s, {
             selectedDice: [...selected],
+            stockSelection: selectingStock && !notices.busy && !moving,
+            chooseStock: id => {
+                if (!disposed && !moving && !notices.busy && game.state.pending?.kind === 'stock' &&
+                    game.state.pending.options.some(option => option.id === id)) act(() => game.choose([id]));
+            },
             rerollSelection: selectingReroll,
             canConfirmReroll: () => !disposed && !moving && selectingReroll && selected.size >= s.pending.min &&
                 selected.size <= s.pending.max && [...selected].every(id => s.pending.options.some(option => option.id === id)),

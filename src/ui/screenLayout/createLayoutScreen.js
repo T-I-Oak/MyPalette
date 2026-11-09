@@ -102,6 +102,7 @@ export function createLayoutScreen(viewport, button) {
     requestAnimationFrame(watchResolution);
     render();
     return { areas, surface, render,
+        openPanel() { if (target !== 1) button.click(); },
         setFixedScale(scale) {
             if (!Number.isFinite(scale) || scale <= 0) throw new RangeError('Expected positive fixed scale');
             layout.fixedScale = scale;
