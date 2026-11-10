@@ -19,6 +19,7 @@ export class Game {
         this.manualDayStart = manualDayStart;
         this.definitions = Object.fromEntries(structuredClone(settings.cards).map(card => [card.id, card]));
         this.sequence = 0; this.task = null; this.noticeSequence = 0;
+        this.deckEvents = [];
         this.state = {
             day: 0, fame: 0, credit: 3, flyers: 0, progress: 0, orderCost: 3, rerolls: 0,
             phase: 'betweenDays', pending: null, achievement: null, dice: [], deck: [], hand: [], field: [], discard: [], shipped: [],
@@ -98,9 +99,14 @@ export class Game {
     draw(count) {
         const s = this.state; let drawn = 0;
         for (let i = 0; i < count; i++) {
-            if (!s.deck.length) { s.deck = shuffle(s.discard, this.random); s.discard = []; }
+            if (!s.deck.length) {
+                s.deck = shuffle(s.discard, this.random); s.discard = [];
+                if (s.deck.length) this.deckEvents.push({ kind: 'recycle', cards: structuredClone(s.deck) });
+            }
             if (!s.deck.length) break;
-            s.hand.push(s.deck.shift()); drawn++;
+            const card = s.deck.shift();
+            this.deckEvents.push({ kind: 'draw', card: { ...card } });
+            s.hand.push(card); drawn++;
         }
         this.log(`${drawn}枚ドロー`);
     }
@@ -118,7 +124,10 @@ export class Game {
         const s = this.state;
         if (s.phase !== 'awaitingStart') s.day++;
         s.phase = 'start'; s.dayEndDice = null;
-        if (s.day === 1) s.deck = s.stocks.A.splice(0, 7);
+        if (s.day === 1) {
+            s.deck = s.stocks.A.splice(0, 7);
+            this.deckEvents.push({ kind: 'deal', cards: structuredClone(s.deck) });
+        }
         for (const grade of ['A', 'B', 'C']) s.public[grade] = s.stocks[grade][0]?.id ?? null;
         for (const die of s.dice) die.used = false;
         s.rerolls++; this.draw(4);

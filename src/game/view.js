@@ -104,12 +104,13 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         }
         selected = new Set();
         activeTab = 'play';
-        moving = presentation ? presentation.hasAnimation(game.state) : transfers.length > 0;
+        moving = presentation ? presentation.hasAnimation(game.state, game.deckEvents) : transfers.length > 0;
         render();
         if (!moving) return;
         if (presentation) {
             presentation.animate(game.state, render, () => {
-                session.dispatch(() => game.completeAchievement()); render();
+                session.dispatch(() => game.completeAchievement());
+                return game.deckEvents;
             }).catch(error => {
                 if (game.state.achievement) session.dispatch(() => game.completeAchievement());
                 presentation.cancelEffects();

@@ -6,7 +6,7 @@ export function createGameSession(settings, { random = Math.random, onCandidateA
     const publish = () => { for (const listener of listeners) listener(game); };
     return {
         get game() { return game; },
-        dispatch(action) { action(game); publish(); },
+        dispatch(action) { game.deckEvents = []; action(game); publish(); },
         subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     };
 }
