@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { cardPlaneMatrix, createPaintingCamera } from '../../../src/game/easel/paintingView.js';
+import { cardPlaneMatrix, createPaintingCamera } from '../../../../src/game/easel/paintingView.js';
 
 test('CSS射影変換の四隅が3D平面の四隅の投影と一致する', () => {
     const camera = createPaintingCamera(400 / 640);

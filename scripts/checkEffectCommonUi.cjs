@@ -28,6 +28,14 @@ const base = process.argv[2] || 'http://127.0.0.1:3003/MyPalette/';
         await page.goto(base);
         await page.waitForFunction(() => document.querySelector('.PaintingCard'), null, { timeout: 10000 });
         const anchor = page.locator('.PaintingBlock.play .CardIcon');
+        async function assertNoKeyboardToggle(icon, expanded) {
+            assert.equal(await icon.getAttribute('tabindex'), '-1');
+            for (const key of ['Enter', ' ', 'Escape']) {
+                await icon.dispatchEvent('keydown', { key, bubbles: true });
+                assert.equal(await icon.getAttribute('aria-expanded'), String(expanded), `${key} must not toggle an explanation`);
+            }
+        }
+        await assertNoKeyboardToggle(anchor, false);
         await anchor.hover();
         await page.locator('.EffectDetails').waitFor();
         await page.mouse.move(1100, 850);
@@ -35,13 +43,16 @@ const base = process.argv[2] || 'http://127.0.0.1:3003/MyPalette/';
         await anchor.click();
         await page.mouse.move(1100, 850);
         assert.equal(await page.locator('.EffectDetails.is-pinned').count(), 1);
+        await assertNoKeyboardToggle(anchor, true);
         const inline = page.locator('.EffectDetails .EffectBodyText .CardIcon').first();
+        await assertNoKeyboardToggle(inline, false);
         await inline.hover();
         assert.equal(await page.locator('.EffectDetails .EffectDetails:not(.is-pinned)').count(), 1);
         await page.mouse.move(1100, 850);
         assert.equal(await page.locator('.EffectDetails').count(), 1, 'leaving nested hover closes only the child');
         await inline.click();
         assert.equal(await page.locator('.EffectDetails .EffectDetails').count(), 1);
+        await assertNoKeyboardToggle(inline, true);
         assert.ok((await page.locator('.EffectDetails .EffectDetails').innerText()).includes('名声値を増やす。'));
         await page.mouse.move(1100, 850);
         assert.equal(await page.locator('.EffectDetails').count(), 2);

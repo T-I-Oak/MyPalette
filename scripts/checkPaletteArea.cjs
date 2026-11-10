@@ -2,7 +2,7 @@ const { chromium } = require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwri
 const assert = require('node:assert/strict');
 const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
 (async () => {
-    const browser = await chromium.launch({ channel: 'msedge', headless: true });
+    const browser = await chromium.launch({ channel: process.env.MYPALETTE_BROWSER_CHANNEL || 'msedge', headless: true });
     try {
         const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
         const errors = []; page.on('pageerror', error => errors.push(error.message));
@@ -18,9 +18,9 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         await page.waitForFunction(() => !!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
         const rerolls = page.locator('.PaletteRerolls');
         assert(await rerolls.isHidden());
-        const tabStops = await page.locator('button,[role="button"],[role="tab"]').evaluateAll(nodes =>
+        const initialTabStops = await page.locator('button,[role="button"],[role="tab"]').evaluateAll(nodes =>
             nodes.filter(node => node.tabIndex >= 0).map(node => node.outerHTML));
-        assert.deepEqual(tabStops, []);
+        assert.deepEqual(initialTabStops, [], '初日の開始前は裏向きカードで説明アイコンもない');
         await page.keyboard.press('Tab');
         assert.equal(await page.evaluate(() => document.activeElement.matches('button,[role="button"],[role="tab"]')), false);
         assert(await roll.evaluate(node => node.classList.contains('state-attention')));
@@ -68,6 +68,15 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         const endDay=page.getByRole('button',{name:'今日の仕事を終える',exact:true});
         await page.waitForFunction(()=>document.querySelector('[data-game-end-day]')?.disabled===false,null,{timeout:60000});
         assert(await endDay.isEnabled());assert(await rerolls.isVisible());assert.equal(await rerolls.innerText(),'×1');
+        const effectIcons = page.locator('.PaintingBlock.play .CardIcon[aria-expanded], .PaintingBlock.reward .CardIcon[aria-expanded]');
+        assert(await effectIcons.count() > 0, 'ドロー後のカードに説明アイコンがある');
+        assert(await effectIcons.evaluateAll(nodes => nodes.every(node => node.tabIndex === -1 && node.getAttribute('role') === 'button')));
+        const tabStops = await page.locator('button,[role="button"],[role="tab"]').evaluateAll(nodes =>
+            nodes.filter(node => node.tabIndex >= 0).map(node => node.outerHTML));
+        assert.deepEqual(tabStops, [], '効果説明を含む操作ボタン・タブはTab順次フォーカス対象外');
+        await page.evaluate(() => { document.activeElement.blur(); });
+        await page.keyboard.press('Tab');
+        assert.equal(await page.evaluate(() => document.activeElement.matches('button,[role="button"],[role="tab"]')), false);
         const firstTab = page.locator('[data-game-area="hand"] .PaintingTab').first();
         await firstTab.click();
         assert.equal(await firstTab.getAttribute('aria-selected'), 'true');
@@ -138,8 +147,16 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         assert(await rerolls.isHidden());
         assert(await palette.locator('canvas').evaluate(node => node === window.paletteCanvas));
         await roll.waitFor();assert.equal(await page.locator('.HandFixedActions .Button').count(),0);
-        await roll.click({force:true});
-        await page.waitForFunction(()=>document.querySelector('[data-game-end-day]')?.disabled===false,null,{timeout:60000});
+        await page.waitForFunction(() => {
+            const button = document.querySelector('[data-game-end-day]');
+            return button?.textContent === '今日の仕事を始める' && !button.disabled && !document.querySelector('[data-stock-effect]');
+        });
+        // 注目アニメーションで拡縮し続けるため、演出完了と有効状態は上で明示的に待つ。
+        await roll.click({ force: true });
+        await page.waitForFunction(() => {
+            const button = document.querySelector('[data-game-end-day]');
+            return button?.textContent === '今日の仕事を終える' && !button.disabled;
+        }, null, { timeout: 60000 });
         assert(await rerolls.isVisible());assert.equal(await rerolls.innerText(),'×1');
         await page.getByRole('button', { name:'入口へ戻る',exact:true }).click();
         await roll.waitFor();await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));

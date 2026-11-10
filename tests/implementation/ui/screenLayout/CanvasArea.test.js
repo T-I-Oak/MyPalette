@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CanvasArea } from '../../../src/ui/screenLayout/CanvasArea.js';
-import { ScreenLayout, areaDefinitions } from '../../../src/ui/screenLayout/ScreenLayout.js';
-import { MoveObject } from '../../../src/ui/areaTransition/MoveObject.js';
+import { CanvasArea } from '../../../../src/ui/screenLayout/CanvasArea.js';
+import { ScreenLayout, areaDefinitions } from '../../../../src/ui/screenLayout/ScreenLayout.js';
+import { MoveObject } from '../../../../src/ui/areaTransition/MoveObject.js';
 
 class DrawingArea extends CanvasArea {
     draw() { this.drawCount = (this.drawCount ?? 0) + 1; }

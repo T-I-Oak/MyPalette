@@ -27,7 +27,7 @@ export function createIconPopovers({ createPopup, releasePopup }) {
     }
     return {
         bind(anchor, value) {
-            anchor.setAttribute('role', 'button'); anchor.tabIndex = 0;
+            anchor.setAttribute('role', 'button'); anchor.tabIndex = -1;
             anchor.setAttribute('aria-expanded', 'false');
             const tap = () => {
                 const index = entries.findIndex(entry => entry.anchor === anchor);
@@ -40,13 +40,6 @@ export function createIconPopovers({ createPopup, releasePopup }) {
                 if (index >= 0 && !entries[index].pinned) closeFrom(index);
             });
             anchor.addEventListener('click', event => { event.stopPropagation(); tap(); });
-            anchor.addEventListener('keydown', event => {
-                if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); tap(); }
-                if (event.key === 'Escape') {
-                    const index = entries.findIndex(entry => entry.anchor === anchor);
-                    if (index >= 0) closeFrom(index);
-                }
-            });
         },
         outside(target) {
             const index = entries.findLastIndex(entry => entry.anchor.contains(target) || entry.popup.contains(target));

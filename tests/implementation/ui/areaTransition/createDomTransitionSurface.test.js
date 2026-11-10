@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createDomTransitionSurface } from '../../../src/ui/areaTransition/createDomTransitionSurface.js';
+import { createDomTransitionSurface } from '../../../../src/ui/areaTransition/createDomTransitionSurface.js';
 
 function documentFixture() {
     const document = { defaultView: {}, createElement: () => new Element() };

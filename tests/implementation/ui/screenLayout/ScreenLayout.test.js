@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ScreenLayout, fitArea } from '../../../src/ui/screenLayout/ScreenLayout.js';
+import { ScreenLayout, fitArea } from '../../../../src/ui/screenLayout/ScreenLayout.js';
 
 test('固定倍率を掛けた両端オフセットを除いてから描画倍率を計算する', () => {
     const frame = fitArea({ x: 100, y: 200, width: 640, height: 300 }, {
