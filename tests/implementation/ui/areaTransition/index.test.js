@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { MoveArea, MoveObject, createMoveManager } from '../../../src/ui/areaTransition/index.js';
+import { MoveArea, MoveObject, createMoveManager } from '../../../../src/ui/areaTransition/index.js';
 
 const rect = (x, y, width, height) => ({ x, y, width, height });
 const transform = (x, y, scale) => ({ x, y, scale });
