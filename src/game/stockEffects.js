@@ -5,8 +5,9 @@ import { animateProgress } from './playAnimation.js';
 import { stockSnapshot, planStockMotion, stockTiming as t, clampProgress as p, stockDealDepth } from './stockMotion.js';
 import { planStockHandTransfers } from './stockHandMotion.js';
 import { createStockHandActors, stockHandDuration, stockHandTiming } from './stockHandEffects.js';
+import { layoutDeck } from './deckLayout.js';
 
-export function createStockEffects(screen, host) {
+export function createStockEffects(screen, host, deckEffects) {
     let capture = null, plans = [], objects = [], transfers = [], actors = [], after, controller = new AbortController();
     const area = screen.areas.get('stock');
     function cancel() {
@@ -15,6 +16,7 @@ export function createStockEffects(screen, host) {
         actors=[];transfers=[];
         objects=[];plans=[];capture=null;host.classList.remove('state-stock-moving');
         delete host.dataset.stockEffect;
+        area.canvas.closest('.LayoutContent').classList.remove('state-deck-receiving');
         area.canvas.closest('.LayoutScreen').querySelector('.HandFixedActions')?.style.removeProperty('visibility');
         screen.areas.get('hand').canvas.closest('.LayoutScreen').querySelector('[data-game-area="hand"]')?.style.removeProperty('visibility');
     }
@@ -81,6 +83,7 @@ export function createStockEffects(screen, host) {
             }
             try {
                 host.dataset.stockEffect='running';
+                if (plans.some(plan => plan.deal.length)) area.canvas.closest('.LayoutContent').classList.add('state-deck-receiving');
                 await animateProgress(duration,progress=>{
                     const time=progress*duration;
                     for(const actor of actors) actor.draw(time);
@@ -106,16 +109,14 @@ export function createStockEffects(screen, host) {
                                 const origin=readRect({x,y,width:m.cardWidth,height:m.cardHeight});
                                 const deck=screen.areas.get('deck');
                                 if(!deck.layoutFrame.drawable) { object.element.style.visibility='hidden';continue; }
-                                const width=Math.min(m.cardWidth,deck.logicalWidth-24,(deck.logicalHeight-24)*m.cardWidth/m.cardHeight);
-                                const height=width*m.cardHeight/m.cardWidth;
-                                const target=readRect({x:(deck.logicalWidth-width)/2,y:(deck.logicalHeight-height)/2,width,height},deck);
+                                const destination=layoutDeck(deck.logicalWidth,deck.logicalHeight);
+                                destination.y-=Math.max(0,removed-1-dealIndex)*m.thickness;
+                                const target=readRect({...destination,width:m.cardWidth,height:m.cardHeight},deck);
                                 rect=Object.fromEntries(['x','y','width','height'].map(key=>[key,origin[key]+(target[key]-origin[key])*flight]));
-                                z=stockDealDepth(old.length,dealIndex,time,plan.deal.length);
-                                object.element.style.visibility=flight===1?'hidden':'';
+                                z=flight===1?40-dealIndex:stockDealDepth(old.length,dealIndex,time,plan.deal.length);
                             }
                             host.querySelector('[data-stock-grade="A"] h3').textContent=`グレードA ${old.length-removed}枚`;
-                            const title=area.canvas.closest('.LayoutScreen').querySelector('[data-transfer-anchor="deck"]');
-                            if(title) title.textContent=`デッキ ${removed}枚`;
+                            deckEffects.acceptInitial(removed);
                         }
                         const start=transferDuration+dealDuration+(plan?.delay??0);
                         if(plan?.reveal===object.id || plan?.replenish===object.id) {
