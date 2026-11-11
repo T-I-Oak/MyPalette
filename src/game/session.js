@@ -1,7 +1,7 @@
 import { Game } from './engine.js';
 
-export function createGameSession(settings, { random = Math.random, onCandidateAcquired, manualStartRoll = false, manualRolls = manualStartRoll, manualDayStart = false } = {}) {
-    const game = new Game(settings, random, { onCandidateAcquired, manualRolls, manualDayStart });
+export function createGameSession(settings, { random = Math.random, onCandidateAcquired, manualStartRoll = false, manualRolls = manualStartRoll, manualDayStart = false, manualRecycle = false } = {}) {
+    const game = new Game(settings, random, { onCandidateAcquired, manualRolls, manualDayStart, manualRecycle });
     const listeners = new Set();
     const publish = () => { for (const listener of listeners) listener(game); };
     return {

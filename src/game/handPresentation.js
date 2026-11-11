@@ -29,7 +29,7 @@ export function createHandPresentation(area, host) {
             cards = [...section.querySelectorAll('.GameHandCards > .GameCardSlot')];
             actions = cards.map(card => card.querySelector('.GameCardActions'));
             for (const [index, card] of cards.entries()) {
-                actions[index].dataset.cardId = card.querySelector('.PaintingCard').dataset.cardId;
+                actions[index].dataset.cardId = card.dataset.cardId;
                 const button=actions[index].querySelector('button');
                 button.textContent = button.dataset.handReturn ? cardMessages().returnToStock : cardMessages().startPainting;
                 host.append(card);

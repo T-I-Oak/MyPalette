@@ -19,7 +19,7 @@ export function syncPaletteSnapshot(group, dice, request = null, { animateReady 
         }
         if (source.current === null) {
             die.setConsumed(source.used);
-            if (die.state !== 'ready') die.prepare();
+            if (die.state !== 'ready') die.prepare({ animated: animateReady });
             continue;
         }
         const preservePose = die.state === 'settled' && die.current === source.current;

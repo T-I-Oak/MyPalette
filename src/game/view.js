@@ -33,11 +33,13 @@ export function mountGame(root, settings, onMenu, presentation = null) {
     const session = createGameSession(settings, {
         manualRolls: Boolean(presentation),
         manualDayStart: Boolean(presentation),
+        manualRecycle: Boolean(presentation),
         onCandidateAcquired(id) {
             if (candidateSource) candidateOrigins.set(id, candidateSource);
         },
     });
     const game = session.game;
+    presentation?.initialize(game.definitions, game.state);
     let disposed = false;
     let selected = new Set();
     let activeTab = 'play';
@@ -46,7 +48,16 @@ export function mountGame(root, settings, onMenu, presentation = null) {
     const scroll = el('div', undefined, 'GameBoard');
     if (presentation) root.append(scroll); else root.replaceChildren(scroll);
     const scope = presentation ? root : scroll;
-    const notices = createEffectNotices(root, () => { if (!disposed) render(); });
+    let inspectionRefresh = false;
+    const inspectionOpen = () => Boolean(scroll.querySelector('.GameCardDetail[open], .GameInspection[open]'));
+    const notices = createEffectNotices(root, () => {
+        if (disposed) return;
+        if (inspectionOpen()) inspectionRefresh = true;
+        else render();
+    });
+    scroll.addEventListener('close', () => queueMicrotask(() => {
+        if (inspectionRefresh && !disposed && !inspectionOpen()) render();
+    }), true);
     function searchGoal(event) {
         const icon = event.target.closest?.('[data-goal-condition]');
         if (!icon || !presentation) return;
@@ -111,9 +122,14 @@ export function mountGame(root, settings, onMenu, presentation = null) {
             presentation.animate(game.state, render, () => {
                 session.dispatch(() => game.completeAchievement());
                 return game.deckEvents;
-            }).catch(error => {
+            }, id => {
+                session.dispatch(() => game.completeRecycle(id));
+                return game.deckEvents;
+            }).catch(async error => {
                 if (game.state.achievement) session.dispatch(() => game.completeAchievement());
+                while (game.state.recycleRequest) session.dispatch(() => game.completeRecycle(game.state.recycleRequest.id));
                 presentation.cancelEffects();
+                if (!disposed) await presentation.recover(game.state, render);
                 console.error(error);
                 animationError = '演出を表示できなかったため、現在のゲーム状態を表示しました。';
             }).finally(() => {
@@ -148,21 +164,23 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         return placements.get(key);
     }
     function cardView(card, area = 'choice', detail = false) {
-        const component = new Card(card.id);
+        const physical = presentation && !detail && ['hand', 'field', 'discard'].includes(area);
+        const component = physical ? presentation.cardComponent(card.id) : new Card(card.id);
         const key = area + ':' + card.id;
-        component.setPresentation(area, detail ? { x: 0, y: 0, angle: 0 } : cardPlacement(area, card.id));
+        if (!physical) component.setPresentation(area, detail ? { x: 0, y: 0, angle: 0 } : cardPlacement(area, card.id));
         const remembered = inspectedSteps.get(key);
-        component.setFace(game.definitions[card.id], card.step,
+        if (!physical) component.setFace(game.definitions[card.id], card.step,
             remembered?.current === card.step ? remembered.selected : card.step,
             selected => inspectedSteps.set(key, { current: card.step, selected }));
         const node = el('div', undefined, 'GameCardSlot');
         const actions = el('div', undefined, 'GameCardActions');
         const face = component.element;
-        node.append(face, actions);
-        if (!detail) {
+        node.dataset.cardId = card.id; node._face = face;
+        if (physical) node.append(actions); else node.append(face, actions);
+        if (!detail && !physical) {
             face.setAttribute('aria-haspopup', 'dialog');
             face.addEventListener('click', event => {
-                if (!moving && !event.target.closest('button, .CardIcon')) openCardDetail(card, area, face, actions);
+                if (!moving && (area === 'discard' || !event.target.closest('button, .CardIcon'))) openCardDetail(card, area, face, actions);
             });
         }
         return node;
@@ -239,9 +257,12 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         update();
     }
     function render() {
+        inspectionRefresh = false;
         notices.sync(game.state, moving);
         const positions = new Map([...scope.querySelectorAll('[data-pane]')].map(node => [node.dataset.pane, { top: node.scrollTop, left: node.scrollLeft }]));
-        releasePaintingIcons(scope);
+        // Build controls while detached so intermediate sections cannot change the viewport's scrollbars.
+        if (presentation) scroll.remove();
+        releasePaintingIcons(presentation ? scroll : scope);
         presentation?.clear();
         scroll.replaceChildren(); const s = game.state;
         const status = section(`${s.day}日目 · ${phaseLabel[s.phase]}${s.pending ? '（効果を選択中）' : ''}`, scroll, 'GameStatus');
@@ -264,7 +285,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         }
         scroll.append(tabs);
         const workspace = el('div', undefined, 'GameWorkspace'); scroll.append(workspace);
-        const canPlay = s.phase === 'play' && !s.pending && !s.achievement && !s.rollRequest;
+        const canPlay = s.phase === 'play' && !s.pending && !s.achievement && !s.rollRequest && !s.recycleRequest;
         const selectingReroll = Boolean(presentation && !notices.busy && s.pending?.kind === 'dice' && s.pending.effectType === 'reroll');
         const selectingReturn = Boolean(presentation && s.pending?.kind === 'handReturn');
         const visibleDice = s.phase === 'betweenDays' ? s.dayEndDice : s.dice;
@@ -292,13 +313,15 @@ export function mountGame(root, settings, onMenu, presentation = null) {
             const zone = section(`${label} ${s[key].length}枚`, workspace, `GameCardsPane ${key}`);
             zone.hidden = key === 'shipped' ? activeTab !== 'shipped' : activeTab !== 'play';
             const list = cardArea(zone, key);
-            const visibleCards = key === 'field' && presentation ? presentation.field(s) : s[key];
+            const visibleCards = presentation && key === 'field' ? presentation.field(s)
+                : presentation && key === 'hand' ? presentation.hand(s) : s[key];
             for (const [index, card] of visibleCards.entries()) {
                 const node = cardView(card, key);
                 const match = !s.rollRequest && (key === 'hand' || key === 'field') && card.step < 3 ? matchingDice(game.step(card).goals, s.dice) : null;
-                const face = node.querySelector('.PaintingCard');
-                face.classList.toggle('state-achievable', !!match);
-                if (match) face.setAttribute('aria-label', '達成可能');
+                const face = node._face || node.querySelector('.PaintingCard');
+                if (presentation) presentation.setAchievable(card.id, !!match);
+                else face.classList.toggle('state-achievable', !!match);
+                if (match && !presentation) face.setAttribute('aria-label', '達成可能');
                 if (key === 'hand') {
                     const intervals = Math.max(3, s.hand.length - 1);
                     node.style.setProperty('--hand-position', index / intervals);
@@ -338,18 +361,19 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         }
         stocks.append(counts);
         const stockList = cardArea(stocks, 'stock');
+        const stockState = presentation ? presentation.stock(s) : s;
         for (const grade of ['A', 'B', 'C']) {
-            const cards = s.stocks[grade];
+            const cards = stockState.stocks[grade];
             const node = el('div');
             node.dataset.stockGrade = grade;
             node.append(el('h3', `グレード${grade} ${cards.length}枚`));
-            if (cards.length) {
+            if (cards.length && !presentation) {
                 const pile = el('div', undefined, 'GameStockPile');
                 pile.style.setProperty('--stack-layers', cards.length - 1);
                 for (let index = cards.length - 1; index >= 0; index--) {
                     const card = cards[index];
                     let face;
-                    if (index === 0 && s.public[grade]) {
+                    if (index === 0 && stockState.public[grade]) {
                         face = cardView(card, 'stock').firstElementChild;
                     } else {
                         const component = new Card(card.id);
@@ -382,6 +406,13 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         const selectingStock = Boolean(presentation && s.pending?.kind === 'stock');
         if (s.pending && !selectingReroll && !selectingStock && !selectingReturn && !notices.busy) selectionPanel(s.pending);
         presentation?.present(scroll, s, {
+            inspectCard(id, source) {
+                const all = [...s.hand, ...s.field, ...s.discard, ...s.deck, ...s.shipped, ...Object.values(s.stocks).flat()];
+                const card = all.find(item => item.id === id);
+                const area = cardLocations(s).get(id);
+                const actions = scope.querySelector(`.GameCardActions[data-card-id="${id}"]`) || el('div');
+                openCardDetail(card, area, source, actions);
+            },
             selectedDice: [...selected],
             stockSelection: selectingStock && !notices.busy && !moving,
             chooseStock: id => {
@@ -410,6 +441,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
             completeRoll: (id, results) => { if (!disposed) act(() => game.completeRoll(id, results)); },
             failRoll: id => { if (!disposed) act(() => game.failRoll(id)); },
         });
+        if (presentation) root.append(scroll);
         for (const node of scope.querySelectorAll('[data-pane]')) {
             const position = positions.get(node.dataset.pane);
             node.scrollTop = position?.top ?? 0; node.scrollLeft = position?.left ?? 0;

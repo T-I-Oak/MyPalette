@@ -2,7 +2,34 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {Game} from '../../../src/game/engine.js';
+import {matchingDice} from '../../../src/game/goals.js';
 const settings=JSON.parse(readFileSync(new URL('../../../public/data/cards.json',import.meta.url)));
+
+test('朝はドロー・再構成より先に出目を未確定にし、前日の出目で達成判定しない',()=>{
+ const game=new Game(settings,()=>.4,{manualDayStart:true,manualRolls:true,manualRecycle:true}),s=game.state;
+ game.beginDay();
+ const settle=()=>{const r=s.rollRequest;game.beginRoll(r.id);game.completeRoll(r.id,r.ids.map(id=>({id,index:0,status:'settled'})));};
+ settle();
+ const goal=[{color:s.dice[0].faces[0].color,material:null}];
+ assert.ok(matchingDice(goal,s.dice));
+ game.endDay();
+ assert.equal(s.phase,'awaitingStart');
+ assert.ok(s.dice.every(die=>die.current===0));
+ game.beginDay();
+ assert.equal(s.hand.length,3);
+ assert.ok(s.recycleRequest);
+ assert.equal(s.rollRequest,null);
+ assert.ok(s.dice.every(die=>die.current===null&&!die.used));
+ assert.equal(matchingDice(goal,s.dice),null);
+ game.completeRecycle(s.recycleRequest.id);
+ assert.equal(s.rollRequest.status,'ready');
+ assert.ok(s.dice.every(die=>die.current===null));
+ game.beginRoll(s.rollRequest.id);
+ assert.equal(matchingDice(goal,s.dice),null);
+ const r=s.rollRequest;game.completeRoll(r.id,r.ids.map(id=>({id,index:0,status:'settled'})));
+ assert.equal(s.phase,'play');
+ assert.ok(matchingDice(goal,s.dice));
+});
 test('仕事開始まではドローせず、翌日も持ち越し効果と権利付与を待つ',()=>{
  const game=new Game(settings,()=>.4,{manualDayStart:true,manualRolls:true}),s=game.state;
  const settle=()=>{const r=s.rollRequest;game.beginRoll(r.id);game.completeRoll(r.id,r.ids.map(id=>({id,index:0,status:'settled'})));};

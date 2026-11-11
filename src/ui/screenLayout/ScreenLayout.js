@@ -11,7 +11,7 @@ export const areaDefinitions = Object.freeze({
     play: { name: 'プレイエリア', width: 600, height: 300 },
     palette: { name: 'パレットエリア', ...paletteStandardSize },
     stock: { name: 'ストック', ...stockStandardSize, ...stockOffsets },
-    discard: { name: '捨て札エリア', width: 300, height: 200, topLeftOffset: { x: 0, y: 36 } },
+    discard: { name: '捨て札 0枚', ...deckStandardSize, topLeftOffset: { x: 0, y: 36 } },
     deck: { name: 'デッキ 0枚', ...deckStandardSize, topLeftOffset: { x: 0, y: 36 } },
     hand: { name: '手札', ...handStandardSize, ...handOffsets },
 });

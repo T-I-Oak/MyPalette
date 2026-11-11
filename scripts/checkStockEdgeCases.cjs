@@ -28,7 +28,7 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
             window.stockCheck={screen,presentation,mounted,root,settings};
             </script>` }));
         await page.goto(base);
-        await page.locator('.StockArea .PaintingCard').first().waitFor();
+        await page.locator('[data-scene-area=stock] .PaintingCard').first().waitFor();
         await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});
         await page.waitForFunction(()=>window.stockCheck.mounted.session.game.state.phase==='play',null,{timeout:60000});
         await page.evaluate(()=>{
@@ -59,7 +59,7 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
             }
             await page.waitForFunction(()=>!document.querySelector('[data-stock-hand-motion],[data-stock-motion-card]'));
             assert.equal(await page.evaluate(id=>window.stockCheck.mounted.session.game.state.hand.find(c=>c.id===id).step,id),0);
-            assert.equal(await page.locator('.StockArea .PaintingCard').count(),0);
+            assert.equal(await page.locator('[data-scene-area=stock] .PaintingCard').count(),0);
         }
         if(await page.locator('#panel-toggle').isVisible()) await page.locator('#panel-toggle').click();
         await page.evaluate(()=>{

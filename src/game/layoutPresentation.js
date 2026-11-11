@@ -2,138 +2,104 @@ import { MoveObject } from '../ui/areaTransition/MoveObject.js';
 import { releasePaintingIcons } from '../cardIcons.js';
 import { createHandPresentation } from './handPresentation.js';
 import { createPlayPresentation } from './playPresentation.js';
-import { createPlayEffects } from './playEffects.js';
 import { createPalettePresentation } from './palettePresentation.js';
 import { createStockPresentation } from './stockPresentation.js';
-import { createStockEffects } from './stockEffects.js';
-import { createDeckPresentation } from './deckPresentation.js';
-import { createDeckEffects } from './deckEffects.js';
+import { createCardScene } from './cardScene.js';
+import { createCardSceneTimeline } from './cardSceneTimeline.js';
 import './layoutGame.css';
 
-// Each host can later be replaced by an area-specific renderer.
 export function createLayoutPresentation(screen) {
     const hosts = new Map();
     for (const [id, area] of screen.areas) {
-        const host = document.createElement('div');
-        host.className = 'GameAreaHost';
-        host.dataset.gameArea = id;
+        const host = document.createElement('div'); host.className = 'GameAreaHost'; host.dataset.gameArea = id;
         host.setAttribute('aria-label', area.name);
         const object = new MoveObject(`game:${id}`, host);
-        area.setSlot(object.id, { x: 0, y: 0, width: area.logicalWidth, height: area.logicalHeight });
-        area.place(object, object.id);
+        area.setSlot(object.id, { x: 0, y: 0, width: area.logicalWidth, height: area.logicalHeight }); area.place(object, object.id);
         hosts.set(id, { host, object });
     }
-    const handPresentation = createHandPresentation(screen.areas.get('hand'), hosts.get('hand').host);
-    const stockPresentation = createStockPresentation(screen.areas.get('stock'), hosts.get('stock').host);
-    const deckPresentation = createDeckPresentation(screen.areas.get('deck'), hosts.get('deck').host);
-    const deckEffects = createDeckEffects(screen, deckPresentation);
-    const stockEffects = createStockEffects(screen, hosts.get('stock').host, deckEffects);
-    let stockChoice = null;
-    let cardDefinitions;
-    const palettePresentation = createPalettePresentation(screen.areas.get('palette'), hosts.get('palette').host, () => screen.render());
-    const playPresentation = createPlayPresentation(screen.areas.get('play'), hosts.get('play').host, () => screen.render());
-    const effects = createPlayEffects(screen, hosts.get('play').host, playPresentation, screen.areas.get('play').canvas.closest('.LayoutScreen'), palettePresentation);
+    const hand = createHandPresentation(screen.areas.get('hand'), hosts.get('hand').host);
+    const stock = createStockPresentation(screen.areas.get('stock'), hosts.get('stock').host);
+    const palette = createPalettePresentation(screen.areas.get('palette'), hosts.get('palette').host, () => screen.render());
+    const play = createPlayPresentation(screen.areas.get('play'), hosts.get('play').host, () => screen.render());
+    const cards = createCardScene(screen, play); play.bindScene(cards);
+    let renderGame, stockChoice;
+    const timeline = createCardSceneTimeline(screen, cards, play, palette, () => renderGame());
+    function counts() {
+        if (!cards.display) return;
+        for (const [id, label] of [['deck', 'デッキ'], ['discard', '捨て札']]) {
+            const area = screen.areas.get(id), name = `${label} ${cards.counts[id]}枚`;
+            area.name = name; area.fixedLayer.querySelector('.LayoutAreaName').textContent = name;
+            area.canvas.setAttribute('aria-label', name);
+        }
+        for (const grade of ['A', 'B', 'C']) {
+            const label = hosts.get('stock').host.querySelector(`[data-stock-grade="${grade}"] h3`);
+            if (label) label.textContent = `グレード${grade} ${cards.counts.stocks[grade]}枚`;
+        }
+    }
+    cards.onDraw(counts);
     const unsubscribe = screen.subscribe(() => {
         for (const [id, { object }] of hosts) {
-            const area = screen.areas.get(id);
-            area.setSlot(object.id, { x: 0, y: 0, width: area.logicalWidth, height: area.logicalHeight });
+            const area = screen.areas.get(id); area.setSlot(object.id, { x: 0, y: 0, width: area.logicalWidth, height: area.logicalHeight });
         }
-        handPresentation.update();
-        stockPresentation.update();
-        deckPresentation.update();
-        palettePresentation.update();
-        playPresentation.update();
+        hand.update(); stock.update(); palette.update(); play.update(); cards.update();
     });
     function clear() {
-        handPresentation.clear();
-        stockPresentation.clear();
-        palettePresentation.clear();
-        playPresentation.clear();
+        hand.clear(); stock.clear(); palette.clear(); play.clear();
         for (const [id, { host }] of hosts) {
-            // Keep the palette connected so unrelated renders do not restart its CSS animations.
             if (id === 'palette') continue;
-            // Closed panel hosts are detached, so the screen root cannot release their observers.
-            releasePaintingIcons(host);
-            host.replaceChildren();
+            releasePaintingIcons(host); host.replaceChildren();
         }
     }
     return {
+        cards, play,
+        initialize: (definitions, state) => cards.initialize(definitions, state),
+        cardComponent: cards.component,
+        setAchievable: cards.achievable,
         clear,
-        reset() { palettePresentation.reset(); deckPresentation.reset(); },
-        searchFaces: palettePresentation.searchFaces,
-        beginAction(action,state,definitions) {
-            cardDefinitions = definitions;
-            effects.begin(action,state,definitions);stockEffects.begin(action,state,definitions);deckEffects.begin(state,definitions);
+        reset() { timeline.cancel(); cards.reset(); play.reset(); palette.reset(); },
+        searchFaces: palette.searchFaces,
+        beginAction(action) { timeline.begin(action); },
+        hand: () => cards.display.hand,
+        field: () => cards.display.field,
+        stock: () => cards.display,
+        hasAnimation: timeline.hasWork,
+        async animate(state, render, completeAchievement, resumeRecycle) {
+            renderGame = render;
+            await timeline.run(state, render, completeAchievement, resumeRecycle);
         },
-        field: effects.field,
-        hasAnimation(state,records = []) {
-            const stock=stockEffects.hasWork(state), deck=deckEffects.hasWork(records);
-            return effects.hasWork(state)||stock||deck;
+        cancelEffects: timeline.cancel,
+        async recover(state, render) {
+            timeline.cancel(); cards.busy = true; cards.restoreVisibility(); play.dropCanvases(); cards.adopt(state); render();
+            await cards.move(state, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300, 'recovery');
+            cards.busy = false; cards.update();
         },
-        async animate(state,render,completeAchievement) {
-            await stockEffects.run();
-            if(effects.hasWork(state)) await effects.run(state,render,() => {
-                deckEffects.begin(state,cardDefinitions);
-                const records = completeAchievement();
-                deckEffects.hasWork(records);
-                render();
-            });
-            await deckEffects.run(state);
-        },
-        cancelEffects() { effects.cancel();stockEffects.cancel();deckEffects.cancel(); },
         present(board, state, actions) {
             const move = (id, selector) => {
-                const node = board.querySelector(selector);
-                node.hidden = false;
-                hosts.get(id).host.append(node);
-                return node;
+                const node = board.querySelector(selector); node.hidden = false; hosts.get(id).host.append(node); return node;
             };
-            move('info', '.GameStatus');
-            const infoControls = move('info', '.GameControls');
-            const palette = move('palette', '.GameDicePane');
-            palettePresentation.present(palette, state, actions);
-            effects.hideDestination(board);
-            const field = move('play', '.field');
-            playPresentation.present(field, { ...state, field: effects.field(state) });
-            playPresentation.setEndDayButton(infoControls.querySelector('[data-game-end-day]'));
-            const hand = move('hand', '.hand');
-            hand.querySelector('h2').remove();
-            handPresentation.present(hand);
-            stockPresentation.present(move('stock', '.GameStockPane'), state, actions);
+            move('info', '.GameStatus'); const infoControls = move('info', '.GameControls');
+            palette.present(move('palette', '.GameDicePane'), state, actions);
+            play.present(move('play', '.field'), { ...state, field: cards.display.field });
+            play.setEndDayButton(infoControls.querySelector('[data-game-end-day]'));
+            const handSection = move('hand', '.hand'); handSection.querySelector('h2').remove(); hand.present(handSection);
+            stock.present(move('stock', '.GameStockPane'), { ...state, stocks: cards.display.stocks, public: cards.display.public }, actions);
             const choice = actions.stockSelection ? JSON.stringify(state.pending) : null;
-            if (choice && choice !== stockChoice) screen.openPanel();
-            stockChoice = choice;
-            stockEffects.present();
-            move('discard', '.discard');
-            deckPresentation.present(state);
-            deckEffects.present();
+            if (choice && choice !== stockChoice) screen.openPanel(); stockChoice = choice;
+            board.querySelector('.discard').remove();
             const info = hosts.get('info').host;
             for (const [selector, label] of [['.shipped', '出荷済み作品を確認'], ['.GameLogsPane', '進行記録を確認']]) {
-                const content = board.querySelector(selector);
-                content.hidden = false;
-                const dialog = document.createElement('dialog');
-                dialog.className = 'GameInspection';
-                dialog.setAttribute('aria-label', label);
-                const close = document.createElement('button'); close.tabIndex = -1;
-                close.className = 'Button texture-raised'; close.textContent = '閉じる';
-                close.addEventListener('click', () => dialog.close());
-                dialog.append(close, content); board.append(dialog);
-                const open = document.createElement('button'); open.tabIndex = -1;
-                open.className = 'Button texture-raised'; open.textContent = label;
+                const content = board.querySelector(selector); content.hidden = false;
+                const dialog = document.createElement('dialog'); dialog.className = 'GameInspection'; dialog.setAttribute('aria-label', label);
+                const close = document.createElement('button'); close.tabIndex = -1; close.className = 'Button texture-raised'; close.textContent = '閉じる';
+                close.addEventListener('click', () => dialog.close()); dialog.append(close, content); board.append(dialog);
+                const open = document.createElement('button'); open.tabIndex = -1; open.className = 'Button texture-raised'; open.textContent = label;
                 open.addEventListener('click', () => dialog.showModal()); info.append(open);
             }
-            board.querySelector('.GameTabs').remove();
-            board.querySelector('.GameWorkspace').remove();
+            board.querySelector('.GameTabs').remove(); board.querySelector('.GameWorkspace').remove();
+            cards.inspect(actions.inspectCard); counts(); cards.update(); cards.draw();
         },
         dispose() {
-            deckEffects.cancel();
-            stockEffects.cancel();
-            effects.cancel();
-            clear(); unsubscribe();
-            handPresentation.dispose();
-            stockPresentation.dispose();
-            palettePresentation.dispose();
-            playPresentation.dispose();
+            timeline.cancel(); clear(); unsubscribe(); cards.dispose(); hand.dispose(); stock.dispose(); palette.dispose(); play.dispose();
             for (const { object } of hosts.values()) object.area.remove(object);
         },
     };

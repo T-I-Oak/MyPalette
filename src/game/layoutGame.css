@@ -22,3 +22,5 @@
 .GameInspection .GameCardAreaContent { zoom: .6; width: auto; display: flex; flex-wrap: wrap; }
 .GameStartup { position: absolute; inset: 0; z-index: 6; padding: 24px; overflow: auto; background: var(--ui-surface); font-family: system-ui, sans-serif; }
 .GameStartup[hidden] { display: none; }
+
+.GameAreaHost[data-game-area='deck'], .GameAreaHost[data-game-area='discard'] { background: transparent; padding: 0; }

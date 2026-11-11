@@ -10,7 +10,7 @@ export function gameIssues(settings) {
     return settings.cards.flatMap(card => draftIssues(card).map(issue => `${card.id}：${issue}`));
 }
 export class Game {
-    constructor(settings, random = Math.random, { onCandidateAcquired, manualStartRoll = false, manualRolls = manualStartRoll, manualDayStart = false } = {}) {
+    constructor(settings, random = Math.random, { onCandidateAcquired, manualStartRoll = false, manualRolls = manualStartRoll, manualDayStart = false, manualRecycle = false } = {}) {
         const issues = gameIssues(settings);
         if (issues.length) throw new Error(issues.join('\n'));
         this.random = random;
@@ -19,11 +19,12 @@ export class Game {
         this.manualDayStart = manualDayStart;
         this.definitions = Object.fromEntries(structuredClone(settings.cards).map(card => [card.id, card]));
         this.sequence = 0; this.task = null; this.noticeSequence = 0;
+        this.manualRecycle = manualRecycle; this.recycleSequence = 0;
         this.deckEvents = [];
         this.state = {
             day: 0, fame: 0, credit: 3, flyers: 0, progress: 0, orderCost: 3, rerolls: 0,
             phase: 'betweenDays', pending: null, achievement: null, dice: [], deck: [], hand: [], field: [], discard: [], shipped: [],
-            stocks: {}, public: {}, reserved: [], logs: [], dayEndDice: null, rollRequest: null, effectNotices: [],
+            stocks: {}, public: {}, reserved: [], logs: [], dayEndDice: null, rollRequest: null, recycleRequest: null, effectNotices: [],
         };
         const s = this.state;
         for (const grade of ['A', 'B', 'C']) s.stocks[grade] = shuffle(settings.cards.filter(c => c.id[0] === grade)
@@ -50,7 +51,7 @@ export class Game {
     }
     advance(value) {
         const result = this.task.next(value);
-        this.state.pending = result.done || result.value.kind === 'roll' ? null : result.value;
+        this.state.pending = result.done || ['roll', 'recycle'].includes(result.value.kind) ? null : result.value;
         if (result.done) this.task = null;
     }
     choose(ids) {
@@ -96,10 +97,20 @@ export class Game {
         this.state.rollRequest = { id: ++this.rollSequence, ids: dice.map(die => die.id), status: 'ready', reason };
         yield { kind: 'roll' };
     }
-    draw(count) {
+    completeRecycle(id) {
+        if (!this.state.recycleRequest || this.state.recycleRequest.id !== id) throw new Error('再構成待機中ではありません。');
+        this.state.recycleRequest = null;
+        this.advance();
+    }
+    draw(count) { this.drawCards(count, false).next(); }
+    *drawCards(count, wait = this.manualRecycle) {
         const s = this.state; let drawn = 0;
         for (let i = 0; i < count; i++) {
             if (!s.deck.length) {
+                if (wait && s.discard.length) {
+                    s.recycleRequest = { id: ++this.recycleSequence, cards: structuredClone(s.discard) };
+                    yield { kind: 'recycle' };
+                }
                 s.deck = shuffle(s.discard, this.random); s.discard = [];
                 if (s.deck.length) this.deckEvents.push({ kind: 'recycle', cards: structuredClone(s.deck) });
             }
@@ -124,13 +135,13 @@ export class Game {
         const s = this.state;
         if (s.phase !== 'awaitingStart') s.day++;
         s.phase = 'start'; s.dayEndDice = null;
+        for (const die of s.dice) { die.used = false; die.current = null; }
         if (s.day === 1) {
             s.deck = s.stocks.A.splice(0, 7);
             this.deckEvents.push({ kind: 'deal', cards: structuredClone(s.deck) });
         }
         for (const grade of ['A', 'B', 'C']) s.public[grade] = s.stocks[grade][0]?.id ?? null;
-        for (const die of s.dice) die.used = false;
-        s.rerolls++; this.draw(4);
+        s.rerolls++; yield* this.drawCards(4);
         const reserved = s.reserved; s.reserved = [];
         yield* this.effects(reserved);
         yield* this.rollDice(s.dice, 'start');
