@@ -162,7 +162,7 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
             } : undefined);
         }
         if (signal.aborted) return;
-        if (['awaitingStart', 'betweenDays'].includes(state.phase)) {
+        if (['awaitingStart', 'betweenDays'].includes(state.phase) || state.dayEndRequest?.kind === 'cleanup') {
             const intermediate = cardSceneSnapshot(cards.display);
             for (const change of changes.filter(item => item.from === 'stock' && item.to === 'discard')) {
                 const grade = change.id[0];

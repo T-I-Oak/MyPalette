@@ -61,13 +61,81 @@ test('turn end consumes specials then two flyer dice, reduces credit and removes
     game.endDay();
     assert.equal(s.phase, 'betweenDays'); assert.equal(s.credit, 2);
     assert.equal(s.flyers, 1); assert.equal(s.progress, 0); assert.equal(s.dice.length, 3);
-    assert.equal(s.reserved.length, 1); assert.equal(s.rerolls, 0);
+    assert.equal(s.reserved.length, 0); assert.equal(s.rerolls, 0);
+    assert.equal(s.fame, 1);
     assert.equal(s.dayEndDice.length, 4);
     assert.equal(s.dayEndDice.at(-1).id, 'extra');
     assert.equal(s.dayEndDice.at(-1).used, false);
     assert.equal(s.dayEndDice[0].used, true);
     game.nextDay(); assert.equal(s.fame, 1); assert.equal(s.day, 2);
     assert.equal(s.dayEndDice, null);
+});
+
+test('play and achievement resolve fame first and preserve order across choices', () => {
+    const game = make(), s = game.state, card = s.hand[0];
+    const die = s.dice[0];
+    die.faces[die.current] = { color: 'red', material: 'brush' };
+    const effects = [{ type: 'changeColor', color: 'red' }, { type: 'changeFame', amount: 3 },
+        { type: 'gainRerolls', count: 1 }, { type: 'changeFame', amount: -1 }];
+    game.definitions[card.id].steps[0] = {
+        goals: [{ color: 'red', material: null }], playEffects: effects, achievementEffects: effects,
+    };
+    game.play(card.id);
+    assert.equal(s.fame, 2);
+    assert.equal(s.rerolls, 1);
+    assert.deepEqual(s.effectNotices.at(-1).effects, effects);
+    game.choose([die.id]);
+    assert.equal(s.fame, 2);
+    assert.equal(s.rerolls, 2);
+    game.achieve(card.id, [die.id]);
+    assert.equal(s.fame, 4);
+    assert.equal(s.rerolls, 2);
+    assert.deepEqual(s.effectNotices.at(-1).effects, effects);
+    assert.deepEqual(s.logs.slice(-3), [effects[1], effects[3], effects[0]]
+        .map(effect => `${s.day}日目：効果：${game.effectLabel(effect)}`));
+    game.choose([s.dice[1].id]);
+    assert.equal(s.fame, 4);
+    assert.equal(s.rerolls, 3);
+    assert.equal(s.pending, null);
+});
+
+test('day end applies all unused fame faces only after day-end requests and before either outcome', () => {
+    for (const lastDay of [false, true]) {
+        const game = new Game(settings, () => .4, { manualDayStart: true, manualDayEnd: true }), s = game.state;
+        game.beginDay();
+        for (let i = 0; i < 3; i++) {
+            const die = game.makeDie([{ special: 'fame1' }], 'temporary');
+            die.used = i === 2;
+            s.dice.push(die);
+        }
+        s.credit = lastDay ? 1 : 3;
+        game.endDay();
+        assert.ok(s.dice.slice(-3).every(die => die.used));
+        assert.deepEqual(s.reserved, []);
+        assert.ok(s.dayEndRequest);
+        while (s.dayEndRequest && s.dayEndRequest.kind !== 'cleanup') {
+            assert.equal(s.fame, 0);
+            game.completeDayEndRequest(s.dayEndRequest);
+        }
+        if (!lastDay) {
+            assert.deepEqual(s.dayEndRequest, { kind: 'cleanup' });
+            assert.equal(s.phase, 'end');
+            assert.equal(s.fame, 0);
+            assert.ok(Object.values(s.public).every(id => id === null));
+            game.completeDayEndRequest(s.dayEndRequest);
+        }
+        assert.equal(s.fame, 2);
+        if (lastDay) {
+            assert.equal(s.phase, 'finished');
+            assert.match(s.logs.at(-1), /ゲーム終了：名声2/);
+        } else {
+            game.nextDay();
+            assert.equal(s.phase, 'awaitingStart');
+            assert.equal(s.fame, 2);
+            game.beginDay();
+            assert.equal(s.fame, 2);
+        }
+    }
 });
 test('normal multi acquisition waits for all candidates before rolling and adding', () => {
     const accepted = [];

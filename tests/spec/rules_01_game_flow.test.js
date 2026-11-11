@@ -90,7 +90,7 @@ test('1.3 game over consumes reserved flyers and skips stock acquisition', () =>
     assert.equal(s.flyers, 0); assert.equal(s.progress, 1); assert.equal(s.orderCost, 5);
     assert.deepEqual(s.public, publicCards); assert.equal(s.discard.length, 0);
 });
-test('1.3 temporary specials reserve before removal and trigger after next day draw/roll', () => {
+test('1.3 temporary specials reserve before removal and trigger at next day start', () => {
     const game = new Game(settings, random(8)), s = game.state;
     s.discard.push(...s.hand.splice(0));
     const die = game.makeDie(Array.from({ length: 6 }, () => ({ special: 'draw1' })), 'temporary'); s.dice.push(die);

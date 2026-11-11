@@ -131,10 +131,18 @@ export function mountGame(root, settings, onMenu, presentation = null) {
                 return game.deckEvents;
             }).catch(async error => {
                 if (game.state.achievement) session.dispatch(() => game.completeAchievement());
-                while (game.state.dayEndRequest) session.dispatch(() => game.completeDayEndRequest(game.state.dayEndRequest));
+                while (game.state.dayEndRequest && game.state.dayEndRequest.kind !== 'cleanup') {
+                    session.dispatch(() => game.completeDayEndRequest(game.state.dayEndRequest));
+                }
                 while (game.state.recycleRequest) session.dispatch(() => game.completeRecycle(game.state.recycleRequest.id));
                 presentation.cancelEffects();
-                if (!disposed) await presentation.recover(game.state, render);
+                try {
+                    if (!disposed) await presentation.recover(game.state, render);
+                } finally {
+                    if (game.state.dayEndRequest?.kind === 'cleanup') {
+                        session.dispatch(() => game.completeDayEndRequest(game.state.dayEndRequest));
+                    }
+                }
                 console.error(error);
                 animationError = '演出を表示できなかったため、現在のゲーム状態を表示しました。';
             }).finally(() => {
@@ -286,6 +294,12 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         scroll.append(tabs);
         const workspace = el('div', undefined, 'GameWorkspace'); scroll.append(workspace);
         const canPlay = s.phase === 'play' && !s.pending && !s.achievement && !s.rollRequest && !s.recycleRequest;
+        const unusedDice = s.dice.filter(die => !die.used);
+        const canChangeAll = () => {
+            const selectedCount = unusedDice.filter(die => selected.has(die.id)).length;
+            return canPlay && !moving && !notices.busy && s.rerolls > 0 && unusedDice.length > 0 &&
+                (selectedCount === 0 || selectedCount === unusedDice.length);
+        };
         const selectingReroll = Boolean(presentation && !notices.busy && s.pending?.kind === 'dice' && s.pending.effectType === 'reroll');
         const selectingReturn = Boolean(presentation && s.pending?.kind === 'handReturn');
         const visibleDice = s.phase === 'betweenDays' ? s.dayEndDice : s.dice;
@@ -305,7 +319,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
             reroll.setAttribute('aria-label', `${die.id}をリロール`); reroll.title = `${die.id}をリロール`;
             node.append(reroll); diceList.append(node);
         }
-        diceSection.append(diceList, gameButton('全未使用ダイスをリロール', () => act(() => game.reroll()), !canPlay || !s.rerolls || !s.dice.some(d => !d.used)));
+        diceSection.append(diceList, gameButton('全未使用ダイスをリロール', () => act(() => game.reroll()), !canChangeAll()));
         diceSection.title = 'ダイスにチェックを付け、制作中の作品の達成ボタンで確定します。';
         const cardZones = [['field', '制作中'], ['hand', '手札'], ['shipped', '出荷済み作品']];
         if (presentation) cardZones.push(['discard', '捨て札']);
@@ -428,7 +442,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
                 selected.size <= s.pending.max && [...selected].every(id => s.pending.options.some(option => option.id === id)),
             confirmReroll: () => act(() => game.choose([...selected])),
             canStartRoll: () => !disposed && !moving && !notices.busy && s.rollRequest?.status === 'ready',
-            canChangeAll: () => canPlay && !moving && s.rerolls > 0 && s.dice.some(die => !die.used),
+            canChangeAll,
             canChangeOne: () => canPlay && !moving && s.rerolls > 0 && selected.size === 1 && s.dice.some(die => selected.has(die.id) && !die.used),
             changeAll: () => act(() => game.reroll()),
             changeOne: () => { if (selected.size === 1) act(() => game.reroll([...selected][0])); },

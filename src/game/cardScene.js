@@ -43,14 +43,15 @@ export function createCardScene(screen, play) {
         if (!placements.has(key)) placements.set(key, scatteredPlacement(area));
         return placements.get(key);
     }
-    function refreshContent(id, step) {
+    function refreshContent(id, { area, step }) {
         const component = cards.get(id).component;
-        const key = JSON.stringify([definitions[id], step]);
+        const key = JSON.stringify([definitions[id], area, step]);
         if (content.get(id) === key) return;
         releasePaintingIcons(component.element);
         const remembered = selected.get(id);
-        component.setFace(definitions[id], step, remembered?.current === step ? remembered.selected : step,
-            value => selected.set(id, { current: step, selected: value }));
+        const selectedStep = remembered?.area === area && remembered.current === step ? remembered.selected : step;
+        component.setFace(definitions[id], step, selectedStep,
+            value => selected.set(id, { area, current: step, selected: value }));
         component.element.dataset.sceneCard = id;
         component.element.setAttribute('aria-haspopup', 'dialog');
         content.set(id, key);
@@ -66,7 +67,7 @@ export function createCardScene(screen, play) {
         for (const [id, entry] of cards) {
             const record = model.get(id), where = locations.get(id);
             if (where.area === 'field' && record.area === 'field' || root.dataset.cardSceneMotion === 'achievement-canvas') record.pose = poseFor(id);
-            refreshContent(id, where.step);
+            refreshContent(id, where);
             entry.component.element.classList.toggle('state-achievable', entry.achievable && ['hand', 'field'].includes(record.area) && record.area === where.area);
             const layer = model.motion ? 'moving' : ['stock', 'discard', 'deck'].includes(where.area) ? 'panel' : 'main';
             if (entry.wrapper.parentNode !== layers.get(layer)) layers.get(layer).append(entry.wrapper);
