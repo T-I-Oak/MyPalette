@@ -135,6 +135,17 @@ export function createPalettePresentation(area, host, relayout) {
         if (group) syncSnapshot();
     }
     return {
+        waitReady(signal) {
+            return new Promise(resolve => {
+                let frame;
+                const done = () => { cancelAnimationFrame(frame); signal.removeEventListener('abort', done); resolve(); };
+                const tick = () => {
+                    if (disposed || signal.aborted || group && group.dice.every(die => die.state === 'ready' && !die.readyMotion)) done();
+                    else frame = requestAnimationFrame(tick);
+                };
+                signal.addEventListener('abort', done, { once: true }); tick();
+            });
+        },
         searchFaces(condition) {
             if (scene) return scene.showFaceSearch(condition);
             pendingSearch = {...condition};

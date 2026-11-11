@@ -40,13 +40,13 @@ for (const card of settings.cards) for (const step of card.steps) {
         await page.goto(base);
         await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});
         await page.waitForFunction(()=>document.querySelector('[data-game-end-day]')?.disabled===false,null,{timeout:60000});
-        const hand = page.locator('.HandArea .PaintingCard');
+        const hand = page.locator('[data-scene-area=hand] .PaintingCard');
         await hand.first().waitFor();
         async function checkGlow(label) {
             const result = await page.evaluate(async () => {
                 const { matchingDice } = await import('./src/game/goals.js');
                 const game = window.handCheck.session.game;
-                return [...document.querySelectorAll('.HandArea .PaintingCard')].map(node => {
+                return [...document.querySelectorAll('[data-scene-area=hand] .PaintingCard')].map(node => {
                     const card = game.state.hand.find(card => card.id === node.dataset.cardId);
                     return { id: card.id, actual: node.classList.contains('state-achievable'),
                         expected: !!matchingDice(game.step(card).goals, game.state.dice) };
@@ -67,8 +67,8 @@ for (const card of settings.cards) for (const step of card.steps) {
         assert.equal(await detail.locator('[aria-current="step"]').textContent(), 'Step 0');
         assert.equal(await snapshot(), before);
         await detail.getByRole('button', { name: '閉じる', exact: true }).click();
-        await page.waitForFunction(id => document.querySelector(`.HandArea [data-card-id="${id}"] [aria-selected="true"]`)?.textContent === 'Step 1', first);
-        assert.equal(await page.locator(`.HandArea [data-card-id="${first}"] [aria-selected="true"]`).textContent(), 'Step 1');
+        await page.waitForFunction(id => document.querySelector(`[data-scene-area=hand] [data-card-id="${id}"] [aria-selected="true"]`)?.textContent === 'Step 1', first);
+        assert.equal(await page.locator(`[data-scene-area=hand] [data-card-id="${first}"] [aria-selected="true"]`).textContent(), 'Step 1');
         await page.locator('.HandFixedActions button').first().click();
         assert.equal(await hand.count(), 6);
         await checkGlow('draw');
@@ -88,7 +88,7 @@ for (const card of settings.cards) for (const step of card.steps) {
             const ids = await hand.evaluateAll(nodes => nodes.map(node => node.dataset.cardId));
             // All exposed card strips must open the correct card, including overlapped ones.
             for (const id of ids) {
-                await page.locator(`.HandArea [data-card-id="${id}"]`).click({ position: { x: 5, y: 40 } });
+                await page.locator(`[data-scene-area=hand] [data-card-id="${id}"]`).click({ position: { x: 5, y: 40 } });
                 await detail.waitFor();
                 assert.equal(await detail.locator('.PaintingCard').getAttribute('data-card-id'), id);
                 await detail.getByRole('button', { name: '閉じる', exact: true }).click();

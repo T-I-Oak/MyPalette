@@ -1,7 +1,0 @@
-.GameAreaHost.DeckArea { padding: 0; background: transparent; }
-.DeckArea, .DeckArea * { box-sizing: border-box; }
-.DeckArea > .PaintingCard { position: absolute; margin: 0; }
-.LayoutContent.state-deck-receiving .DeckArea { visibility: hidden; }
-.LayoutContent.state-deck-moving .HandArea,
-.LayoutContent.state-deck-moving .HandFixedActions { visibility: hidden; }
-.PaintingCard[data-deck-motion-card], .PaintingCard[data-deck-motion-card] * { box-sizing: border-box; }

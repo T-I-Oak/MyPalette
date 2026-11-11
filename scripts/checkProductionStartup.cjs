@@ -11,7 +11,7 @@ const base=process.argv[2]||'http://127.0.0.1:4173/MyPalette/';
   const start=page.getByRole('button',{name:'今日の仕事を始める',exact:true});await start.waitFor();
   await page.waitForFunction(()=>document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
   const readyMs=await page.evaluate(()=>performance.now());
-  assert.equal(await page.locator('.HandArea .PaintingCard').count(),0);
+  assert.equal(await page.locator('[data-scene-area=hand] .PaintingCard').count(),0);
   assert.equal(await page.locator('.PaletteViewport .DiceResult:not([hidden])').count(),0);
   await start.click({force:true});
   await page.waitForFunction(()=>{const b=[...document.querySelectorAll('.PaletteFixedActions button')].find(n=>n.textContent==='すべての画材を更新する');return b&&!b.disabled;},null,{timeout:60000});
@@ -21,7 +21,7 @@ const base=process.argv[2]||'http://127.0.0.1:4173/MyPalette/';
   if(i===0){
    await page.setViewportSize({width:390,height:844});assert(await page.getByRole('button',{name:'今日の仕事を終える',exact:true}).isEnabled());
    await page.getByRole('button',{name:'今日の仕事を終える',exact:true}).click();
-   await start.waitFor();assert.equal(await page.locator('.HandArea .PaintingCard').count(),0);
+   await start.waitFor();assert.equal(await page.locator('[data-scene-area=hand] .PaintingCard').count(),0);
   }
   assert.deepEqual(errors,[]);await context.close();
  }

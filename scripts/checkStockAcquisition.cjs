@@ -28,7 +28,7 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
             window.stockCheck={screen,presentation,mounted,root,settings};
             </script>` }));
         await page.goto(base);
-        await page.locator('.StockArea .PaintingCard').first().waitFor();
+        await page.locator('[data-scene-area=stock] .PaintingCard').first().waitFor();
         await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});
         await page.waitForFunction(()=>window.stockCheck.mounted.session.game.state.phase==='play',null,{timeout:60000});
         await page.evaluate(()=>{
@@ -47,7 +47,7 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
             const first=button.getBoundingClientRect();button.style.scale='1.1';
             const second=button.getBoundingClientRect();
             button.style.removeProperty('animation');button.style.removeProperty('scale');
-            const source=document.querySelector('.StockArea .PaintingCardBackOnly');
+            const source=document.querySelector('[data-scene-area=stock] .PaintingCard[data-scene-back=true]');
             const before=getComputedStyle(source.querySelector('.PaintingBack'));
             const normal=[before.width,before.height,before.boxSizing];
             const copy=source.cloneNode(true);copy.dataset.stockMotionCard='geometry-check';

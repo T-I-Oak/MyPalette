@@ -1,0 +1,20 @@
+.CardSceneLayer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.CardSceneLayer.main { z-index: 1; }
+.CardSceneLayer.panel { z-index: 3; }
+.CardSceneLayer.moving { z-index: 4; }
+.CardSceneCard { position: absolute; top: 0; left: 0; width: 294px; height: 414px; transform-origin: 0 0; }
+.CardSceneCard, .CardSceneCard * { box-sizing: border-box; }
+.CardSceneCard > .PaintingCard { margin: 0; transform: none; }
+.CardSceneCard > .PaintingCard[data-card-area='field'] { perspective: none; }
+.CardSceneCard > .PaintingCard[data-card-area='field'] .PaintingFaces { transform-style: flat; }
+.CardSceneCard > .PaintingCard[data-card-area='field'] .PaintingFront { transform: none; backface-visibility: visible; }
+.CardSceneCard > .PaintingCard[data-card-area='field'] .PaintingBack { display: none; }
+.CardSceneCard > .PaintingCard[data-card-area='field'] :is(.PaintingFront, .PaintingSheet, .PaintingArtwork, .PaintingTab, .PaintingBlock) { border-width: 1.5px; }
+.CardSceneCard > .PaintingCard[data-card-area='field'].state-achievable .PaintingFront::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    box-shadow: 0 0 0 3px var(--ui-success-border), 0 0 14px 5px var(--ui-success-border);
+    pointer-events: none; animation: hand-achievable-glow 1.6s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+    .CardSceneCard > .PaintingCard[data-card-area='field'].state-achievable .PaintingFront::after { animation: none; }
+}

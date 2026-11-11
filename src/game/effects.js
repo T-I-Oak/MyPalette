@@ -51,7 +51,7 @@ export function* resolveEffects(game, effects) {
             for (const die of s.dice) die.used = false;
         }
         else if (effect.type === 'gainRerolls') s.rerolls += effect.count;
-        else if (effect.type === 'drawCards') game.draw(effect.count);
+        else if (effect.type === 'drawCards') yield* game.drawCards(effect.count);
         else if (effect.type === 'gainStockCards') yield* stockCards(game, effect.count);
         else if (effect.type === 'activateSpecialFaces') yield* game.effects(specialEffects(s.dice), 'special');
         else if (effect.type === 'changeCardStep') {

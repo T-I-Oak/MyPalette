@@ -62,9 +62,6 @@ export function createEasel() {
             const { object, placement } = canvas;
             object.position.set(...placement.center);
             front.add(object);
-            front.getObjectByName('top-clamp-block').position.y = placement.top + .0555;
-            front.getObjectByName('top-clamp-lip').position.y = placement.top + .009;
-            front.getObjectByName('clamp-knob').position.y = placement.top + .0555;
         },
         dispose() {
             easel.traverse(node => { if (node.isMesh) node.geometry.dispose(); });
