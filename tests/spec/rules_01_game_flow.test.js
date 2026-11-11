@@ -69,16 +69,16 @@ test('1.3 flyer ordering proceeds when flyer dice are consumed and credit remain
     const game = new Game(settings, random(9)), s = game.state;
     s.discard.push(...s.hand.splice(0)); s.flyers = 2; s.progress = 1; s.credit = 2;
     game.endDay(); assert.equal(s.phase, 'end'); assert.equal(s.pending.kind, 'stock');
-    assert.equal(s.orderCost, 5); assert.equal(s.flyers, 0); assert.equal(s.progress, 1); assert.equal(s.credit, 2);
+    assert.equal(s.orderCost, 5); assert.equal(s.flyers, 0); assert.equal(s.progress, 1); assert.equal(s.credit, 1);
     const chosen = s.public.C; game.choose([chosen]); assert.equal(s.discard.some(c => c.id === chosen), true);
-    assert.equal(s.credit, 1);
+    assert.equal(s.credit, 1); assert.equal(s.progress, 1);
     game.nextDay(); s.discard.push(...s.hand.splice(0)); s.flyers = 4;
     const specialDie = game.makeDie(Array.from({ length: 6 }, () => ({ special: 'draw1' })), 'temporary');
     s.dice[0].used = true; s.dice.push(specialDie);
     game.endDay(); assert.equal(s.orderCost, 7); game.choose([s.public.A]); assert.equal(s.progress, 1);
     assert.equal(s.credit, 1); assert.equal(s.reserved.length, 1);
 });
-test('1.3 game over skips flyer ordering even with a public stock card available', () => {
+test('1.3 game over consumes reserved flyers and skips stock acquisition', () => {
     const game = new Game(settings, random(9)), s = game.state;
     s.flyers = 2; s.progress = 1; s.credit = 1;
     const publicCards = { ...s.public };
@@ -87,7 +87,7 @@ test('1.3 game over skips flyer ordering even with a public stock card available
     game.endDay();
 
     assert.equal(s.phase, 'finished'); assert.equal(s.credit, 0); assert.equal(s.pending, null);
-    assert.equal(s.flyers, 3); assert.equal(s.progress, 1); assert.equal(s.orderCost, 3);
+    assert.equal(s.flyers, 0); assert.equal(s.progress, 1); assert.equal(s.orderCost, 5);
     assert.deepEqual(s.public, publicCards); assert.equal(s.discard.length, 0);
 });
 test('1.3 temporary specials reserve before removal and trigger after next day draw/roll', () => {

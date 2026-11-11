@@ -5,12 +5,15 @@ import { stockTiming } from './stockMotion.js';
 import { recycleFrame, recycleTiming, sineProgress } from './recycleMotion.js';
 import { stockMetrics as m } from './stockLayout.js';
 import { paintingPreview } from './easel/paintingPreview.js';
-import { flyAchievementMaterials } from './achievementMaterials.js';
+import { flyMaterials } from './achievementMaterials.js';
 import { materialTiming } from './achievementMotion.js';
+import { flyerReserveCycles, flyerReserveDuration } from './infoLayout.js';
+import { animateProgress } from './playAnimation.js';
+import { animateCreditLoss } from './creditLossMotion.js';
 
 const clamp = value => Math.min(1, Math.max(0, value));
 
-export function createCardSceneTimeline(screen, cards, play, palette, refresh) {
+export function createCardSceneTimeline(screen, cards, play, palette, flyer, info, refresh) {
     const root = screen.areas.get('play').canvas.closest('.LayoutContent');
     let action, records = [], enabled = true, controller = new AbortController();
     function prepare(target) { cards.adopt(target); refresh(); }
@@ -201,12 +204,12 @@ export function createCardSceneTimeline(screen, cards, play, palette, refresh) {
         hasWork(state, events) {
             records = structuredClone(events);
             const changed = JSON.stringify(cards.display) !== JSON.stringify(cardSceneSnapshot(state));
-            const work = Boolean(state.achievement || state.recycleRequest || changed);
+            const work = Boolean(state.achievement || state.recycleRequest || state.dayEndRequest || state.phase === 'betweenDays' || changed);
             cards.busy = work;
             if (!work) cards.adopt(state);
             return work;
         },
-        async run(state, render, completeAchievement, resumeRecycle) {
+        async run(state, completeAchievement, resumeRecycle, resumeDayEnd) {
             const signal = controller.signal;
             try {
                 if (state.phase === 'start') {
@@ -226,27 +229,62 @@ export function createCardSceneTimeline(screen, cards, play, palette, refresh) {
                     palette.beginAchievement(action.diceIds);
                     await play.fadeOut(id, images[0], signal);
                     if (signal.aborted) return;
-                    const effect = { id, diceIds: action.diceIds };
-                    await Promise.all([flyAchievementMaterials(screen, palette, play, effect, signal),
+                    await Promise.all([flyMaterials(screen, palette, { diceIds: action.diceIds, corners: () => play.canvasCorners(id) }, signal),
                         play.repaint(id, images[0], images[1], signal, Math.max(520, materialTiming.outbound + materialTiming.orbit + Math.max(0, action.diceIds.length - 1) * materialTiming.stagger))]);
-                    if (signal.aborted) return;
-                    await play.fadeIn(id, null, nextStep, signal);
                     if (signal.aborted) return;
                     const target = cardSceneSnapshot(cards.display), destination = nextStep === 3 ? 'shipped' : 'discard';
                     target.field = target.field.filter(item => item.id !== id);
                     target[destination].push({ id, step: nextStep });
-                    await move(target, 520, 'achievement-transfer');
+                    if (destination === 'shipped') {
+                        await move(target, 520, 'achievement-shipment', {
+                            shipment: { id, image: images[1] }, ease: sineProgress,
+                            departure: (cardId, progress) => cardId === id && progress > 0,
+                        });
+                    } else {
+                        await play.fadeIn(id, null, nextStep, signal);
+                        if (signal.aborted) return;
+                        await move(target, 520, 'achievement-transfer');
+                    }
                     if (signal.aborted) return;
                     palette.endAchievement(); records = completeAchievement();
                 }
                 await reconcile(state, records);
-                while (state.recycleRequest && !signal.aborted) {
-                    records = await recycle(state, resumeRecycle);
+                while (!signal.aborted && (state.dayEndRequest || state.recycleRequest)) {
+                    if (state.dayEndRequest) {
+                        const request = state.dayEndRequest;
+                        if (enabled && request.kind === 'work') {
+                            root.dataset.cardSceneMotion = 'flyer-work';
+                            await flyer.work(state, request, signal);
+                        } else if (enabled && request.kind === 'return') {
+                            root.dataset.cardSceneMotion = 'flyer-return';
+                            await flyer.returnToInfo(state, request, signal);
+                        } else if (enabled && request.kind === 'reserve') {
+                            root.dataset.cardSceneMotion = 'flyer-reserve';
+                            await animateProgress(flyerReserveDuration * flyerReserveCycles, () => {}, signal);
+                        } else if (request.kind === 'credit') {
+                            if (enabled) {
+                                root.dataset.cardSceneMotion = 'credit-loss';
+                                await animateCreditLoss(screen, palette, info, request.diceIds, state.credit, signal);
+                            }
+                            if (!signal.aborted) palette.hideCreditMaterials(request.diceIds);
+                        }
+                        if (signal.aborted) return;
+                        records = resumeDayEnd(request);
+                        if (request.kind === 'return') flyer.clear();
+                        refresh();
+                        if (request.kind === 'work') palette.endAchievement();
+                    } else {
+                        records = await recycle(state, resumeRecycle);
+                    }
                     if (!signal.aborted) await reconcile(state, records);
                 }
                 if (!signal.aborted) { cards.adopt(state); cards.busy = false; cards.update(); }
             } finally { if (controller.signal === signal) delete root.dataset.cardSceneMotion; }
         },
-        cancel() { controller.abort(); controller = new AbortController(); palette.endAchievement(); cards.cancel(); delete root.dataset.cardSceneMotion; },
+        cancel() {
+            controller.abort(); controller = new AbortController();
+            flyer.clear(); info.clearCreditImpacts(); palette.endAchievement(); cards.cancel();
+            delete root.dataset.cardSceneMotion;
+        },
     };
 }

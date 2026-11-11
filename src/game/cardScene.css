@@ -5,6 +5,20 @@
 .CardSceneCard { position: absolute; top: 0; left: 0; width: 294px; height: 414px; transform-origin: 0 0; }
 .CardSceneCard, .CardSceneCard * { box-sizing: border-box; }
 .CardSceneCard > .PaintingCard { margin: 0; transform: none; }
+.SceneShippedCanvas { display: none; }
+.CardSceneCard.SceneShippedPainting, .SceneShippedPainting > .PaintingCard { width: var(--shipped-width); height: var(--shipped-height); }
+.SceneShippedPainting > .PaintingCard { perspective: none; }
+.SceneShippedPainting .PaintingFaces { visibility: hidden; }
+.SceneShippedPainting .SceneShippedCanvas {
+    position: absolute; top: 0; left: calc(var(--shipped-edge) * var(--shipment-progress, 1)); display: block; height: 100%;
+    transform: perspective(var(--shipped-perspective)) rotateY(calc(var(--shipped-angle) * var(--shipment-progress, 1)));
+    transform-origin: left center; transform-style: preserve-3d;
+}
+.SceneShippedCanvas::before {
+    content: ''; position: absolute; inset: 0 auto 0 0; width: var(--shipped-thickness);
+    background: linear-gradient(90deg, #dcc4a0, #aa8762); transform-origin: left center; transform: rotateY(90deg);
+}
+.SceneShippedArtwork { display: block; width: 100%; height: 100%; background: #fffef9; }
 .CardSceneCard > .PaintingCard[data-card-area='field'] { perspective: none; }
 .CardSceneCard > .PaintingCard[data-card-area='field'] .PaintingFaces { transform-style: flat; }
 .CardSceneCard > .PaintingCard[data-card-area='field'] .PaintingFront { transform: none; backface-visibility: visible; }

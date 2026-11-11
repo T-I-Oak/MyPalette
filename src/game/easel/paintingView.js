@@ -15,12 +15,23 @@ export function orientPainting(easel, centerX, areaWidth, id) {
 }
 
 export function cardPlaneMatrix(tray, camera, width, height, cardWidth, cardHeight) {
-    tray.updateWorldMatrix(true, false); camera.updateMatrixWorld();
     const worldWidth = 1.16, unit = worldWidth / cardWidth;
     const local = new THREE.Matrix4().makeTranslation(-worldWidth / 2, .0275 + cardHeight * unit, .079)
         .multiply(new THREE.Matrix4().makeScale(unit, -unit, 1));
+    return projectPlane(tray, camera, width, height, local);
+}
+
+export function canvasPlaneMatrix(painting, camera, width, height, faceWidth, faceHeight) {
+    const { width: w, height: h, depth } = painting.placement;
+    const local = new THREE.Matrix4().makeTranslation(-w / 2, h / 2, depth / 2)
+        .multiply(new THREE.Matrix4().makeScale(w / faceWidth, -h / faceHeight, 1));
+    return projectPlane(painting.object, camera, width, height, local);
+}
+
+function projectPlane(object, camera, width, height, local) {
+    object.updateWorldMatrix(true, false); camera.updateMatrixWorld();
     const clip = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
-        .multiply(tray.matrixWorld).multiply(local).elements;
+        .multiply(object.matrixWorld).multiply(local).elements;
     const result = new THREE.Matrix4().elements;
     const normalize = clip[15];
     for (const column of [0, 1, 3]) {

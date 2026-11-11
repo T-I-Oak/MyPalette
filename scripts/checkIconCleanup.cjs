@@ -21,11 +21,12 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         });
         await page.goto(base);
         await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).waitFor();
+        const togglePanel = () => page.locator('#panel-toggle').evaluate(button => button.click());
         async function rememberHosts() {
-            await page.locator('#panel-toggle').click();
+            await togglePanel();
             await page.locator('[data-game-area="stock"]').waitFor();
             await page.evaluate(() => { window.currentHosts = [...document.querySelectorAll('[data-game-area]')]; });
-            await page.locator('#panel-toggle').click();
+            await togglePanel();
         }
         async function checkOwnership(label) {
             const result = await page.evaluate(() => {
@@ -43,35 +44,45 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         }
         await rememberHosts();
         const counts = [await checkOwnership('initial')];
-        let replays = 0;
-        for (let step = 0; step < 12; step++) {
-            if (await page.getByRole('button', { name: 'もう一度遊ぶ', exact: true }).count()) {
-                await page.getByRole('button', { name: 'もう一度遊ぶ', exact: true }).click();
-                replays++;
-            } else if (await page.getByRole('button', { name: '今日の仕事を終える', exact: true }).count()) {
-                await page.getByRole('button', { name: '今日の仕事を終える', exact: true }).click();
-            } else { await page.getByRole('button', { name: '今日の仕事を始める', exact: true }).click({force:true});await page.waitForFunction(()=>document.querySelector('[data-game-end-day]')?.disabled===false,null,{timeout:60000}); }
+        const updates = 12;
+        let endings = 0;
+        const start = page.getByRole('button', { name: '今日の仕事を始める', exact: true });
+        const end = page.getByRole('button', { name: '今日の仕事を終える', exact: true });
+        for (let step = 0; step < updates; step++) {
+            if (await end.count()) {
+                await end.click();
+                await page.waitForFunction(() => {
+                    const button = document.querySelector('[data-game-end-day]');
+                    return !button || (button.textContent === '今日の仕事を始める' && !button.disabled);
+                });
+                if (!await start.count()) {
+                    endings++;
+                    assert.equal(await page.getByRole('button', { name: 'もう一度遊ぶ', exact: true }).count(), 0);
+                    assert.equal(await page.getByRole('heading', { name: /^結果/ }).count(), 0);
+                    await checkOwnership('game over');
+                    if (step + 1 < updates) {
+                        await page.reload();
+                        await start.waitFor();
+                        await rememberHosts();
+                    }
+                }
+            } else {
+                await start.click({ force: true });
+                await page.waitForFunction(() => document.querySelector('[data-game-end-day]')?.disabled === false, null, { timeout: 60000 });
+                if (step === 0) {
+                    await togglePanel();
+                    await page.waitForFunction(() => {
+                        const frames = [...document.querySelectorAll('[data-scene-area="stock"] [data-scene-back="false"] .PaintingIconFrame')];
+                        return frames.length > 0 && frames.every(frame => frame.querySelector('canvas')?.height > 0);
+                    });
+                    await togglePanel();
+                    await checkOwnership('panel closed after redisplay');
+                }
+            }
             counts.push(await checkOwnership(`update ${step + 1}`));
         }
-        assert.ok(replays > 0, 'must cover replay with the panel closed');
-        await page.locator('#panel-toggle').click();
-        await page.waitForFunction(() => {
-            const frames = [...document.querySelectorAll('[data-game-area="stock"] .PaintingIconFrame')];
-            return frames.length > 0 && frames.every(frame => frame.querySelector('canvas')?.height > 0);
-        });
-        await page.locator('#panel-toggle').click();
-        // Freeze the next settings load so menu disposal can be checked before a new game mounts.
-        await page.route('**/data/cards.json', route => route.fulfill({ status: 500, body: 'test failure' }));
-        await page.getByRole('button', { name: '入口へ戻る', exact: true }).click();
-        await page.locator('.GameStartup button').waitFor();
-        assert.equal((await checkOwnership('menu disposal')).registered, 0);
-        assert.equal(await page.locator('[data-game-area]').count(), 0);
-        await page.unroute('**/data/cards.json');
-        await page.getByRole('button', { name: '再読み込み', exact: true }).click();
-        await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).waitFor();
-        await rememberHosts();
-        await checkOwnership('new presentation');
+        assert.ok(endings > 0, 'must cover game over with the panel closed');
         assert.deepEqual(errors, []);
-        console.log(JSON.stringify({ regression: 'GC-R01', counts, replays, stale: 0, menuRegistered: 0, redisplay: 'passed' }));
+        console.log(JSON.stringify({ regression: 'GC-R01', counts, endings, stale: 0, redisplay: 'passed' }));
     } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

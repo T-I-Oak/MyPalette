@@ -1,6 +1,7 @@
 import { layoutHand } from './handLayout.js';
 import { layoutStock, stockMetrics as m } from './stockLayout.js';
 import { layoutDeck, discardScatter } from './deckLayout.js';
+import { shippedRect } from './infoLayout.js';
 
 export const cardZones = ['deck', 'hand', 'field', 'discard', 'shipped'];
 export function cardSceneSnapshot(state) {
@@ -25,11 +26,9 @@ export function sceneCardPose(screen, state, card, placement, play) {
     const { area, id, index, grade } = card;
     if (area === 'field') return { matrix: play.cardMatrix(id), flip: 0, z: 100 + index };
     if (area === 'shipped') {
-        const frame = screen.areas.get('info').layoutFrame.rect;
-        const width = Math.min(72, frame.width * .16, frame.height * .6 * m.cardWidth / m.cardHeight);
-        const height = width * m.cardHeight / m.cardWidth;
-        return { matrix: new DOMMatrix().translate(frame.x + frame.width - width - 12,
-            frame.y + frame.height - height - 8 - index * .5).scale(width / m.cardWidth).toFloat64Array(), flip: 0, z: 500 + index };
+        const owner = screen.areas.get('info');
+        const rect = owner.readScreenRect(shippedRect(owner.logicalWidth, owner.logicalHeight, index, state.shipped.length));
+        return { matrix: new DOMMatrix().translate(rect.x, rect.y).scale(rect.height / m.cardHeight).toFloat64Array(), flip: 0, z: 500 + index };
     }
     const owner = screen.areas.get(area);
     let slot, flip = 0, z = index;

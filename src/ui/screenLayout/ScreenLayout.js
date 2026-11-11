@@ -2,12 +2,13 @@ import { handStandardSize, handOffsets } from '../../game/handLayout.js';
 import { paletteStandardSize } from '../../dice/paletteLayout.js';
 import { stockStandardSize, stockOffsets } from '../../game/stockLayout.js';
 import { deckStandardSize } from '../../game/deckLayout.js';
+import { infoStandardSize } from '../../game/infoLayout.js';
 
 const panelWidthRatio = 0.85;
 const panelHeightRatio = 0.6;
 
 export const areaDefinitions = Object.freeze({
-    info: { name: '情報表示エリア', width: 600, height: 300, topLeftOffset: { x: 0, y: 36 } },
+    info: { name: '情報表示エリア', ...infoStandardSize },
     play: { name: 'プレイエリア', width: 600, height: 300 },
     palette: { name: 'パレットエリア', ...paletteStandardSize },
     stock: { name: 'ストック', ...stockStandardSize, ...stockOffsets },

@@ -3,7 +3,31 @@ import { releasePaintingIcons } from '../cardIcons.js';
 import { CardSceneState } from './cardSceneState.js';
 import { cardSceneSnapshot, locateSceneCards, scatteredPlacement, sceneCardPose } from './cardSceneLayout.js';
 import { animateProgress } from './playAnimation.js';
+import { shippedCanvas } from './infoLayout.js';
 import './cardScene.css';
+
+function createShippedArtwork(id, wrapper, image) {
+    const { faceWidth, faceHeight, thickness, perspective, angle, edgeWidth, projectedWidth } = shippedCanvas;
+    wrapper.style.setProperty('--shipped-width', `${projectedWidth}px`);
+    wrapper.style.setProperty('--shipped-height', `${faceHeight}px`);
+    const canvas = document.createElement('div');
+    canvas.className = 'SceneShippedCanvas';
+    canvas.setAttribute('aria-hidden', 'true');
+    canvas.style.width = `${faceWidth}px`;
+    canvas.style.setProperty('--shipped-edge', `${edgeWidth}px`);
+    canvas.style.setProperty('--shipped-angle', `${angle}deg`);
+    canvas.style.setProperty('--shipped-perspective', `${perspective}px`);
+    canvas.style.setProperty('--shipped-thickness', `${thickness}px`);
+    if (!image) {
+        image = document.createElement('img');
+        image.alt = '';
+        image.draggable = false;
+        image.src = `${import.meta.env.BASE_URL}assets/paintings/${id}-3.png`;
+    }
+    image.className = 'SceneShippedArtwork';
+    canvas.append(image);
+    return canvas;
+}
 
 export function createCardScene(screen, play) {
     const root = screen.areas.get('deck').canvas.closest('.LayoutContent');
@@ -11,7 +35,7 @@ export function createCardScene(screen, play) {
         const layer = document.createElement('div'); layer.className = `CardSceneLayer ${name}`;
         root.append(layer); return [name, layer];
     }));
-    let model, definitions, display, initialized = false, busy = false, inspector, afterDraw, controller = new AbortController();
+    let model, definitions, display, initialized = false, busy = false, inspector, afterDraw, activeShipment, controller = new AbortController();
     const locationCache = new WeakMap();
     const cards = new Map(), placements = new Map(), content = new Map(), selected = new Map();
     function placement(id, area) {
@@ -48,6 +72,15 @@ export function createCardScene(screen, play) {
             if (entry.wrapper.parentNode !== layers.get(layer)) layers.get(layer).append(entry.wrapper);
             if (entry.component.element.parentNode !== entry.wrapper) entry.wrapper.append(entry.component.element);
             entry.wrapper.dataset.sceneArea = where.area;
+            const flying = activeShipment?.id === id;
+            const shipped = flying || record.area === 'shipped' && where.area === 'shipped';
+            entry.wrapper.classList.toggle('SceneShippedPainting', shipped);
+            if (shipped && !entry.artwork) entry.artwork = createShippedArtwork(id, entry.wrapper);
+            if (shipped) {
+                if (flying) entry.artwork.style.setProperty('--shipment-progress', activeShipment.progress);
+                else entry.artwork.style.removeProperty('--shipment-progress');
+                if (entry.artwork.parentNode !== entry.component.element) entry.component.element.append(entry.artwork);
+            }
             entry.wrapper.style.transform = `matrix3d(${Array.from(record.pose.matrix).join(',')})`;
             entry.wrapper.style.zIndex = String(record.pose.z);
             entry.wrapper.style.opacity = String(record.opacity);
@@ -117,6 +150,7 @@ export function createCardScene(screen, play) {
         },
         async move(state, duration, owner, options = {}) {
             const signal = controller.signal, activeModel = model;
+            const shipment = options.shipment;
             const previous = new Map([...activeModel.cards].map(([id, record]) => [id, { area: record.area, grade: record.grade }]));
             display = cardSceneSnapshot(state);
             const next = locateSceneCards(display);
@@ -127,11 +161,23 @@ export function createCardScene(screen, play) {
                     ? { ...pose, matrix: play.cardDestinationMatrix(id) } : pose;
             }]));
             play.begin();
+            if (shipment) {
+                const { id, image } = shipment, entry = cards.get(id), record = activeModel.get(id);
+                entry.artwork = createShippedArtwork(id, entry.wrapper, image);
+                record.pose = { ...record.pose, matrix: play.shipmentMatrix(id) };
+                record.opacity = 1;
+                activeShipment = { id, progress: 0 };
+            }
             activeModel.begin(targets, owner);
             try {
+                if (shipment) {
+                    draw();
+                    play.releaseCanvas(shipment.id);
+                }
                 const complete = await animateProgress(duration, progress => {
                     play.sample(progress);
                     activeModel.sample(options.progressFor ? id => options.progressFor(id, progress) : options.ease ? options.ease(progress) : progress);
+                    if (shipment) activeShipment.progress = options.ease?.(progress) ?? progress;
                     for (const id of cards.keys()) {
                         const custom = options.frame?.(id, progress, activeModel.get(id).pose);
                         if (custom) activeModel.get(id).pose = custom;
@@ -147,14 +193,17 @@ export function createCardScene(screen, play) {
                     draw();
                 }, signal);
                 if (complete) { activeModel.interrupt(); play.finish(); for (const [id, where] of next) { activeModel.get(id).area = options.areaOnArrival?.(id) ?? where.area; activeModel.get(id).grade = where.grade; } }
-            } finally { activeModel.interrupt(); draw(); }
+            } finally {
+                if (shipment && activeShipment?.id === shipment.id) activeShipment = undefined;
+                activeModel.interrupt(); draw();
+            }
         },
         cancel() { controller.abort(); controller = new AbortController(); model?.interrupt(); },
         restoreVisibility() { for (const record of model.cards.values()) record.opacity = 1; draw(); },
         reset() {
             controller.abort(); controller = new AbortController();
             for (const { component, wrapper } of cards.values()) { releasePaintingIcons(component.element); wrapper.remove(); }
-            cards.clear(); content.clear(); placements.clear(); selected.clear(); initialized = false; busy = false; model = null;
+            cards.clear(); content.clear(); placements.clear(); selected.clear(); initialized = false; busy = false; model = null; activeShipment = undefined;
         },
         dispose() { this.reset(); for (const layer of layers.values()) layer.remove(); },
     };

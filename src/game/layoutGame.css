@@ -16,10 +16,6 @@
 .GameAreaHost .GameDicePane .GameGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .GameAreaHost input[type='checkbox'] { width: 20px; height: 20px; }
 .LayoutScreen > .GameBoard { display: block; font: 14px system-ui, sans-serif; }
-.GameInspection { width: min(960px, 94vw); max-height: 90dvh; overflow: auto; color: var(--ui-text); background: var(--ui-surface); border: 1px solid var(--ui-border); }
-.GameInspection::backdrop { background: var(--ui-scrim); }
-.GameInspection .GameCardArea { container-type: normal; }
-.GameInspection .GameCardAreaContent { zoom: .6; width: auto; display: flex; flex-wrap: wrap; }
 .GameStartup { position: absolute; inset: 0; z-index: 6; padding: 24px; overflow: auto; background: var(--ui-surface); font-family: system-ui, sans-serif; }
 .GameStartup[hidden] { display: none; }
 

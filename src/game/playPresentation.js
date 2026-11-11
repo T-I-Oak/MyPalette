@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { createEasel } from './easel/createEasel.js';
-import { createPaintingCamera, cardPlaneMatrix, orientPainting } from './easel/paintingView.js';
+import { createPaintingCamera, cardPlaneMatrix, canvasPlaneMatrix, orientPainting } from './easel/paintingView.js';
+import { shippedCanvas } from './infoLayout.js';
 import { playMetrics, playOffsets, playStandardSize, layoutPlay, paintingFacing } from './playLayout.js';
 import { mountEffectCanvas } from './playCanvasEffects.js';
 import { animateProgress, achievementTiming } from './playAnimation.js';
@@ -88,6 +89,7 @@ export function createPlayPresentation(area, host, relayout) {
         clear() { controls.replaceChildren(); endDay.replaceChildren(); },
         reset() { for (const entry of [...entries.values()]) removeEntry(entry); order = []; motion = false; render(); },
         setEndDayButton(button) { endDay.replaceChildren(); if (button) endDay.append(button); },
+        setSessionActions(actions) { endDay.append(actions); },
         cardTarget(id) { return find(id).info; },
         cardMatrix(id) {
             const entry = find(id), f = entry.frame;
@@ -149,7 +151,17 @@ export function createPlayPresentation(area, host, relayout) {
         async fadeIn(id, definition, step, signal) {
             cards.showStep(id, step);
             await animateProgress(achievementTiming.fade, progress => cards.opacity(id, progress), signal);
-            if (!signal.aborted) { const entry = find(id); entry.painting.dispose(); entry.painting = null; render(); }
+            if (!signal.aborted) this.releaseCanvas(id);
+        },
+        releaseCanvas(id) {
+            const entry = find(id);
+            entry.painting.dispose(); entry.painting = null; render();
+        },
+        shipmentMatrix(id) {
+            const { painting, frame } = find(id);
+            const local = canvasPlaneMatrix(painting, camera, playMetrics.width, playMetrics.height, shippedCanvas.faceWidth, shippedCanvas.faceHeight);
+            return new DOMMatrix().translate(frame.x, frame.y).scale(frame.width / playMetrics.width)
+                .multiply(new DOMMatrix(local)).toFloat64Array();
         },
         canvasCorners(id) {
             const entry = find(id), painting = entry.painting, origin = root.getBoundingClientRect();

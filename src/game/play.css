@@ -33,6 +33,8 @@
 .AchievementMaterial.state-special img { position: absolute; left: 25%; top: 25%; width: 50%; height: 50%; }
 .PlayPainting[data-effect] .PlayCard, .PlayPainting[data-effect] .PlayPaintingViewport { pointer-events: none; }
 .PlayEndDayAction > .Button { transform-origin: top right; }
+.PlaySessionActions { max-width: 50%; }
+.PlaySessionActions .GameAnimationNotice { margin: 0; font: 14px system-ui, sans-serif; }
 .PersistentEaselLayer { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .PersistentEaselLayer .PlayPainting { transform-origin: 0 0; width: 400px; height: 640px; }
 .PersistentEaselLayer .PlayCard { height: 414px; }
