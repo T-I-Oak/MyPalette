@@ -4,19 +4,22 @@ import { canvasOrbit, materialTiming, materialDuration } from './achievementMoti
 
 const lerp = (a,b,p) => ({x:a.x+(b.x-a.x)*p,y:a.y+(b.y-a.y)*p});
 const ease = p => p*p*(3-2*p);
-export async function flyAchievementMaterials(screen, palette, play, effect, signal) {
-    await Promise.all(effect.diceIds.map(async(id,index) => {
+export async function flyMaterials(screen, palette, { diceIds, corners, onOrbit }, signal) {
+    await Promise.all(diceIds.map(async(id,index) => {
         if (!await animateProgress(index*materialTiming.stagger,()=>{},signal)) return;
         const capture = palette.captureMaterial(id), object = new MoveObject(`achievement:${id}`,capture.element);
         capture.start();
         try {
             const complete = await animateProgress(materialDuration(1), progress => {
-                const time = progress*materialDuration(1), source = capture.read(), bottom = canvasOrbit(play.canvasCorners(effect.id),0);
+                const time = progress*materialDuration(1), source = capture.read(), outline = corners();
+                const bottom = canvasOrbit(outline,0);
+                const orbit = Math.max(0, Math.min(1, (time-materialTiming.outbound)/materialTiming.orbit));
+                onOrbit?.(orbit);
                 let center, size=source.size, opacity=1, stage;
                 if (time < materialTiming.outbound) {
                     stage='outbound'; center=lerp(source,bottom,ease(time/materialTiming.outbound));
                 } else if (time < materialTiming.outbound+materialTiming.orbit) {
-                    stage='orbit'; center=canvasOrbit(play.canvasCorners(effect.id),(time-materialTiming.outbound)/materialTiming.orbit);
+                    stage='orbit'; center=canvasOrbit(outline,orbit);
                 } else if (time < materialTiming.outbound+materialTiming.orbit+materialTiming.inbound) {
                     stage='inbound'; center=lerp(bottom,source,ease((time-materialTiming.outbound-materialTiming.orbit)/materialTiming.inbound));
                 } else {

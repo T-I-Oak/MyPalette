@@ -1,0 +1,34 @@
+.GameAreaHost[data-game-area='info'] { display: flex; align-items: center; gap: 8px; }
+.InfoLogo { display: block; flex: none; width: auto; height: 52px; }
+.InfoRows { flex: none; display: grid; gap: 4px; }
+.InfoDay { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.InfoDay .InfoRow { justify-content: center; }
+.InfoRow, .InfoRun { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+.InfoRow { height: 24px; }
+.InfoIcon { display: block; flex: 0 0 24px; width: 24px; height: 24px; }
+.InfoCount { font: 16px monospace; }
+.InfoFlyerIcon { display: block; flex: none; width: auto; height: 24px; }
+.InfoResources { position: relative; }
+.InfoFlyerSource, .InfoFlyerTarget { visibility: hidden; }
+.InfoFlyerTarget { position: absolute; left: 0; top: 28px; }
+.InfoFlyerOrdering { animation-name: info-flyer-order; animation-timing-function: ease-in-out; }
+@keyframes info-flyer-order { 40% { transform: scale(1.35); } }
+.FlyerWork { position: relative; width: 100%; height: 100%; }
+.FlyerWork img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.InfoCreditRow { position: relative; }
+.InfoCreditHit { visibility: hidden; }
+.CreditFragments { position: relative; width: 100%; height: 100%; }
+.CreditFragments span { position: absolute; left: 50%; top: 50%; background: #c17744; }
+.CreditFragments span:nth-child(even) { background: #e2b468; }
+.InfoCreditAtRisk { animation: info-credit-warning 1s ease-in-out infinite alternate; }
+.InfoCreditDanger {
+    filter: drop-shadow(1px 0 #bd263d) drop-shadow(-1px 0 #bd263d)
+        drop-shadow(0 1px #bd263d) drop-shadow(0 -1px #bd263d);
+}
+.InfoCreditFade { position: absolute; left: 0; top: 0; pointer-events: none; }
+@keyframes info-credit-warning { to { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) {
+    .InfoCreditAtRisk { animation: none; opacity: .55; }
+    .InfoCreditFade { display: none; }
+    .InfoFlyerOrdering { animation: none; }
+}

@@ -10,7 +10,7 @@ export function gameIssues(settings) {
     return settings.cards.flatMap(card => draftIssues(card).map(issue => `${card.id}：${issue}`));
 }
 export class Game {
-    constructor(settings, random = Math.random, { onCandidateAcquired, manualStartRoll = false, manualRolls = manualStartRoll, manualDayStart = false, manualRecycle = false } = {}) {
+    constructor(settings, random = Math.random, { onCandidateAcquired, manualStartRoll = false, manualRolls = manualStartRoll, manualDayStart = false, manualRecycle = false, manualDayEnd = false } = {}) {
         const issues = gameIssues(settings);
         if (issues.length) throw new Error(issues.join('\n'));
         this.random = random;
@@ -20,11 +20,13 @@ export class Game {
         this.definitions = Object.fromEntries(structuredClone(settings.cards).map(card => [card.id, card]));
         this.sequence = 0; this.task = null; this.noticeSequence = 0;
         this.manualRecycle = manualRecycle; this.recycleSequence = 0;
+        this.manualDayEnd = manualDayEnd;
         this.deckEvents = [];
         this.state = {
             day: 0, fame: 0, credit: 3, flyers: 0, progress: 0, orderCost: 3, rerolls: 0,
             phase: 'betweenDays', pending: null, achievement: null, dice: [], deck: [], hand: [], field: [], discard: [], shipped: [],
-            stocks: {}, public: {}, reserved: [], logs: [], dayEndDice: null, rollRequest: null, recycleRequest: null, effectNotices: [],
+            stocks: {}, public: {}, reserved: [], logs: [], dayEndDice: null, rollRequest: null, recycleRequest: null,
+            dayEndRequest: null, effectNotices: [],
         };
         const s = this.state;
         for (const grade of ['A', 'B', 'C']) s.stocks[grade] = shuffle(settings.cards.filter(c => c.id[0] === grade)
@@ -51,7 +53,7 @@ export class Game {
     }
     advance(value) {
         const result = this.task.next(value);
-        this.state.pending = result.done || ['roll', 'recycle'].includes(result.value.kind) ? null : result.value;
+        this.state.pending = result.done || ['roll', 'recycle', 'day-end'].includes(result.value.kind) ? null : result.value;
         if (result.done) this.task = null;
     }
     choose(ids) {
@@ -195,25 +197,58 @@ export class Game {
         this.assertPlay();
         this.run(this.finishDay());
     }
+    completeDayEndRequest(request) {
+        if (!request || this.state.dayEndRequest !== request) throw new Error('日末処理の待機中ではありません。');
+        this.state.dayEndRequest = null;
+        this.advance();
+    }
+    *waitForDayEnd(request) {
+        if (!this.manualDayEnd) return;
+        this.state.dayEndRequest = request;
+        yield { kind: 'day-end' };
+    }
+    *prepareFlyerOrders() {
+        const s = this.state;
+        let orders = 0;
+        while (s.flyers >= s.orderCost) {
+            const cost = s.orderCost;
+            yield* this.waitForDayEnd({ kind: 'reserve' });
+            s.flyers -= cost; s.orderCost += 2;
+            this.log(`自動発注：チラシ${cost}枚消費、次回${s.orderCost}枚`);
+            orders++;
+        }
+        return orders;
+    }
     *finishDay() {
         const s = this.state; s.phase = 'end'; s.rerolls = 0;
         s.reserved = specialEffects(s.dice);
         this.notifyEffects('special', s.reserved);
         for (const die of s.dice) if (!die.used && currentFace(die).special) die.used = true;
         this.log(`特殊面予約：${s.reserved.length}件`);
-        const flyerDice = s.dice.filter(d => !d.used).slice(0, 2);
-        for (const die of flyerDice) die.used = true;
-        s.progress += flyerDice.length;
-        const made = Math.floor(s.progress / 2); s.flyers += made; s.progress %= 2;
-        this.log(`チラシ制作：${flyerDice.map(d => d.id).join('、') || 'なし'}、完成${made}枚、所持${s.flyers}枚、進捗${s.progress}/2`);
-        const loss = s.dice.filter(d => !d.used).length;
-        while (loss < s.credit && s.flyers >= s.orderCost) {
-            const cost = s.orderCost; s.flyers -= cost; s.orderCost += 2;
-            this.log(`自動発注：チラシ${cost}枚消費、次回${s.orderCost}枚`);
-            yield* stockCards(this, 1);
+        const unused = s.dice.filter(d => !d.used);
+        const flyerDice = unused.slice(0, 2), loss = unused.length - flyerDice.length;
+        let made = 0, orders = 0;
+        for (const [index, die] of flyerDice.entries()) {
+            const step = s.progress, last = index === flyerDice.length - 1;
+            yield* this.waitForDayEnd({ kind: 'work', dieId: die.id, step });
+            die.used = true;
+            s.progress = (step + 1) % 2;
+            if (!s.progress) {
+                s.flyers++;
+                made++;
+            }
+            if (!s.progress || last) yield* this.waitForDayEnd({ kind: 'return', step: step + 1 });
+            if (!s.progress) orders += yield* this.prepareFlyerOrders();
         }
+        this.log(`チラシ制作：${flyerDice.map(d => d.id).join('、') || 'なし'}、完成${made}枚、所持${s.flyers}枚、進捗${s.progress}/2`);
+        orders += yield* this.prepareFlyerOrders();
+        if (loss) yield* this.waitForDayEnd({ kind: 'credit', diceIds: unused.slice(flyerDice.length).map(die => die.id) });
         s.credit = Math.max(0, s.credit - loss); this.log(`未使用ダイス${loss}個：信用−${loss} → ${s.credit}`);
         if (!s.credit) { s.phase = 'finished'; this.log(`ゲーム終了：名声${s.fame}、出荷${s.shipped.length}枚`); return; }
+        for (let i = 0; i < orders; i++) {
+            yield* stockCards(this, 1);
+            yield* this.waitForDayEnd({ kind: 'order' });
+        }
         s.dayEndDice = structuredClone(s.dice);
         s.discard.push(...s.hand.splice(0), ...s.field.splice(0));
         s.dice = s.dice.filter(d => d.lifetime === 'permanent');
@@ -222,6 +257,5 @@ export class Game {
             s.public[grade] = null;
         }
         s.phase = 'betweenDays'; this.log('一日の仕事を終了');
-        if (this.manualDayStart) { s.day++; s.phase = 'awaitingStart'; }
     }
 }

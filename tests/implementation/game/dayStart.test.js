@@ -5,6 +5,49 @@ import {Game} from '../../../src/game/engine.js';
 import {matchingDice} from '../../../src/game/goals.js';
 const settings=JSON.parse(readFileSync(new URL('../../../public/data/cards.json',import.meta.url)));
 
+test('チラシ発注の準備後も制作を続け、信用減算後にストックを取得する', () => {
+ const game = new Game(settings, () => .4, { manualDayEnd: true }), s = game.state;
+ s.flyers = 2; s.progress = 1;
+ game.endDay();
+ const first = s.dayEndRequest;
+ assert.deepEqual(first, { kind: 'work', dieId: s.dice[0].id, step: 1 });
+ assert.equal(s.dice[0].used, false);
+ game.completeDayEndRequest(first);
+ assert.deepEqual(s.dayEndRequest, { kind: 'return', step: 2 });
+ assert.equal(s.dice[0].used, true);
+ assert.equal(s.pending, null);
+ game.completeDayEndRequest(s.dayEndRequest);
+ assert.equal(s.pending, null);
+ assert.deepEqual(s.dayEndRequest, { kind: 'reserve' });
+ assert.equal(s.flyers, 3);
+ assert.equal(s.orderCost, 3);
+ assert.equal(s.dice[0].used, true);
+ assert.equal(s.dice[1].used, false);
+ game.completeDayEndRequest(s.dayEndRequest);
+ assert.equal(s.pending, null);
+ assert.equal(s.flyers, 0);
+ assert.equal(s.orderCost, 5);
+ assert.deepEqual(s.dayEndRequest, { kind: 'work', dieId: s.dice[1].id, step: 0 });
+ game.completeDayEndRequest(s.dayEndRequest);
+ assert.deepEqual(s.dayEndRequest, { kind: 'return', step: 1 });
+ game.completeDayEndRequest(s.dayEndRequest);
+ assert.deepEqual(s.dayEndRequest, { kind: 'credit', diceIds: [s.dice[2].id] });
+ assert.equal(s.credit, 3);
+ assert.equal(s.pending, null);
+ game.completeDayEndRequest(s.dayEndRequest);
+ assert.equal(s.credit, 2);
+ assert.equal(s.dice[1].used, true);
+ assert.equal(s.pending.kind, 'stock');
+ const selected = s.public.A;
+ game.choose([selected]);
+ assert.equal(s.dayEndRequest.kind, 'order');
+ assert.ok(s.discard.some(card => card.id === selected));
+ game.completeDayEndRequest(s.dayEndRequest);
+ assert.equal(s.phase, 'betweenDays');
+ assert.equal(s.progress, 1);
+ assert.equal(s.orderCost, 5);
+});
+
 test('朝はドロー・再構成より先に出目を未確定にし、前日の出目で達成判定しない',()=>{
  const game=new Game(settings,()=>.4,{manualDayStart:true,manualRolls:true,manualRecycle:true}),s=game.state;
  game.beginDay();
@@ -13,6 +56,9 @@ test('朝はドロー・再構成より先に出目を未確定にし、前日�
  const goal=[{color:s.dice[0].faces[0].color,material:null}];
  assert.ok(matchingDice(goal,s.dice));
  game.endDay();
+ assert.equal(s.phase,'betweenDays');assert.equal(s.day,1);
+ assert.throws(()=>game.beginDay());
+ game.nextDay();
  assert.equal(s.phase,'awaitingStart');
  assert.ok(s.dice.every(die=>die.current===0));
  game.beginDay();
@@ -44,6 +90,8 @@ test('仕事開始まではドローせず、翌日も持ち越し効果と権�
  for(const grade of ['A','B','C']) assert.equal(s.public[grade],s.stocks[grade][0].id);
  assert.equal(s.phase,'start');assert.throws(()=>game.beginDay());settle();
  assert.equal(s.phase,'play');game.endDay();
+ assert.equal(s.phase,'betweenDays');assert.equal(s.day,1);
+ game.nextDay();
  assert.equal(s.phase,'awaitingStart');assert.equal(s.day,2);assert.equal(s.hand.length,0);assert.equal(s.rerolls,0);
  assert.deepEqual(s.public,{A:null,B:null,C:null});
  s.reserved=[{type:'changeFame',amount:5}];const fame=s.fame;

@@ -32,6 +32,7 @@ export function createPalettePresentation(area, host, relayout) {
     let pendingSearch = null;
     let rollScheduled = false, failedRequest = null;
     const held = new Set();
+    const creditMaterials = new Set();
     const notice = document.createElement('div'); notice.className = 'PaletteNotice';
     notice.setAttribute('role', 'status');
     const retry = document.createElement('button'); retry.tabIndex = -1; retry.type = 'button';
@@ -131,10 +132,20 @@ export function createPalettePresentation(area, host, relayout) {
     }
     function endAchievement() {
         held.clear();
-        if (scene) { scene.travelling.clear(); scene.interactionLocked = false; }
+        if (scene) {
+            scene.travelling.clear();
+            for (const id of creditMaterials) scene.travelling.add(id);
+            scene.interactionLocked = false;
+        }
         if (group) syncSnapshot();
     }
     return {
+        hideCreditMaterials(ids) {
+            for (const id of ids) {
+                creditMaterials.add(id);
+                scene?.travelling.add(id);
+            }
+        },
         waitReady(signal) {
             return new Promise(resolve => {
                 let frame;
@@ -179,6 +190,10 @@ export function createPalettePresentation(area, host, relayout) {
             };
         },
         present(section, state, callbacks) {
+            if (state.phase === 'play' && creditMaterials.size) {
+                for (const id of creditMaterials) scene?.travelling.delete(id);
+                creditMaterials.clear();
+            }
             rerolls.hidden = state.rerolls <= 0;
             quantity.textContent = `×${state.rerolls}`;
             rerolls.setAttribute('aria-label', `リロール権 ${state.rerolls}個`);
@@ -202,6 +217,7 @@ export function createPalettePresentation(area, host, relayout) {
         clear() { controls.replaceChildren(); },
         reset() {
             held.clear();
+            creditMaterials.clear();
             pendingSearch = null; searchNotice.hidden = true; searchNotice.replaceChildren();
             failedRequest = null;
             generation++; scene?.dispose(); scene = null; group = null;

@@ -6,6 +6,8 @@ import { createPalettePresentation } from './palettePresentation.js';
 import { createStockPresentation } from './stockPresentation.js';
 import { createCardScene } from './cardScene.js';
 import { createCardSceneTimeline } from './cardSceneTimeline.js';
+import { createInfoPresentation } from './infoPresentation.js';
+import { createFlyerMotion } from './flyerMotion.js';
 import './layoutGame.css';
 
 export function createLayoutPresentation(screen) {
@@ -21,9 +23,14 @@ export function createLayoutPresentation(screen) {
     const stock = createStockPresentation(screen.areas.get('stock'), hosts.get('stock').host);
     const palette = createPalettePresentation(screen.areas.get('palette'), hosts.get('palette').host, () => screen.render());
     const play = createPlayPresentation(screen.areas.get('play'), hosts.get('play').host, () => screen.render());
+    const infoArea = screen.areas.get('info');
+    const info = createInfoPresentation(infoArea, hosts.get('info').host);
+    const infoLabel = infoArea.fixedLayer.querySelector('.LayoutAreaName');
+    infoLabel.hidden = true;
     const cards = createCardScene(screen, play); play.bindScene(cards);
     let renderGame, stockChoice;
-    const timeline = createCardSceneTimeline(screen, cards, play, palette, () => renderGame());
+    const flyer = createFlyerMotion(screen, palette, info);
+    const timeline = createCardSceneTimeline(screen, cards, play, palette, flyer, info, () => renderGame());
     function counts() {
         if (!cards.display) return;
         for (const [id, label] of [['deck', 'デッキ'], ['discard', '捨て札']]) {
@@ -41,12 +48,12 @@ export function createLayoutPresentation(screen) {
         for (const [id, { object }] of hosts) {
             const area = screen.areas.get(id); area.setSlot(object.id, { x: 0, y: 0, width: area.logicalWidth, height: area.logicalHeight });
         }
-        hand.update(); stock.update(); palette.update(); play.update(); cards.update();
+        info.update(); hand.update(); stock.update(); palette.update(); play.update(); cards.update();
     });
     function clear() {
         hand.clear(); stock.clear(); palette.clear(); play.clear();
         for (const [id, { host }] of hosts) {
-            if (id === 'palette') continue;
+            if (id === 'palette' || id === 'info') continue;
             releasePaintingIcons(host); host.replaceChildren();
         }
     }
@@ -56,16 +63,16 @@ export function createLayoutPresentation(screen) {
         cardComponent: cards.component,
         setAchievable: cards.achievable,
         clear,
-        reset() { timeline.cancel(); cards.reset(); play.reset(); palette.reset(); },
+        reset() { timeline.cancel(); cards.reset(); play.reset(); palette.reset(); info.reset(); },
         searchFaces: palette.searchFaces,
         beginAction(action) { timeline.begin(action); },
         hand: () => cards.display.hand,
         field: () => cards.display.field,
         stock: () => cards.display,
         hasAnimation: timeline.hasWork,
-        async animate(state, render, completeAchievement, resumeRecycle) {
+        async animate(state, render, completeAchievement, resumeRecycle, resumeDayEnd) {
             renderGame = render;
-            await timeline.run(state, render, completeAchievement, resumeRecycle);
+            await timeline.run(state, completeAchievement, resumeRecycle, resumeDayEnd);
         },
         cancelEffects: timeline.cancel,
         async recover(state, render) {
@@ -77,29 +84,28 @@ export function createLayoutPresentation(screen) {
             const move = (id, selector) => {
                 const node = board.querySelector(selector); node.hidden = false; hosts.get(id).host.append(node); return node;
             };
-            move('info', '.GameStatus'); const infoControls = move('info', '.GameControls');
+            info.present(state);
+            const status = board.querySelector('.GameStatus');
+            const infoControls = board.querySelector('.GameControls');
             palette.present(move('palette', '.GameDicePane'), state, actions);
             play.present(move('play', '.field'), { ...state, field: cards.display.field });
             play.setEndDayButton(infoControls.querySelector('[data-game-end-day]'));
+            const gameActions = document.createElement('div'); gameActions.className = 'PlaySessionActions';
+            gameActions.append(...status.querySelectorAll(':scope > .GameAnimationNotice'));
             const handSection = move('hand', '.hand'); handSection.querySelector('h2').remove(); hand.present(handSection);
             stock.present(move('stock', '.GameStockPane'), { ...state, stocks: cards.display.stocks, public: cards.display.public }, actions);
             const choice = actions.stockSelection ? JSON.stringify(state.pending) : null;
             if (choice && choice !== stockChoice) screen.openPanel(); stockChoice = choice;
             board.querySelector('.discard').remove();
-            const info = hosts.get('info').host;
-            for (const [selector, label] of [['.shipped', '出荷済み作品を確認'], ['.GameLogsPane', '進行記録を確認']]) {
-                const content = board.querySelector(selector); content.hidden = false;
-                const dialog = document.createElement('dialog'); dialog.className = 'GameInspection'; dialog.setAttribute('aria-label', label);
-                const close = document.createElement('button'); close.tabIndex = -1; close.className = 'Button texture-raised'; close.textContent = '閉じる';
-                close.addEventListener('click', () => dialog.close()); dialog.append(close, content); board.append(dialog);
-                const open = document.createElement('button'); open.tabIndex = -1; open.className = 'Button texture-raised'; open.textContent = label;
-                open.addEventListener('click', () => dialog.showModal()); info.append(open);
-            }
+            play.setSessionActions(gameActions);
+            status.remove();
+            infoControls.remove();
             board.querySelector('.GameTabs').remove(); board.querySelector('.GameWorkspace').remove();
             cards.inspect(actions.inspectCard); counts(); cards.update(); cards.draw();
         },
         dispose() {
             timeline.cancel(); clear(); unsubscribe(); cards.dispose(); hand.dispose(); stock.dispose(); palette.dispose(); play.dispose();
+            infoLabel.hidden = false;
             for (const { object } of hosts.values()) object.area.remove(object);
         },
     };

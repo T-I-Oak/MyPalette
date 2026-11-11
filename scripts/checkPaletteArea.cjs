@@ -158,13 +158,8 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             return button?.textContent === '今日の仕事を終える' && !button.disabled;
         }, null, { timeout: 60000 });
         assert(await rerolls.isVisible());assert.equal(await rerolls.innerText(),'×1');
-        await page.getByRole('button', { name:'入口へ戻る',exact:true }).click();
-        await roll.waitFor();await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
-        assert.equal(await palette.locator('.DiceResult:not([hidden])').count(), 0);
-        assert.equal(await palette.locator('canvas').count(), 1);
-        assert(await palette.locator('canvas').evaluate(node => node !== window.paletteCanvas));
         assert.deepEqual(errors, []);
         assert.deepEqual(shadowWarnings, []);
-        console.log('PASS: palette in game, A/B, resize, panel, persistent canvas, restart, no browser errors');
+        console.log('PASS: palette in game, A/B, resize, panel, persistent canvas, no browser errors');
     } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

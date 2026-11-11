@@ -34,6 +34,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         manualRolls: Boolean(presentation),
         manualDayStart: Boolean(presentation),
         manualRecycle: Boolean(presentation),
+        manualDayEnd: Boolean(presentation),
         onCandidateAcquired(id) {
             if (candidateSource) candidateOrigins.set(id, candidateSource);
         },
@@ -49,7 +50,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
     if (presentation) root.append(scroll); else root.replaceChildren(scroll);
     const scope = presentation ? root : scroll;
     let inspectionRefresh = false;
-    const inspectionOpen = () => Boolean(scroll.querySelector('.GameCardDetail[open], .GameInspection[open]'));
+    const inspectionOpen = () => Boolean(scroll.querySelector('.GameCardDetail[open]'));
     const notices = createEffectNotices(root, () => {
         if (disposed) return;
         if (inspectionOpen()) inspectionRefresh = true;
@@ -125,8 +126,12 @@ export function mountGame(root, settings, onMenu, presentation = null) {
             }, id => {
                 session.dispatch(() => game.completeRecycle(id));
                 return game.deckEvents;
+            }, request => {
+                session.dispatch(() => game.completeDayEndRequest(request));
+                return game.deckEvents;
             }).catch(async error => {
                 if (game.state.achievement) session.dispatch(() => game.completeAchievement());
+                while (game.state.dayEndRequest) session.dispatch(() => game.completeDayEndRequest(game.state.dayEndRequest));
                 while (game.state.recycleRequest) session.dispatch(() => game.completeRecycle(game.state.recycleRequest.id));
                 presentation.cancelEffects();
                 if (!disposed) await presentation.recover(game.state, render);
@@ -134,6 +139,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
                 animationError = '演出を表示できなかったため、現在のゲーム状態を表示しました。';
             }).finally(() => {
                 if (disposed) return;
+                if (game.state.phase === 'betweenDays') session.dispatch(() => game.nextDay());
                 moving = false; render();
             });
             return;
@@ -272,12 +278,6 @@ export function mountGame(root, settings, onMenu, presentation = null) {
             const notice = el('p', animationError, 'GameAnimationNotice'); notice.setAttribute('role', 'status'); status.append(notice);
         }
         const menu = button('入口へ戻る', () => { dispose(); onMenu(); }); status.append(menu);
-        if (s.phase === 'finished') {
-            status.append(el('h2', `結果：${s.day}日 · 名声 ${s.fame} · 出荷 ${s.shipped.length}枚`), button('もう一度遊ぶ', () => {
-                dispose();
-                mountGame(root, settings, onMenu, presentation);
-            }));
-        }
         const tabs = el('nav', undefined, 'GameTabs'); tabs.setAttribute('aria-label', 'ゲーム情報');
         for (const [id, label] of [['play', '制作と手札'], ['stock', `ストック・山札（${s.deck.length}）・捨て札（${s.discard.length}）`], ['shipped', `出荷済み（${s.shipped.length}）`], ['logs', '進行記録']]) {
             const tab = button(label, () => { activeTab = id; render(); });
@@ -393,7 +393,7 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         const logText = el('pre', s.logs.join('\n'), 'GameLog'); logText.dataset.pane = 'logs'; logs.append(logText);
         const controls = section('仕事の進行', scroll, 'GameControls');
         controls.append(el('p', s.logs.at(-1), 'GameLatestLog'));
-        if (s.phase === 'play' || (presentation && ['awaitingStart', 'start', 'end'].includes(s.phase))) {
+        if (s.phase === 'play' || (presentation && ['awaitingStart', 'start', 'end', 'betweenDays'].includes(s.phase))) {
             const awaitingStart = s.phase === 'awaitingStart';
             const endDay = gameButton(awaitingStart ? '今日の仕事を始める' : '今日の仕事を終える',
                 () => act(() => awaitingStart ? game.beginDay() : game.endDay()), !awaitingStart && !canPlay);
@@ -401,7 +401,11 @@ export function mountGame(root, settings, onMenu, presentation = null) {
             endDay.dataset.gameEndDay = '';
             controls.append(el('p', '任意のタイミングで仕事を終了できます。余った画材はチラシ制作・信用更新に使われます。'),
                 endDay);
-        } else if (s.phase === 'betweenDays') controls.append(gameButton('翌日の仕事を始める', () => act(() => game.nextDay())));
+        } else if (s.phase === 'betweenDays') {
+            const nextDay = gameButton('翌日の仕事を始める', () => act(() => game.nextDay()));
+            nextDay.dataset.gameEndDay = '';
+            controls.append(nextDay);
+        }
         updateAchievements();
         const selectingStock = Boolean(presentation && s.pending?.kind === 'stock');
         if (s.pending && !selectingReroll && !selectingStock && !selectingReturn && !notices.busy) selectionPanel(s.pending);
