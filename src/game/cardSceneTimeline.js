@@ -197,11 +197,11 @@ export function createCardSceneTimeline(screen, cards, play, palette, refresh) {
         return next;
     }
     return {
-        begin(value) { controller.abort(); controller = new AbortController(); action = value; enabled = !matchMedia('(prefers-reduced-motion: reduce)').matches; if (value?.kind === 'achieve') palette.beginAchievement(value.diceIds); },
+        begin(value) { controller.abort(); controller = new AbortController(); action = value; enabled = !matchMedia('(prefers-reduced-motion: reduce)').matches; if (enabled && value?.kind === 'achieve') palette.beginAchievement(value.diceIds); },
         hasWork(state, events) {
             records = structuredClone(events);
             const changed = JSON.stringify(cards.display) !== JSON.stringify(cardSceneSnapshot(state));
-            const work = Boolean(state.achievement || state.recycleRequest || enabled && changed);
+            const work = Boolean(state.achievement || state.recycleRequest || changed);
             cards.busy = work;
             if (!work) cards.adopt(state);
             return work;
