@@ -43,6 +43,9 @@ test('チラシ発注の準備後も制作を続け、信用減算後にスト�
  assert.equal(s.dayEndRequest.kind, 'order');
  assert.ok(s.discard.some(card => card.id === selected));
  game.completeDayEndRequest(s.dayEndRequest);
+ assert.deepEqual(s.dayEndRequest, { kind: 'cleanup' });
+ assert.equal(s.phase, 'end');
+ game.completeDayEndRequest(s.dayEndRequest);
  assert.equal(s.phase, 'betweenDays');
  assert.equal(s.progress, 1);
  assert.equal(s.orderCost, 5);
@@ -94,8 +97,8 @@ test('仕事開始まではドローせず、翌日も持ち越し効果と権�
  game.nextDay();
  assert.equal(s.phase,'awaitingStart');assert.equal(s.day,2);assert.equal(s.hand.length,0);assert.equal(s.rerolls,0);
  assert.deepEqual(s.public,{A:null,B:null,C:null});
- s.reserved=[{type:'changeFame',amount:5}];const fame=s.fame;
- assert.equal(s.fame,fame);assert.equal(s.rollRequest,null);
- game.beginDay();assert.equal(s.day,2);assert.equal(s.hand.length,4);assert.equal(s.fame,fame+5);
- assert.equal(s.rerolls,1);settle();assert.equal(s.phase,'play');
+ s.reserved=[{type:'gainRerolls',count:2}];
+ assert.equal(s.rollRequest,null);
+ game.beginDay();assert.equal(s.day,2);assert.equal(s.hand.length,4);
+ assert.equal(s.rerolls,3);settle();assert.equal(s.phase,'play');
 });

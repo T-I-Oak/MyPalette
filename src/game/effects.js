@@ -24,9 +24,11 @@ export function* acquire(game, effect) {
             game.onCandidateAcquired?.(die.id);
         } else gained.push(game.makeDie(specifiedFaces(effect), effect.lifetime));
     }
+    const includeInStartRoll = game.state.phase === 'start';
+    if (includeInStartRoll) for (const die of gained) die.current = null;
     game.state.dice.push(...gained);
     game.log(`ダイス獲得：${gained.map(die => die.id).join('、')}（${effect.lifetime === 'temporary' ? '一時' : '永続'}）`);
-    yield* game.rollDice(gained, 'acquire');
+    if (!includeInStartRoll) yield* game.rollDice(gained, 'acquire');
 }
 export function* stockCards(game, count, destination = 'discard') {
     for (let i = 0; i < count; i++) {

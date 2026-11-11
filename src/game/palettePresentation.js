@@ -199,7 +199,8 @@ export function createPalettePresentation(area, host, relayout) {
             rerolls.setAttribute('aria-label', `リロール権 ${state.rerolls}個`);
             request = state.rollRequest ? structuredClone(state.rollRequest) : null;
             actions = callbacks;
-            snapshot = structuredClone(state.phase === 'betweenDays' ? state.dayEndDice ?? [] : state.dice);
+            const showingDayEnd = state.phase === 'betweenDays' || state.dayEndRequest?.kind === 'cleanup';
+            snapshot = structuredClone(showingDayEnd ? state.dayEndDice ?? [] : state.dice);
             const size=paletteSizeForScale(paletteScaleForCount(snapshot.length));
             const resized=area.standardWidth!==size.width||area.standardHeight!==size.height;
             area.standardWidth=size.width;area.standardHeight=size.height;

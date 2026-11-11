@@ -45,6 +45,10 @@ export class Game {
     }
     *effects(items, timing = null) {
         if (timing) this.notifyEffects(timing, items);
+        if (timing === 'play' || timing === 'reward') {
+            items = [...items.filter(effect => effect.type === 'changeFame'),
+                ...items.filter(effect => effect.type !== 'changeFame')];
+        }
         yield* resolveEffects(this, items);
     }
     run(task) {
@@ -221,7 +225,9 @@ export class Game {
     }
     *finishDay() {
         const s = this.state; s.phase = 'end'; s.rerolls = 0;
-        s.reserved = specialEffects(s.dice);
+        const special = specialEffects(s.dice);
+        const fameEffects = special.filter(effect => effect.type === 'changeFame');
+        s.reserved = special.filter(effect => effect.type !== 'changeFame');
         this.notifyEffects('special', s.reserved);
         for (const die of s.dice) if (!die.used && currentFace(die).special) die.used = true;
         this.log(`特殊面予約：${s.reserved.length}件`);
@@ -244,18 +250,22 @@ export class Game {
         orders += yield* this.prepareFlyerOrders();
         if (loss) yield* this.waitForDayEnd({ kind: 'credit', diceIds: unused.slice(flyerDice.length).map(die => die.id) });
         s.credit = Math.max(0, s.credit - loss); this.log(`未使用ダイス${loss}個：信用−${loss} → ${s.credit}`);
+        if (s.credit) {
+            for (let i = 0; i < orders; i++) {
+                yield* stockCards(this, 1);
+                yield* this.waitForDayEnd({ kind: 'order' });
+            }
+            s.dayEndDice = structuredClone(s.dice);
+            s.discard.push(...s.hand.splice(0), ...s.field.splice(0));
+            s.dice = s.dice.filter(d => d.lifetime === 'permanent');
+            for (const grade of ['A', 'B', 'C']) {
+                if (s.public[grade]) s.stocks[grade].push(s.stocks[grade].shift());
+                s.public[grade] = null;
+            }
+            yield* this.waitForDayEnd({ kind: 'cleanup' });
+        }
+        yield* this.effects(fameEffects, 'special');
         if (!s.credit) { s.phase = 'finished'; this.log(`ゲーム終了：名声${s.fame}、出荷${s.shipped.length}枚`); return; }
-        for (let i = 0; i < orders; i++) {
-            yield* stockCards(this, 1);
-            yield* this.waitForDayEnd({ kind: 'order' });
-        }
-        s.dayEndDice = structuredClone(s.dice);
-        s.discard.push(...s.hand.splice(0), ...s.field.splice(0));
-        s.dice = s.dice.filter(d => d.lifetime === 'permanent');
-        for (const grade of ['A', 'B', 'C']) {
-            if (s.public[grade]) s.stocks[grade].push(s.stocks[grade].shift());
-            s.public[grade] = null;
-        }
         s.phase = 'betweenDays'; this.log('一日の仕事を終了');
     }
 }
