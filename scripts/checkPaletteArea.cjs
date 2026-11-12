@@ -25,10 +25,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         assert.equal(await page.evaluate(() => document.activeElement.matches('button,[role="button"],[role="tab"]')), false);
         assert(await roll.evaluate(node => node.classList.contains('state-attention')));
         assert.equal(await roll.evaluate(node => getComputedStyle(node).fontSize), '24px');
-        assert.equal(await page.locator('.HandArea').evaluate(node => {
-            const labels = [...document.querySelectorAll('.LayoutAreaName')];
-            return getComputedStyle(labels.find(label => label.textContent === '手札')).fontSize;
-        }), '24px');
+        assert.equal(await page.locator('.LayoutAreaFixed[data-area="hand"] .LayoutAreaName').isVisible(), false);
         const attention = await roll.evaluate(node => {
             const animation = node.getAnimations().find(item => item.animationName === 'ButtonAttentionPulse');
             if (!animation) return null;
@@ -77,7 +74,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         await page.evaluate(() => { document.activeElement.blur(); });
         await page.keyboard.press('Tab');
         assert.equal(await page.evaluate(() => document.activeElement.matches('button,[role="button"],[role="tab"]')), false);
-        const firstTab = page.locator('[data-game-area="hand"] .PaintingTab').first();
+        const firstTab = page.locator('[data-scene-area="hand"] .PaintingTab').first();
         await firstTab.click();
         assert.equal(await firstTab.getAttribute('aria-selected'), 'true');
         assert.equal(await page.locator('.HandFixedActions .Button').first().evaluate(node => getComputedStyle(node).fontSize), '24px');
@@ -87,10 +84,12 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         });
         assert(Math.abs(ticketPosition.x)<1 && Math.abs(ticketPosition.y)<1);
         const endDayPlacement = await page.locator('[data-game-end-day]').evaluate(node => {
-            const wrapper=node.closest('.PlayEndDayAction'), rect=wrapper?.getBoundingClientRect(), layer=wrapper?.parentElement.getBoundingClientRect();
-            return { fixed:!!wrapper, top:rect?.top-layer?.top, right:layer?.right-rect?.right };
+            const rect = node.getBoundingClientRect();
+            const play = document.querySelector('.LayoutAreaFixed[data-area="play"]').getBoundingClientRect();
+            return { fixed: !!node.closest('.PlayEndDayAction'), top: rect.top - play.top,
+                center: rect.left + rect.width / 2 - play.left - play.width / 2 };
         });
-        assert(endDayPlacement.fixed && Math.abs(endDayPlacement.top)<1 && Math.abs(endDayPlacement.right)<1,JSON.stringify(endDayPlacement));
+        assert(endDayPlacement.fixed && Math.abs(endDayPlacement.top)<1 && Math.abs(endDayPlacement.center)<1,JSON.stringify(endDayPlacement));
         assert.equal(await page.locator('[data-game-area="info"] [data-game-end-day]').count(),0);
         await palette.locator('.DiceResult:not([hidden])').first().waitFor();
         await page.waitForTimeout(100);
@@ -124,7 +123,8 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             const actionSpace = await page.locator('.PaletteFixedActions').evaluate(node => {
                 const actions = node.getBoundingClientRect();
                 const viewport = document.querySelector('.PaletteViewport').getBoundingClientRect();
-                return { height: actions.height, gap: actions.top - viewport.bottom };
+                const scale = new DOMMatrix(getComputedStyle(node.parentElement).transform).a;
+                return { height: actions.height / scale, gap: actions.top - viewport.bottom };
             });
             assert(Math.abs(actionSpace.height - 36) < 1, JSON.stringify(actionSpace));
             assert(Math.abs(actionSpace.gap) < 1, JSON.stringify(actionSpace));
@@ -141,6 +141,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         const before = await palette.getAttribute('class');
         await page.locator('#panel-toggle').click(); await page.waitForTimeout(350);
         assert.equal(await palette.getAttribute('class'), before);
+        assert.equal(await firstTab.getAttribute('aria-selected'), 'true');
         await page.setViewportSize({ width:1200,height:800 });
         await page.getByRole('button', { name:'今日の仕事を終える',exact:true }).click();
         await page.waitForTimeout(300);

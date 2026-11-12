@@ -53,6 +53,20 @@
     --ui-floating-surface: #fffdf7f5;
     --ui-floating-border: #7a8e80;
     --ui-inverse-inactive-surface: #736c60;
+    --ui-atelier-wall: #bd9465;
+    --ui-cork-surface: #be965f;
+    --ui-cork-frame: #724c2e;
+    --ui-cork-frame-light: #a4744c;
+    --ui-cork-shadow: #39200e75;
+    --ui-sticky-note-paper: #fff0b8;
+    --ui-sticky-note-adhesive: #f3dfa0;
+    --ui-text-outline: #fff4df;
+    --ui-journal-paper: #fff6df;
+    --ui-journal-edge: #a58765;
+    --ui-journal-spine: #754c33;
+    --ui-journal-rule: #bda07d45;
+    --ui-journal-ring-light: #d5b885;
+    --ui-easel-shadow: #39200e66;
 }
 .theme-atelier {
     --ui-surface-warm: var(--ui-on-primary);

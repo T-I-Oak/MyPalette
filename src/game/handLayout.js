@@ -11,7 +11,7 @@ export const handStandardSize = Object.freeze({
     width: Math.ceil(padding * 2 + envelopeWidth * 4 + gap * 3),
     height: Math.ceil(padding * 2 + envelopeHeight),
 });
-export const handOffsets = Object.freeze({ topLeftOffset: { x: 0, y: 36 }, bottomRightOffset: { x: 0, y: 40 } });
+export const handOffsets = Object.freeze({ topLeftOffset: { x: 0, y: 0 }, bottomRightOffset: { x: 0, y: 40 } });
 
 export function layoutHand(width, height, count) {
     const available = width - padding * 2 - envelopeWidth;

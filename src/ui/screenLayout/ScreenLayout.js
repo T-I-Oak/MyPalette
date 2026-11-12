@@ -6,6 +6,7 @@ import { infoStandardSize } from '../../game/infoLayout.js';
 
 const panelWidthRatio = 0.85;
 const panelHeightRatio = 0.6;
+const fixedScaleReference = { width: 540, height: 540 };
 
 export const areaDefinitions = Object.freeze({
     info: { name: '情報表示エリア', ...infoStandardSize },
@@ -39,7 +40,7 @@ export function fitArea(rect, standard, visible = true, fixedScale = 1) {
 export class ScreenLayout {
     constructor(definitions = areaDefinitions) {
         this.definitions = definitions;
-        this.fixedScale = 1;
+        this.fixedScale = null;
         this.minimumHeight = 240;
     }
 
@@ -51,10 +52,11 @@ export class ScreenLayout {
             throw new RangeError('Expected panel progress between zero and one');
         }
         const mode = width >= height ? 'A' : 'B';
-        height = Math.max(height, this.minimumHeight * this.fixedScale);
+        const fixedScale = this.fixedScale ?? Math.min(1, width / fixedScaleReference.width, height / fixedScaleReference.height);
+        height = Math.max(height, this.minimumHeight * fixedScale);
         const areas = {};
         const put = (id, x, y, w, h, visible = true) => {
-            areas[id] = fitArea({ x, y, width: w, height: h }, this.definitions[id], visible, this.fixedScale);
+            areas[id] = fitArea({ x, y, width: w, height: h }, this.definitions[id], visible, fixedScale);
         };
         if (mode === 'A') {
             const w = width / 2;

@@ -7,6 +7,14 @@ export function createLayoutScreen(viewport, button) {
     root.className = 'LayoutContent';
     viewport.append(root);
     root.append(button);
+    const floor = document.createElement('div');
+    floor.className = 'LayoutAtelierFloor';
+    floor.setAttribute('aria-hidden', 'true');
+    root.prepend(floor);
+    const board = document.createElement('div');
+    board.className = 'LayoutCorkBoard';
+    board.setAttribute('aria-hidden', 'true');
+    root.append(board);
     // Layout coordinates are CSS pixels; the transition surface applies no extra screen scale.
     function createLayer(className) {
         const layer = document.createElement('div');
@@ -40,7 +48,11 @@ export function createLayoutScreen(viewport, button) {
         fixedLayer.className = 'LayoutAreaFixed';
         fixedLayer.dataset.area = id;
         (panelAreas.has(id) ? panelFixedLayer : mainFixedLayer).append(fixedLayer);
-        return [id, new CanvasArea(id, surface, definition, canvas, fixedLayer)];
+        const area = new CanvasArea(id, surface, definition, canvas, fixedLayer);
+        if (panelAreas.has(id)) {
+            fixedLayer.firstElementChild.classList.replace('texture-text-outline', 'texture-sticky-note');
+        }
+        return [id, area];
     }));
     const layout = new ScreenLayout();
     const listeners = new Set();
@@ -59,11 +71,21 @@ export function createLayoutScreen(viewport, button) {
         root.style.height = `${frame.height}px`;
         viewport.dataset.layout = frame.mode;
         root.dataset.layout = frame.mode;
+        const play = frame.areas.play.drawRect;
+        root.style.setProperty('--atelier-floor-y', `${play.y + play.height * 0.57}px`);
+        root.style.setProperty('--atelier-image-width', `${Math.max(width, frame.height * 1672 / 941)}px`);
+        const { rect: stock, visible: boardVisible } = frame.areas.stock;
+        const deck = frame.areas.deck.rect;
+        Object.assign(board.style, {
+            left: `${stock.x}px`, top: `${stock.y}px`,
+            width: `${stock.width}px`, height: `${deck.y + deck.height - stock.y}px`,
+        });
+        board.hidden = !boardVisible;
         for (const [id, area] of areas) area.applyLayout(frame.areas[id], window.devicePixelRatio);
         for (const listener of listeners) listener(frame);
         button.hidden = frame.mode === 'A';
-        button.style.right = `${width - frame.areas.stock.rect.x}px`;
-        button.style.top = `${frame.areas.stock.rect.y}px`;
+        button.style.right = `${width - stock.x}px`;
+        button.style.top = `${stock.y}px`;
         button.setAttribute('aria-expanded', String(target === 1));
         button.setAttribute('aria-label', target === 1 ? 'サイドパネルを閉じる' : 'サイドパネルを開く');
     }

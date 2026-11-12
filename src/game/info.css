@@ -1,8 +1,20 @@
-.GameAreaHost[data-game-area='info'] { display: flex; align-items: center; gap: 8px; }
+.GameAreaHost[data-game-area='info'] { display: flex; align-items: center; gap: 8px; background: transparent; }
 .InfoLogo { display: block; flex: none; width: auto; height: 52px; }
 .InfoRows { flex: none; display: grid; gap: 4px; }
-.InfoDay { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.InfoDay .InfoRow { justify-content: center; }
+.InfoDay {
+    position: relative;
+    box-sizing: border-box;
+    flex: none;
+    display: grid;
+    grid-template-rows: 18px 34px;
+    padding-inline: 8px 3px;
+    font: 700 20px/1 system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+.InfoDay::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 7px; pointer-events: none; }
+.InfoDay .InfoRow { height: auto; justify-content: center; }
+.InfoDayWord { font-size: 13px; font-weight: 600; }
+.InfoDay .InfoIcon { flex-basis: 34px; width: 34px; height: 34px; }
 .InfoRow, .InfoRun { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
 .InfoRow { height: 24px; }
 .InfoIcon { display: block; flex: 0 0 24px; width: 24px; height: 24px; }

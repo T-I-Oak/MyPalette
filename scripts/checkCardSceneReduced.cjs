@@ -9,7 +9,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  for(const card of settings.cards)for(const step of card.steps){step.playEffects=[];step.achievementEffects=[];}
  await page.route(base,route=>route.fulfill({contentType:'text/html',body:`
  <style>.LayoutScreen::-webkit-scrollbar{width:17px;height:17px}</style>
- <body class="theme-atelier texture-layout"><main class="LayoutScreen"><button id="panel-toggle"></button></main>
+ <body class="theme-atelier texture-layout"><main class="LayoutScreen"><button id="panel-toggle" class="PanelToggle" type="button"></button></main>
  <script type="module">
  import {createLayoutScreen} from './src/ui/screenLayout/createLayoutScreen.js';
  import {createLayoutPresentation} from './src/game/layoutPresentation.js';import {mountGame} from './src/game/view.js';
@@ -87,7 +87,19 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  assert.ok(point,'対象ダイスの見えている位置を選ぶ');await page.mouse.click(point.x,point.y);
  assert.equal(await page.locator('.PaletteViewport .DiceResult[data-die-id="'+id+'"]').getAttribute('aria-label'),'選択中');
  };
- await select(first.die);await page.getByRole('button',{name:'選択ダイスで達成',exact:true}).first().click({force:true});await idle();
+ await select(first.die);
+ await page.setViewportSize({width:390,height:844});
+ await page.locator('.LayoutScreen[data-layout="B"]').waitFor();
+ const panel=page.locator('#panel-toggle'), board=page.locator('.LayoutCorkBoard');
+ await panel.click();
+ assert.equal(await board.isVisible(),true);
+ await verify('reduce panel open with selected die');
+ await panel.click();
+ assert.equal(await board.isVisible(),false);
+ await page.setViewportSize({width:1200,height:800});
+ await page.locator('.LayoutScreen[data-layout="A"]').waitFor();
+ assert.equal(await page.locator('.PaletteViewport .DiceResult[data-die-id="'+first.die+'"]').getAttribute('aria-label'),'選択中');
+ await page.getByRole('button',{name:'選択ダイスで達成',exact:true}).first().click({force:true});await idle();
  assert.equal(await page.evaluate(()=>check.mounted.session.game.state.field.length),2);await verify('reduce achievement and reflow');
  const end=async()=>{await page.evaluate(()=>{const s=check.mounted.session.game.state;s.credit=100;s.flyers=0;s.dice.forEach(d=>d.used=true);});await page.getByRole('button',{name:'今日の仕事を終える',exact:true}).click({force:true});await idle();};
  await end();await verify('reduce cleanup');assert.equal(await page.locator('.PlayPainting:not([data-retired])').count(),0);

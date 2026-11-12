@@ -9,7 +9,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  for(const card of settings.cards)for(const step of card.steps){step.playEffects=[];step.achievementEffects=[];}
  await page.route(base,route=>route.fulfill({contentType:'text/html',body:`
  <style>.LayoutScreen::-webkit-scrollbar{width:17px;height:17px}</style>
- <body class="theme-atelier texture-layout"><main class="LayoutScreen"><button id="panel-toggle"></button></main>
+ <body class="theme-atelier texture-layout"><main class="LayoutScreen"><button id="panel-toggle" class="PanelToggle" type="button"></button></main>
  <script type="module">
  import {createLayoutScreen} from './src/ui/screenLayout/createLayoutScreen.js';
  import {createLayoutPresentation} from './src/game/layoutPresentation.js';import {mountGame} from './src/game/view.js';
@@ -123,7 +123,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  const cleanup=await page.evaluate(()=>frames.filter(f=>['day-cleanup','stock-close','stock-rotate'].includes(f.motion)));
  assert.ok(cleanup.some(f=>f.motion==='day-cleanup')&&cleanup.some(f=>f.motion==='stock-rotate'));
  assert.ok(cleanup.every(f=>f.day==='Day 1'));
- assert.equal(await page.locator('.InfoDay span').textContent(),'Day 2');
+ assert.equal(await page.locator('.InfoDay .InfoRow').first().textContent(),'Day 2');
  assert.ok(await page.evaluate(()=>check.mounted.session.game.state.dice.every(die=>die.current!==null)));
  await page.screenshot({path:'tmp_card_scene_cleanup.png'});
  await begin();console.log('morning recycle');
@@ -155,6 +155,8 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.evaluate(async()=>{const {mountGame}=await import('./src/game/view.js');check.mounted=mountGame(document.querySelector('main'),check.settings,()=>{},check.presentation);});
  assert.equal(await page.locator('[data-scene-card]').count(),45);
+ await page.locator('#panel-toggle').click();
+ assert.equal(await page.locator('.LayoutCorkBoard').isVisible(),false);
  await begin();
  assert.equal(await page.evaluate(()=>check.mounted.session.game.state.hand.length),4);
  assert.deepEqual(errors,[]);

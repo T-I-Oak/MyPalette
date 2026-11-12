@@ -16,7 +16,7 @@ export class CanvasArea extends MoveArea {
         this.fixedLayer = fixedLayer;
         if (fixedLayer) {
             const label = fixedLayer.ownerDocument.createElement('div');
-            label.className = 'LayoutAreaName';
+            label.className = 'LayoutAreaName texture-text-outline';
             label.textContent = this.name;
             fixedLayer.append(label);
         }

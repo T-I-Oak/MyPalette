@@ -68,7 +68,22 @@ test('パネルの途中位置も計算しメイン4エリアを固定する', (
     assert.equal(half.areas.stock.rect.x, (400 + open.areas.stock.rect.x) / 2);
 });
 
-test('低い画面でも最低レイアウト高さと有効な手札座標を維持する', () => {
+test('画面幅と高さのうち厳しい方に合わせて全エリアの固定倍率を下げる', () => {
+    const layout = new ScreenLayout();
+    for (const [width, height, expected] of [
+        [540, 540, 1], [270, 800, 0.5], [900, 360, 2 / 3], [1200, 180, 1 / 3],
+        [135, 180, 0.25], [1200, 40, 40 / 540], [1200, 700, 1],
+    ]) {
+        const frame = layout.calculate(width, height);
+        assert.equal(frame.height, height);
+        for (const area of Object.values(frame.areas)) {
+            assert.equal(area.fixedScale, expected);
+            assert.equal(area.drawable, true);
+        }
+    }
+});
+
+test('固定倍率の明示指定時は低い画面でも最低レイアウト高さと有効な手札座標を維持する', () => {
     const layout = new ScreenLayout();
     for (const fixedScale of [1, 2]) {
         layout.fixedScale = fixedScale;

@@ -10,6 +10,36 @@ html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
     -webkit-touch-callout: none;
 }
 .LayoutContent { position: relative; width: 100%; overflow: hidden; }
+.texture-layout .LayoutContent {
+    --atelier-image: url('./atelier-background.webp');
+    --atelier-image-x: center;
+    --atelier-wall-ratio: 0.81;
+    background: var(--ui-atelier-wall) var(--atelier-image) var(--atelier-image-x) top /
+        var(--atelier-image-width) calc(var(--atelier-floor-y) / var(--atelier-wall-ratio)) no-repeat;
+}
+.texture-layout .LayoutContent[data-layout='B'] { --atelier-image-x: left; }
+.LayoutAtelierFloor { position: absolute; inset: var(--atelier-floor-y) 0 0; pointer-events: none; }
+.texture-layout .LayoutAtelierFloor {
+    background: var(--atelier-image) var(--atelier-image-x) bottom /
+        var(--atelier-image-width) calc(100% / (1 - var(--atelier-wall-ratio))) no-repeat;
+}
+.LayoutCorkBoard { position: absolute; z-index: 2; }
+.texture-layout .LayoutCorkBoard {
+    background: var(--ui-cork-surface) url('./cork-board-background.webp') center / cover no-repeat;
+    border-radius: 5px;
+    box-shadow: 1px 4px 8px var(--ui-cork-shadow);
+}
+.texture-layout .LayoutCorkBoard::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: clamp(3px, 1vmin, 8px) solid var(--ui-cork-frame);
+    border-top-color: var(--ui-cork-frame-light);
+    border-left-color: var(--ui-cork-frame-light);
+    box-shadow: inset 0 1px 3px var(--ui-cork-shadow);
+    pointer-events: none;
+}
 .LayoutArea { position: absolute; display: block; }
 .LayoutArea[hidden] { display: none; }
 .LayoutComponentLayer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
@@ -21,10 +51,21 @@ html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
 .LayoutArea[data-area='stock'], .LayoutArea[data-area='discard'], .LayoutArea[data-area='deck'] { z-index: 2; }
 .LayoutPanelLayer { z-index: 3; }
 .LayoutPanelFixedLayer { z-index: 3; }
+.LayoutPanelFixedLayer .LayoutAreaName {
+    box-sizing: border-box;
+    left: 12px;
+    max-width: calc(100% - 16px);
+    padding: 2px 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: 20px/24px sans-serif;
+}
+.LayoutPanelFixedLayer .LayoutAreaFixed[data-area='stock'] .LayoutAreaName { top: 6px; }
 .LayoutMovingLayer { z-index: 4; }
 .PanelToggle {
     position: absolute;
-    z-index: 5;
+    z-index: 6;
     width: 32px;
     height: 64px;
     padding: 8px 4px;
@@ -36,13 +77,6 @@ html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
 .PanelToggle[hidden] { display: none; }
 .PanelIcon { display: block; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .PanelToggle[aria-expanded='true'] .PanelIcon { transform: rotate(180deg); }
-.AppVersion { position: absolute; bottom: max(6px, env(safe-area-inset-bottom)); left: max(8px, env(safe-area-inset-left)); z-index: 2; font: 12px sans-serif; pointer-events: none; }
-.texture-layout { color: var(--ui-text); background: transparent; --area-fill: var(--ui-surface); }
-.texture-layout .LayoutArea[data-area='play'] { --area-fill: transparent; }
-.texture-layout .LayoutArea[data-area='palette'] { --area-fill: transparent; }
-.texture-layout .LayoutArea[data-area='stock'] { --area-fill: transparent; }
-.texture-layout .LayoutArea[data-area='discard'] { --area-fill: transparent; }
-.texture-layout .LayoutArea[data-area='deck'] { --area-fill: transparent; }
-.texture-layout .LayoutArea[data-area='hand'] { --area-fill: transparent; }
+.texture-layout { color: var(--ui-text); background: transparent; --area-fill: transparent; }
 .texture-layout .PanelToggle { color: var(--ui-on-primary); background: var(--ui-primary); border: 1px solid var(--ui-primary); }
 .PanelToggle:focus-visible { outline: 3px solid var(--ui-focus); outline-offset: 2px; }
