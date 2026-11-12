@@ -1,4 +1,6 @@
 import { initializeAppVersion } from './version.js';
+import { createTitleScreen } from './ui/createTitleScreen.js';
+import startPainting from './ui/title/start-painting.webp';
 import { createLayoutScreen } from './ui/screenLayout/createLayoutScreen.js';
 import { loadSettings } from './settingsStorage.js';
 import { gameIssues } from './game/engine.js';
@@ -10,15 +12,39 @@ import './ui/textures.css';
 import './ui/states.css';
 import './ui/screenLayout/layout.css';
 
-initializeAppVersion(__APP_VERSION__);
-export const layoutScreen = createLayoutScreen(document.querySelector('#layout-screen'), document.querySelector('#panel-toggle'));
+const version = initializeAppVersion(__APP_VERSION__);
 const root = document.querySelector('#layout-screen');
-const notice = document.createElement('section');
-notice.className = 'GameStartup';
-notice.setAttribute('role', 'status');
-root.append(notice);
+export const layoutScreen = createLayoutScreen(root, document.querySelector('#panel-toggle'));
+const gameLayout = root.querySelector('.LayoutContent');
+const { screen: title, notice, setMenuItems } = createTitleScreen(version);
+const startLabel = 'ゲーム開始';
+const [{ button: startButton, plaque: startPlaque }] = setMenuItems([
+    { label: startLabel, artwork: startPainting, onSelect: start },
+]);
+
+const result = document.createElement('section');
+result.className = 'GameStartup';
+const resultHeading = document.createElement('h1');
+resultHeading.textContent = 'ゲーム終了';
+const returnButton = document.createElement('button');
+returnButton.type = 'button';
+returnButton.className = 'Button texture-raised';
+returnButton.textContent = 'タイトルへ戻る';
+result.append(resultHeading, returnButton);
+root.append(title, result);
+
+function showTitle() {
+    gameLayout.hidden = true;
+    result.hidden = true;
+    title.hidden = false;
+    notice.textContent = '';
+    startPlaque.textContent = startLabel;
+    startButton.disabled = false;
+}
+
 async function start() {
-    notice.hidden = false;
+    if (startButton.disabled) return;
+    startButton.disabled = true;
     notice.textContent = 'ゲーム設定を読み込んでいます…';
     let settings;
     try {
@@ -26,16 +52,27 @@ async function start() {
         const issues = gameIssues(settings);
         if (issues.length) throw new Error(`設定が制作途中のため開始できません。\n${issues.join('\n')}`);
     } catch (error) {
-        const message = document.createElement('pre');
-        message.className = 'StartIssues'; message.textContent = `ゲーム設定を開けませんでした。\n${error.message}`;
-        const retry = document.createElement('button'); retry.tabIndex = -1;
-        retry.textContent = '再読み込み'; retry.className = 'Button texture-raised';
-        retry.addEventListener('click', start);
-        notice.replaceChildren(message, retry);
+        notice.textContent = `ゲーム設定を開けませんでした。\n${error.message}`;
+        startPlaque.textContent = '再読み込み';
+        startButton.disabled = false;
         return;
     }
-    notice.hidden = true;
+    title.hidden = true;
+    gameLayout.hidden = false;
+    layoutScreen.render();
     const presentation = createLayoutPresentation(layoutScreen);
-    mountGame(root, settings, () => { presentation.dispose(); start(); }, presentation);
+    mountGame(root, settings, () => {
+        presentation.dispose();
+        showTitle();
+    }, presentation, () => {
+        presentation.dispose();
+        gameLayout.hidden = true;
+        result.hidden = false;
+        returnButton.focus();
+    });
 }
-start();
+returnButton.addEventListener('click', () => {
+    showTitle();
+    startButton.focus();
+});
+showTitle();

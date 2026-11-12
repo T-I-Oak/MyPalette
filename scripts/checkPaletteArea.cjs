@@ -12,13 +12,16 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         });
         await page.addInitScript(() => { Math.random = () => .4; });
         await page.goto(base);
+        await page.getByRole('button', { name: 'ゲーム開始', exact: true }).click();
         const palette = page.locator('[data-game-area="palette"]');
         const roll = page.getByRole('button', { name: '今日の仕事を始める', exact: true });
         await roll.waitFor();
         await page.waitForFunction(() => !!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
         const rerolls = page.locator('.PaletteRerolls');
         assert(await rerolls.isHidden());
-        const initialTabStops = await page.locator('button,[role="button"],[role="tab"]').evaluateAll(nodes =>
+        const gameControls = page.locator('.LayoutContent, .LayoutScreen > .GameBoard')
+            .locator('button,[role="button"],[role="tab"]');
+        const initialTabStops = await gameControls.evaluateAll(nodes =>
             nodes.filter(node => node.tabIndex >= 0).map(node => node.outerHTML));
         assert.deepEqual(initialTabStops, [], '初日の開始前は裏向きカードで説明アイコンもない');
         await page.keyboard.press('Tab');
@@ -68,7 +71,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         const effectIcons = page.locator('.PaintingBlock.play .CardIcon[aria-expanded], .PaintingBlock.reward .CardIcon[aria-expanded]');
         assert(await effectIcons.count() > 0, 'ドロー後のカードに説明アイコンがある');
         assert(await effectIcons.evaluateAll(nodes => nodes.every(node => node.tabIndex === -1 && node.getAttribute('role') === 'button')));
-        const tabStops = await page.locator('button,[role="button"],[role="tab"]').evaluateAll(nodes =>
+        const tabStops = await gameControls.evaluateAll(nodes =>
             nodes.filter(node => node.tabIndex >= 0).map(node => node.outerHTML));
         assert.deepEqual(tabStops, [], '効果説明を含む操作ボタン・タブはTab順次フォーカス対象外');
         await page.evaluate(() => { document.activeElement.blur(); });

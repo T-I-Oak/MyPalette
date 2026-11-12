@@ -8,6 +8,7 @@ const assert = require('node:assert/strict');
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
         await page.goto(process.argv[2] || 'http://127.0.0.1:3001/MyPalette/');
+        await page.getByRole('button', { name: 'ゲーム開始', exact: true }).click();
         await page.waitForFunction(() => !!document.querySelector('.PaletteViewport > canvas'));
         await page.evaluate(async () => {
             const { layoutScreen } = await import('/MyPalette/src/main.js');

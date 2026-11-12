@@ -11,6 +11,7 @@ const assert = require('node:assert/strict');
         const backgrounds = ['atelier', 'cork-board'].map(name =>
             page.waitForResponse(response => new URL(response.url()).pathname.includes(`/${name}-background`)));
         await page.goto(base);
+        await page.getByRole('button', { name: 'ゲーム開始', exact: true }).click();
         await page.locator('.LayoutScreen[data-layout="A"]').waitFor();
         for (const response of await Promise.all(backgrounds)) {
             assert.equal(response.status(), 200, response.url());
@@ -127,7 +128,7 @@ const assert = require('node:assert/strict');
         await page.goto(base + 'dev.html');
         await page.getByRole('button', { name: 'カード設定を開く', exact: true }).waitFor();
         assert.equal(await page.locator('#app-version').textContent(), require('../package.json').version);
-        assert.equal(await page.getByRole('button', { name: 'ゲームを始める', exact: true }).count(),0);
+        assert.equal(await page.getByRole('button', { name: 'ゲーム開始', exact: true }).count(),0);
         for (const [hash, selector] of [['settings', '.Overview'], ['icons', '.IconLab']]) {
             await page.goto(base + 'dev.html#' + hash);
             await page.reload();

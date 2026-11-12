@@ -20,6 +20,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             };
         });
         await page.goto(base);
+        await page.getByRole('button', { name: 'ゲーム開始', exact: true }).click();
         await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).waitFor();
         const togglePanel = () => page.locator('#panel-toggle').evaluate(button => button.click());
         async function rememberHosts() {
@@ -57,11 +58,12 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
                 });
                 if (!await start.count()) {
                     endings++;
-                    assert.equal(await page.getByRole('button', { name: 'もう一度遊ぶ', exact: true }).count(), 0);
-                    assert.equal(await page.getByRole('heading', { name: /^結果/ }).count(), 0);
+                    const returnToTitle = page.getByRole('button', { name: 'タイトルへ戻る', exact: true });
+                    await returnToTitle.waitFor();
                     await checkOwnership('game over');
                     if (step + 1 < updates) {
-                        await page.reload();
+                        await returnToTitle.click();
+                        await page.getByRole('button', { name: 'ゲーム開始', exact: true }).click();
                         await start.waitFor();
                         await rememberHosts();
                     }
