@@ -22,7 +22,7 @@ function button(text, action, disabled = false) {
 export const faceLabel = face => face.special ? `特殊面：${displayLabel(face.special)}` : `${displayLabel(face.color)}・${displayLabel(face.material)}`;
 const phaseLabel = { awaitingStart: '仕事の開始待ち', play: '制作中', start: 'ターン開始処理', end: 'ターン終了処理', betweenDays: '一日の仕事を終了', finished: 'ゲーム終了' };
 
-export function mountGame(root, settings, onMenu, presentation = null) {
+export function mountGame(root, settings, onMenu, presentation = null, onFinished = null) {
     const issues = gameIssues(settings);
     if (issues.length) {
         root.replaceChildren(el('h2', '設定が制作途中のため開始できません'), el('pre', issues.join('\n'), 'StartIssues'), button('入口へ戻る', onMenu));
@@ -271,6 +271,11 @@ export function mountGame(root, settings, onMenu, presentation = null) {
         update();
     }
     function render() {
+        if (onFinished && !moving && game.state.phase === 'finished') {
+            dispose();
+            onFinished();
+            return;
+        }
         inspectionRefresh = false;
         notices.sync(game.state, moving);
         const positions = new Map([...scope.querySelectorAll('[data-pane]')].map(node => [node.dataset.pane, { top: node.scrollTop, left: node.scrollLeft }]));

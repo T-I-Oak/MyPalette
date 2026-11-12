@@ -3,7 +3,9 @@ const assert=require('node:assert/strict');
 const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
  const page=await browser.newPage({viewport:{width:1200,height:900}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(base);await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).waitFor();await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
+ await page.goto(base);
+ await page.getByRole('button',{name:'ゲーム開始',exact:true}).click();
+ await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).waitFor();await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
  await page.evaluate(async()=>{
   const url=performance.getEntriesByType('resource').find(e=>new URL(e.name).pathname.endsWith('/dice/DiceScene.js')).name;
   const {DiceScene}=await import(url),original=DiceScene.prototype.project;
