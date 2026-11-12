@@ -8,7 +8,7 @@ class DrawingArea extends CanvasArea {
     draw() { this.drawCount = (this.drawCount ?? 0) + 1; }
 }
 
-test('低い画面でも最低高さに基づいて画面外の描画座標を保持する', () => {
+test('低い画面でも縮小後の描画領域を表示枠内に確保する', () => {
     const canvas = { style: {}, width: 0, height: 0 };
     const area = new DrawingArea('hand', {}, areaDefinitions.hand, canvas);
     const layout = new ScreenLayout();
@@ -16,7 +16,7 @@ test('低い画面でも最低高さに基づいて画面外の描画座標を�
     assert.equal(canvas.hidden, false);
     assert.equal(area.drawCount, 1);
     assert.ok(area.logicalHeight >= 200);
-    assert.ok(area.readTransform().y > 40);
+    assert.ok(area.readTransform().y + parseFloat(canvas.style.height) <= 40);
     area.applyLayout(layout.calculate(1200, 700).areas.hand, 1);
     assert.equal(canvas.hidden, false);
     assert.equal(area.drawCount, 2);
@@ -37,13 +37,14 @@ test('固定倍率層へエリア側が描画でき、表示矩形と開閉だ�
     const custom = { textContent: 'エリア内部の情報' };
     area.fixedLayer.append(custom);
     const layout = new ScreenLayout();
+    const fixedScale = 400 / 540;
     for (const progress of [0, 0.5, 1]) {
         const frame = layout.calculate(400, 800, progress).areas.stock;
         area.applyLayout(frame, 2);
         assert.deepEqual(fixedLayer.style, {
             left: `${frame.rect.x}px`, top: `${frame.rect.y}px`,
-            width: `${frame.rect.width}px`, height: `${frame.rect.height}px`,
-            transform: 'scale(1)', transformOrigin: 'top left',
+            width: `${frame.rect.width / fixedScale}px`, height: `${frame.rect.height / fixedScale}px`,
+            transform: `scale(${fixedScale})`, transformOrigin: 'top left',
         });
         assert.equal(fixedLayer.hidden, !frame.visible);
         assert.equal(fixedLayer.inert, !frame.visible);

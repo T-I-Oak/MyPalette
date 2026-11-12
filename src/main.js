@@ -10,7 +10,7 @@ import './ui/textures.css';
 import './ui/states.css';
 import './ui/screenLayout/layout.css';
 
-document.querySelector('#app-version').textContent = initializeAppVersion(__APP_VERSION__);
+initializeAppVersion(__APP_VERSION__);
 export const layoutScreen = createLayoutScreen(document.querySelector('#layout-screen'), document.querySelector('#panel-toggle'));
 const root = document.querySelector('#layout-screen');
 const notice = document.createElement('section');

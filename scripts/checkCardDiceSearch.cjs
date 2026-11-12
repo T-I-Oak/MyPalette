@@ -25,7 +25,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
   g.state.dice[1].faces=Array.from({length:6},()=>face('airbrush','blue'));
   g.state.dice[2].faces=Array.from({length:6},()=>face('pastel','orange'));
  });
- const goal=condition=>page.locator(`.HandArea [data-goal-condition='${JSON.stringify(condition)}']`).first();
+ const goal=condition=>page.locator(`[data-scene-area="hand"] [data-goal-condition='${JSON.stringify(condition)}']`).first();
  await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});
  await goal({material:'brush',color:'orange'}).click();
  await page.waitForFunction(()=>!!window.searchScene?.faceSearch.active);

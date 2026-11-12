@@ -10,7 +10,7 @@ function leaf(ctx, baseX, baseY, tipX, tipY, width) {
     ctx.fill();
 }
 
-export function drawLaurel(ctx) {
+function drawLaurel(ctx) {
     ctx.save(); ctx.fillStyle = '#51724c'; ctx.strokeStyle = '#51724c'; ctx.lineWidth = 2.5;
     const point = (radius, degrees) => [50 + radius * Math.cos(degrees * Math.PI / 180), 50 + radius * Math.sin(degrees * Math.PI / 180)];
     for (const mirror of [false, true]) {
@@ -24,10 +24,12 @@ export function drawLaurel(ctx) {
     ctx.restore();
 }
 
-export function drawFameIcon(ctx, amount) {
-    if (!Number.isSafeInteger(amount) || amount === 0) throw new Error('Fame amount must be a nonzero safe integer');
+export function drawFameIcon(ctx, amount, { total = false } = {}) {
+    if (!Number.isSafeInteger(amount)) throw new Error('Fame amount must be a safe integer');
+    if (!total && amount === 0) throw new Error('Fame change must be nonzero');
     drawLaurel(ctx);
-    const value = amount > 0 ? `+${amount}` : `−${Math.abs(amount)}`;
+    const sign = amount < 0 ? '−' : total ? '' : '+';
+    const value = `${sign}${Math.abs(amount)}`;
     const size = Math.min(30, 70 / measureGlyphText(value, 1));
     drawGlyphText(ctx, value, 50, 50, size, amount < 0 ? '#d94b51' : '#303e3b', '#ffffff');
 }

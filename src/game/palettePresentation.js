@@ -16,7 +16,7 @@ export function createPalettePresentation(area, host, relayout) {
     controls.className = 'PaletteFixedActions';
     area.fixedLayer.append(controls);
     const rerolls = document.createElement('div');
-    rerolls.className = 'PaletteRerolls'; rerolls.setAttribute('role', 'img'); rerolls.hidden = true;
+    rerolls.className = 'PaletteRerolls texture-text-outline'; rerolls.setAttribute('role', 'img'); rerolls.hidden = true;
     const ticket = rerollTicketCanvas(); ticket.setAttribute('aria-hidden', 'true');
     const quantity = document.createElement('span');
     rerolls.append(ticket, quantity); area.fixedLayer.append(rerolls);

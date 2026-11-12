@@ -8,7 +8,7 @@ const assert = require('node:assert/strict');
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
         await page.goto(process.argv[2] || 'http://127.0.0.1:3001/MyPalette/');
-        await page.locator('[data-game-area="hand"] .PaintingCard').first().waitFor();
+        await page.waitForFunction(() => !!document.querySelector('.PaletteViewport > canvas'));
         await page.evaluate(async () => {
             const { layoutScreen } = await import('/MyPalette/src/main.js');
             const { MoveObject, createMoveManager } = await import('/MyPalette/src/ui/areaTransition/index.js');
@@ -43,12 +43,30 @@ const assert = require('node:assert/strict');
             assert.equal(await page.locator(`[data-piece="${id}"]`).getAttribute('data-clicked'), 'yes');
         }
         for (const id of ['stock', 'discard', 'deck']) await verify(id);
+        assert.ok(await page.evaluate(() => {
+            const { areas, pieces } = window.layerTest;
+            const action = document.querySelector('[data-game-end-day]');
+            const bounds = action.getBoundingClientRect();
+            const x = bounds.x + bounds.width / 2;
+            const y = bounds.y + bounds.height / 2;
+            const play = areas.get('play');
+            const transform = play.readTransform();
+            play.setSlot('test', { x: (x - transform.x) / transform.scale - 10,
+                y: (y - transform.y) / transform.scale - 10, width: 20, height: 20 });
+            return document.elementsFromPoint(x, y).includes(pieces.get('play').element)
+                && action.contains(document.elementFromPoint(x, y));
+        }), 'the day action remains above overlapping play content');
         await page.setViewportSize({ width: 390, height: 844 });
         await page.locator('.LayoutScreen[data-layout="B"]').waitFor();
         for (const id of ['stock', 'discard', 'deck']) assert.equal(await page.locator(`[data-piece="${id}"]`).count(), 0);
         await page.locator('#panel-toggle').click();
         await page.waitForTimeout(350);
         for (const id of ['stock', 'discard', 'deck']) await verify(id);
+        assert.ok(await page.evaluate(() => {
+            const action = document.querySelector('[data-game-end-day]').getBoundingClientRect();
+            const top = document.elementFromPoint(action.x + action.width / 2, action.y + action.height / 2);
+            return !top?.closest('[data-game-end-day]');
+        }), 'the open cork board blocks the day action underneath it');
         // Put a main-area component underneath the panel and ensure the panel blocks it.
         assert.ok(await page.evaluate(() => {
             const { areas, pieces } = window.layerTest;

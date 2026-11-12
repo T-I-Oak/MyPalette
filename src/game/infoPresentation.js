@@ -1,5 +1,4 @@
-import { drawLaurel } from '../icons/laurel.js';
-import { drawGlyphText, measureGlyphText } from '../icons/glyphs.js';
+import { drawFameIcon } from '../icons/laurel.js';
 import { compactCountCharacters, creditAtRisk, flyerCounts, flyerFiles, flyerIconWidth, flyerImageSize, flyerReserveCycles, flyerReserveDuration, iconRunWidth, infoDayWidth, infoFormats, logoSize } from './infoLayout.js';
 import './info.css';
 
@@ -13,10 +12,7 @@ function element(tag, className, text) {
 function fameIcon(fame) {
     const canvas = element('canvas', 'InfoIcon');
     canvas.width = canvas.height = 100;
-    const context = canvas.getContext('2d');
-    const value = fame.toLocaleString('en-US', { useGrouping: false }).replace('-', '−');
-    drawLaurel(context);
-    drawGlyphText(context, value, 50, 50, Math.min(52, 56 / measureGlyphText(value, 1)), '#303e3b');
+    drawFameIcon(canvas.getContext('2d'), fame, { total: true });
     return canvas;
 }
 
@@ -159,12 +155,12 @@ export function createInfoPresentation(area, host) {
     logo.width = logoSize.width;
     logo.height = logoSize.height;
     logo.draggable = false;
-    const day = element('div', 'InfoRows InfoDay');
+    const day = element('div', 'InfoDay texture-journal-page');
     day.style.width = `${infoDayWidth}px`;
     const dayLabel = element('div', 'InfoRow');
     const fameRow = row('');
     day.append(dayLabel, fameRow);
-    const resources = element('div', 'InfoRows');
+    const resources = element('div', 'InfoRows texture-text-outline');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
     const creditRow = createCreditRow(reducedMotion);
     const flyerRow = row('');
@@ -223,7 +219,8 @@ export function createInfoPresentation(area, host) {
         update() {
             if (!state) return;
             if (state.day !== previousDay) {
-                const label = element('span', '', `Day ${state.day}`);
+                const label = element('span', '');
+                label.append(element('span', 'InfoDayWord', 'Day'), ` ${state.day}`);
                 dayLabel.replaceChildren(label);
                 if (state.day > previousDay && !reducedMotion.matches) animateIncrease(label, 480);
                 previousDay = state.day;

@@ -4,6 +4,7 @@ import './hand.css';
 
 export function createHandPresentation(area, host) {
     host.classList.add('HandArea');
+    area.fixedLayer.querySelector('.LayoutAreaName').hidden = true;
     const controls = document.createElement('div');
     controls.className = 'HandFixedActions';
     area.fixedLayer.append(controls);

@@ -1,4 +1,26 @@
 .texture-paper { background: var(--ui-surface); border-color: var(--ui-border); }
+.texture-text-outline { -webkit-text-stroke: 2px var(--ui-text-outline); paint-order: stroke fill; }
+.texture-journal-page {
+    color: var(--ui-text);
+    background:
+        linear-gradient(to right, var(--ui-journal-spine) 5px, transparent 5px),
+        repeating-linear-gradient(to bottom, transparent 0 12px, var(--ui-journal-rule) 12px 13px),
+        var(--ui-journal-paper);
+    border-radius: 2px 3px 3px 2px;
+    box-shadow: inset 0 0 0 1px var(--ui-journal-edge),
+        0 1px var(--ui-journal-paper), 0 3px var(--ui-journal-spine),
+        0 4px 4px var(--ui-cork-shadow);
+}
+.texture-journal-page::before {
+    background: radial-gradient(ellipse 3.5px 1.8px at center, var(--ui-journal-ring-light) 35%,
+        var(--ui-journal-spine) 75%, transparent 100%) left top / 100% 17px repeat-y;
+}
+.texture-sticky-note {
+    color: var(--ui-text);
+    background: linear-gradient(var(--ui-sticky-note-adhesive) 18%, var(--ui-sticky-note-paper) 18%);
+    box-shadow: 0 2px 3px var(--ui-cork-shadow);
+}
+.texture-easel-shadow::before { background: radial-gradient(ellipse at center, var(--ui-easel-shadow), transparent 72%); }
 .texture-surface-muted { border-color: var(--ui-surface-muted-border); background: var(--ui-surface-muted); }
 .texture-label-inverse { color: var(--ui-inverse-text); background: var(--ui-inverse-surface); }
 .texture-raised { color: var(--ui-primary); border-color: var(--ui-primary); background: linear-gradient(var(--ui-surface), var(--ui-message-surface)); box-shadow: inset 0 1px 0 var(--ui-surface), 0 1px 2px var(--ui-artwork-shadow); }

@@ -14,7 +14,8 @@ export function createPlayPresentation(area, host, relayout) {
     const name = area.fixedLayer.querySelector('.LayoutAreaName'); name.hidden = true;
     const root = area.canvas.closest('.LayoutContent');
     const controls = document.createElement('div'); controls.className = 'PlayFixedActions'; area.fixedLayer.append(controls);
-    const endDay = document.createElement('div'); endDay.className = 'PlayEndDayAction'; root.append(endDay);
+    const endDay = document.createElement('div'); endDay.className = 'PlayEndDayAction';
+    root.querySelector('.LayoutCorkBoard').before(endDay);
     const layer = document.createElement('div'); layer.className = 'PersistentEaselLayer'; root.append(layer);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setClearColor(0, 0); renderer.domElement.className = 'PlayPaintingSurface'; layer.append(renderer.domElement);
@@ -61,8 +62,11 @@ export function createPlayPresentation(area, host, relayout) {
         }
         controls.style.top = `${area.layoutFrame.rect.height / area.layoutFrame.fixedScale - area.bottomRightOffset.y}px`;
         const frame = area.layoutFrame;
-        Object.assign(endDay.style, { left: `${frame.rect.x}px`, top: `${frame.rect.y}px`,
-            width: `${frame.rect.width / frame.fixedScale}px`, transform: `scale(${frame.fixedScale})` });
+        const actionWidth = frame.rect.width / frame.fixedScale;
+        Object.assign(endDay.style, {
+            left: `${frame.rect.x + (frame.rect.width - actionWidth) / 2}px`, top: `${frame.rect.y}px`,
+            width: `${actionWidth}px`, transform: `scale(${frame.fixedScale})`,
+        });
     }
     function update() {
         if (!motion) for (const [id, entry] of entries) entry.frame = target(id);
@@ -112,7 +116,7 @@ export function createPlayPresentation(area, host, relayout) {
             for (const [index, card] of state.field.entries()) {
                 let entry = find(card.id);
                 if (!entry) {
-                    const pair = document.createElement('article'); pair.className = 'PlayPainting'; pair.dataset.paintingId = card.id;
+                    const pair = document.createElement('article'); pair.className = 'PlayPainting texture-easel-shadow'; pair.dataset.paintingId = card.id;
                     const info = document.createElement('div'); info.className = 'PlayCard';
                     const viewport = document.createElement('button'); viewport.type = 'button'; viewport.tabIndex = -1; viewport.className = 'PlayPaintingViewport';
                     viewport.setAttribute('aria-label', `${card.id}のイーゼル・カードを拡大`);

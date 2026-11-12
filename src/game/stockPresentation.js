@@ -27,6 +27,7 @@ export function createStockPresentation(area, host) {
         present(section, state, actions) {
             entries = [...section.querySelectorAll('[data-stock-grade]')].map(node => {
                 const label = node.querySelector('h3');
+                label.classList.add('texture-sticky-note');
                 host.append(node);
                 let button, action;
                 const id = state.public[node.dataset.stockGrade];
