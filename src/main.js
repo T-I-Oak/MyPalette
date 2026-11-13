@@ -7,6 +7,7 @@ import { loadResultGraphics } from './dice/resultGraphics.js';
 import { gameIssues } from './game/engine.js';
 import { mountGame } from './game/view.js';
 import { createLayoutPresentation } from './game/layoutPresentation.js';
+import { trace, traceText } from './game/startupTrace.js';
 import './ui/theme.css';
 import './ui/layout.css';
 import './ui/textures.css';
@@ -14,6 +15,9 @@ import './ui/states.css';
 import './ui/screenLayout/layout.css';
 
 const version = initializeAppVersion(__APP_VERSION__);
+trace('page-open', { version, navigation: performance.getEntriesByType('navigation')[0]?.type });
+window.addEventListener('error', event => trace('error', { message: event.message, stack: event.error?.stack }));
+window.addEventListener('unhandledrejection', event => trace('rejection', { message: String(event.reason), stack: event.reason?.stack }));
 const root = document.querySelector('#layout-screen');
 export const layoutScreen = createLayoutScreen(root, document.querySelector('#panel-toggle'));
 const gameLayout = root.querySelector('.LayoutContent');
@@ -40,7 +44,22 @@ returnButton.textContent = 'タイトルへ戻る';
 result.append(resultHeading, returnButton);
 root.append(title, result);
 
-function showTitle() {
+const diagnostics = document.createElement('details');
+diagnostics.className = 'StartupTrace';
+const diagnosticLabel = document.createElement('summary');
+diagnosticLabel.textContent = '調査記録';
+const diagnosticText = document.createElement('textarea');
+diagnosticText.readOnly = true;
+diagnosticText.setAttribute('aria-label', '調査記録');
+diagnostics.append(diagnosticLabel, diagnosticText);
+title.append(diagnostics);
+diagnostics.addEventListener('toggle', () => {
+    if (diagnostics.open) diagnosticText.value = traceText();
+});
+
+function showTitle(reason) {
+    trace('title', { reason });
+    diagnostics.open = false;
     gameLayout.hidden = true;
     result.hidden = true;
     title.hidden = false;
@@ -67,21 +86,23 @@ async function start() {
         return;
     }
     title.hidden = true;
+    trace('game-open');
     gameLayout.hidden = false;
     layoutScreen.render();
     const presentation = createLayoutPresentation(layoutScreen, graphics);
     mountGame(root, settings, () => {
         presentation.dispose();
-        showTitle();
+        showTitle('game-menu');
     }, presentation, () => {
         presentation.dispose();
         gameLayout.hidden = true;
         result.hidden = false;
+        trace('game-finished');
         returnButton.focus();
     });
 }
 returnButton.addEventListener('click', () => {
-    showTitle();
+    showTitle('result-button');
     startButton.focus();
 });
-showTitle();
+showTitle('page-startup');

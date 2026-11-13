@@ -1,4 +1,5 @@
 import { createGameSession } from './session.js';
+import { trace } from './startupTrace.js';
 import { gameIssues } from './engine.js';
 import { matchingDice, satisfiesSelection } from './goals.js';
 import { displayLabel } from '../effectCatalog.js';
@@ -94,6 +95,8 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
     }
     function act(action, source = null, animation = null) {
         if (moving) return;
+        const firstLog = game.state.logs.length;
+        const step = animation?.id ? game.state.field.find(card => card.id === animation.id)?.step : undefined;
         presentation?.beginAction(animation, game.state, game.definitions);
         const before = cardLocations(game.state);
         candidateSource = source;
@@ -102,6 +105,7 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
         } finally {
             candidateSource = null;
         }
+        if (presentation) trace('action', { day: game.state.day, phase: game.state.phase, animation, step, logs: game.state.logs.slice(firstLog) });
         const transfers = changedCardAreas(before, cardLocations(game.state)).map(move => {
             placements.delete(move.to + ':' + move.id);
             inspectedSteps.delete(move.to + ':' + move.id);
@@ -121,6 +125,7 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
         if (!moving) return;
         if (presentation) {
             presentation.animate(game.state, render, () => {
+                trace('achievement-complete', game.state.achievement);
                 session.dispatch(() => game.completeAchievement());
                 return game.deckEvents;
             }, id => {
@@ -130,6 +135,7 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
                 session.dispatch(() => game.completeDayEndRequest(request));
                 return game.deckEvents;
             }).catch(async error => {
+                trace('animation-error', { message: String(error), stack: error.stack });
                 if (game.state.achievement) session.dispatch(() => game.completeAchievement());
                 while (game.state.dayEndRequest && game.state.dayEndRequest.kind !== 'cleanup') {
                     session.dispatch(() => game.completeDayEndRequest(game.state.dayEndRequest));
@@ -147,6 +153,7 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
                 animationError = '演出を表示できなかったため、現在のゲーム状態を表示しました。';
             }).finally(() => {
                 if (disposed) return;
+                trace('animation-end', { day: game.state.day, phase: game.state.phase });
                 if (game.state.phase === 'betweenDays') session.dispatch(() => game.nextDay());
                 moving = false; render();
             });
@@ -277,6 +284,7 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
             return;
         }
         inspectionRefresh = false;
+        if (presentation && game.state.effectNotices.length) trace('effects', game.state.effectNotices);
         notices.sync(game.state, moving);
         const positions = new Map([...scope.querySelectorAll('[data-pane]')].map(node => [node.dataset.pane, { top: node.scrollTop, left: node.scrollLeft }]));
         // Build controls while detached so intermediate sections cannot change the viewport's scrollbars.

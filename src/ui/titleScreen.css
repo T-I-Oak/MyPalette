@@ -129,6 +129,9 @@
 }
 .TitleNotice:empty { padding: 0; }
 
+.StartupTrace { position: absolute; z-index: 2; right: 12px; bottom: 54px; padding: 8px; background: #302013; color: white; }
+.StartupTrace textarea { display: block; width: min(70vw, 34rem); height: 35vh; }
+
 .TitleMetadata {
     display: flex;
     flex-wrap: wrap;
