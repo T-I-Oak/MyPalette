@@ -53,6 +53,14 @@ export class DiceScene {
     resize() {
         const { width, height, pixelRatio } = this.readSize?.() ?? this.container.getBoundingClientRect();
         if (!width || !height) return;
+        const ratio = pixelRatio ?? Math.min(devicePixelRatio, 2);
+        if (width !== this.width || height !== this.height || ratio !== this.renderer.getPixelRatio()) {
+            this.renderer.setDrawingBufferSize(width, height, ratio);
+            if (!this.readSize) {
+                this.renderer.domElement.style.width = `${width}px`;
+                this.renderer.domElement.style.height = `${height}px`;
+            }
+        }
         this.width = width; this.height = height;
         const scale=this.group.fieldScale;
         this.fieldScale=scale;
@@ -61,8 +69,6 @@ export class DiceScene {
         const shadow=this.fieldLight.shadow.camera;
         this.fieldLight.position.set(-4*scale,12*scale,5*scale);
         Object.assign(shadow,{left:-15*scale,right:15*scale,top:12*scale,bottom:-12*scale,far:500*scale});shadow.updateProjectionMatrix();
-        this.renderer.setPixelRatio(pixelRatio ?? Math.min(devicePixelRatio, 2));
-        this.renderer.setSize(width, height, !this.readSize);
         const aspect = width / height, vertical = Math.max(12.5, 28 / aspect);
         if (this.bottomAligned) Object.assign(this.camera, paletteCameraBounds(width, height,scale));
         else {
