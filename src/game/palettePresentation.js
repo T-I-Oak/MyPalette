@@ -1,4 +1,5 @@
 import { DiceGroup } from '../dice/DiceGroup.js';
+import { faceCanvas } from '../dice/icons.js';
 import { traceWebGL } from './startupTrace.js';
 import { DiceScene } from '../dice/DiceScene.js';
 import { loadResultGraphics } from '../dice/resultGraphics.js';
@@ -36,6 +37,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
         viewport.setAttribute('role', 'group');
     }
     let domGraphics;
+    const domFaces = new Map();
     let scene, group, canvasTrace, disposed = false, generation = 0, started = false, snapshot = [];
     let request = null, actions;
     let pendingSearch = null;
@@ -160,7 +162,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             const button = document.createElement('button');
             button.type = 'button';
             button.tabIndex = -1;
-            button.className = 'Button texture-raised';
+            button.className = 'PaletteDieFace';
             button.dataset.dieId = die.id;
             button.disabled = die.current === null || (die.used && !held.has(die.id));
             button.hidden = creditMaterials.has(die.id);
@@ -169,7 +171,10 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             if (die.current === null) button.textContent = '？';
             else {
                 const image = document.createElement('img');
-                image.src = domGraphics.get(die.faces[die.current]);
+                const face = die.faces[die.current];
+                const key = JSON.stringify([die.lifetime, face]);
+                if (!domFaces.has(key)) domFaces.set(key, faceCanvas(face, die.lifetime, 128).toDataURL());
+                image.src = domFaces.get(key);
                 image.alt = '';
                 button.append(image);
             }
@@ -300,7 +305,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             creditMaterials.clear();
             pendingSearch = null; searchNotice.hidden = true; searchNotice.replaceChildren();
             failedRequest = null;
-            domGraphics?.dispose(); domGraphics = null;
+            domGraphics?.dispose(); domGraphics = null; domFaces.clear();
             generation++; canvasTrace?.stop(); scene?.dispose(); scene = null; group = null;
             snapshot = []; request = null; actions = null; viewport.replaceChildren(); controls.replaceChildren(); rerolls.hidden = true; started = false;
         },
