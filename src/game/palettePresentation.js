@@ -115,7 +115,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
                     next.setSelected(ids); updateActions();
                 },
                 readSize: () => ({ width: area.logicalWidth, height: area.logicalHeight,
-                    pixelRatio: Math.min(devicePixelRatio, 2) * area.layoutFrame.scale }),
+                    pixelRatio: area.layoutFrame.scale }),
             });
             scene = next; group = pendingGroup;
             traceWebGL(next.renderer.domElement, 'palette');

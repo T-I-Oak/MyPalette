@@ -19,6 +19,7 @@ export function createPlayPresentation(area, host, relayout) {
     root.querySelector('.LayoutCorkBoard').before(endDay);
     const layer = document.createElement('div'); layer.className = 'PersistentEaselLayer'; root.append(layer);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(1);
     traceWebGL(renderer.domElement, 'play');
     renderer.setClearColor(0, 0); renderer.domElement.className = 'PlayPaintingSurface'; layer.append(renderer.domElement);
     const row = document.createElement('div'); row.className = 'PlayPaintings'; layer.append(row);
@@ -28,7 +29,7 @@ export function createPlayPresentation(area, host, relayout) {
     camera.setViewOffset(playMetrics.width, 760, 0, 50, playMetrics.width, playMetrics.height);
     const entries = new Map();
     let order = [], cards, motion = false;
-    let renderWidth = 0, renderHeight = 0, renderPixelRatio = 0;
+    let renderWidth = 0, renderHeight = 0;
     const find = id => entries.get(id);
     function target(id) {
         const index = order.indexOf(id), count = order.length;
@@ -39,7 +40,6 @@ export function createPlayPresentation(area, host, relayout) {
     function render() {
         const width = root.clientWidth, height = root.clientHeight;
         if (!width || !height) return;
-        if (renderPixelRatio !== devicePixelRatio) { renderer.setPixelRatio(devicePixelRatio); renderPixelRatio = devicePixelRatio; }
         if (renderWidth !== width || renderHeight !== height) {
             renderer.setSize(width, height, false); renderWidth = width; renderHeight = height;
         }
