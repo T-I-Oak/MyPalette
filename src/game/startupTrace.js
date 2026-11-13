@@ -44,6 +44,30 @@ export function sampleResources(stage, resources, currentDay = day) {
 }
 
 export function traceWebGL(canvas, area) {
+    const counts = { changed: 0, unchanged: 0 };
+    function countWrites(records) {
+        const values = { width: canvas.getAttribute('width'), height: canvas.getAttribute('height') };
+        for (let i = records.length - 1; i >= 0; i--) {
+            const { attributeName, oldValue } = records[i];
+            const defaultSize = attributeName === 'width' ? 300 : 150;
+            const before = Number(oldValue ?? defaultSize);
+            const after = Number(values[attributeName] ?? defaultSize);
+            counts[before === after ? 'unchanged' : 'changed']++;
+            values[attributeName] = oldValue;
+        }
+    }
+    const observer = new MutationObserver(countWrites);
+    observer.observe(canvas, { attributeFilter: ['width', 'height'], attributeOldValue: true });
     canvas.addEventListener('webglcontextlost', () => trace('webgl-lost', { area }));
     canvas.addEventListener('webglcontextrestored', () => trace('webgl-restored', { area }));
+    return {
+        read() {
+            countWrites(observer.takeRecords());
+            return { ...counts, width: canvas.width, height: canvas.height };
+        },
+        stop() {
+            countWrites(observer.takeRecords());
+            observer.disconnect();
+        },
+    };
 }

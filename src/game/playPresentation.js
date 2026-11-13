@@ -19,8 +19,7 @@ export function createPlayPresentation(area, host, relayout) {
     root.querySelector('.LayoutCorkBoard').before(endDay);
     const layer = document.createElement('div'); layer.className = 'PersistentEaselLayer'; root.append(layer);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(1);
-    traceWebGL(renderer.domElement, 'play');
+    const canvasTrace = traceWebGL(renderer.domElement, 'play');
     renderer.setClearColor(0, 0); renderer.domElement.className = 'PlayPaintingSurface'; layer.append(renderer.domElement);
     const row = document.createElement('div'); row.className = 'PlayPaintings'; layer.append(row);
     const scene = new THREE.Scene(); scene.add(new THREE.HemisphereLight(0xfff5e2, 0x74695c, 2.4));
@@ -29,7 +28,7 @@ export function createPlayPresentation(area, host, relayout) {
     camera.setViewOffset(playMetrics.width, 760, 0, 50, playMetrics.width, playMetrics.height);
     const entries = new Map();
     let order = [], cards, motion = false;
-    let renderWidth = 0, renderHeight = 0;
+    let renderWidth = 0, renderHeight = 0, renderPixelRatio = 0;
     const find = id => entries.get(id);
     function target(id) {
         const index = order.indexOf(id), count = order.length;
@@ -40,6 +39,7 @@ export function createPlayPresentation(area, host, relayout) {
     function render() {
         const width = root.clientWidth, height = root.clientHeight;
         if (!width || !height) return;
+        if (renderPixelRatio !== devicePixelRatio) { renderer.setPixelRatio(devicePixelRatio); renderPixelRatio = devicePixelRatio; }
         if (renderWidth !== width || renderHeight !== height) {
             renderer.setSize(width, height, false); renderWidth = width; renderHeight = height;
         }
@@ -86,7 +86,7 @@ export function createPlayPresentation(area, host, relayout) {
         render();
     }
     return {
-        resourceCounts: () => ({ ...renderer.info.memory, activeEasels: order.length, retainedEasels: entries.size - order.length }),
+        resourceCounts: () => ({ ...renderer.info.memory, activeEasels: order.length, retainedEasels: entries.size - order.length, canvasWrites: canvasTrace.read() }),
         bindScene(value) { cards = value; },
         update,
         begin() { motion = true; for (const entry of entries.values()) entry.from = { ...entry.frame }; },
@@ -179,7 +179,7 @@ export function createPlayPresentation(area, host, relayout) {
                 return { x: origin.x + f.x + (point.x+1)*f.width/2, y: origin.y + f.y + (1-point.y)*f.height/2 };
             });
         },
-        dispose() { this.reset(); controls.remove(); endDay.remove(); renderer.dispose(); layer.remove(); name.hidden = false; },
+        dispose() { this.reset(); canvasTrace.stop(); controls.remove(); endDay.remove(); renderer.dispose(); layer.remove(); name.hidden = false; },
     };
     function targetForNew(index, count) {
         const slot = layoutPlay(count, area.logicalWidth, area.logicalHeight)[index];

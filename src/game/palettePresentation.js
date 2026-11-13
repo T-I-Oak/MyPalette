@@ -28,7 +28,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
     const viewport = document.createElement('div');
     viewport.className = 'PaletteViewport';
     viewport.setAttribute('role', 'img');
-    let scene, group, disposed = false, generation = 0, started = false, snapshot = [];
+    let scene, group, canvasTrace, disposed = false, generation = 0, started = false, snapshot = [];
     let request = null, actions;
     let pendingSearch = null;
     let rollScheduled = false, failedRequest = null;
@@ -94,7 +94,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
     async function initialize() {
         started = true;
         const token = ++generation;
-        scene?.dispose(); scene = null; group = null;
+        canvasTrace?.stop(); scene?.dispose(); scene = null; group = null;
         retry.remove();
         if (!resultGraphics) {
             noticeText.textContent = '画材を読み込んでいます…';
@@ -115,10 +115,10 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
                     next.setSelected(ids); updateActions();
                 },
                 readSize: () => ({ width: area.logicalWidth, height: area.logicalHeight,
-                    pixelRatio: area.layoutFrame.scale }),
+                    pixelRatio: Math.min(devicePixelRatio, 2) * area.layoutFrame.scale }),
             });
             scene = next; group = pendingGroup;
-            traceWebGL(next.renderer.domElement, 'palette');
+            canvasTrace = traceWebGL(next.renderer.domElement, 'palette');
             next.setSelected(actions.selectedDice);
             next.renderer.domElement.setAttribute('aria-hidden', 'true');
             syncSnapshot(); notice.remove(); updateActions(); update();
@@ -149,7 +149,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
         if (group) syncSnapshot();
     }
     return {
-        resourceCounts: () => scene ? { ...scene.renderer.info.memory, dice: group.dice.length } : null,
+        resourceCounts: () => scene ? { ...scene.renderer.info.memory, dice: group.dice.length, canvasWrites: canvasTrace.read() } : null,
         hideCreditMaterials(ids) {
             for (const id of ids) {
                 creditMaterials.add(id);
@@ -231,9 +231,9 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             creditMaterials.clear();
             pendingSearch = null; searchNotice.hidden = true; searchNotice.replaceChildren();
             failedRequest = null;
-            generation++; scene?.dispose(); scene = null; group = null;
+            generation++; canvasTrace?.stop(); scene?.dispose(); scene = null; group = null;
             snapshot = []; request = null; actions = null; viewport.replaceChildren(); controls.replaceChildren(); rerolls.hidden = true; started = false;
         },
-        dispose() { disposed = true; generation++; scene?.dispose(); viewport.remove(); controls.remove(); rerolls.remove(); searchNotice.remove(); name.hidden = false; },
+        dispose() { disposed = true; generation++; canvasTrace?.stop(); scene?.dispose(); viewport.remove(); controls.remove(); rerolls.remove(); searchNotice.remove(); name.hidden = false; },
     };
 }
