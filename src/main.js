@@ -16,6 +16,10 @@ import './ui/screenLayout/layout.css';
 
 const version = initializeAppVersion(__APP_VERSION__);
 trace('page-open', { version, navigation: performance.getEntriesByType('navigation')[0]?.type });
+document.addEventListener('visibilitychange', () => trace('visibility', { state: document.visibilityState }));
+for (const event of ['pagehide', 'pageshow']) {
+    window.addEventListener(event, ({ persisted }) => trace(event, { persisted }));
+}
 window.addEventListener('error', event => trace('error', { message: event.message, stack: event.error?.stack }));
 window.addEventListener('unhandledrejection', event => trace('rejection', { message: String(event.reason), stack: event.reason?.stack }));
 const root = document.querySelector('#layout-screen');

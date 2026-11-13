@@ -1,3 +1,4 @@
+import { trace } from './startupTrace.js';
 import { cardSceneSnapshot } from './cardSceneLayout.js';
 import { relocateSceneCards, sceneChanges, closingStockCards } from './cardScenePlans.js';
 import { deckTiming } from './deckMotion.js';
@@ -250,8 +251,11 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
                 }
                 await reconcile(state, records);
                 while (!signal.aborted && (state.dayEndRequest || state.recycleRequest)) {
+                    let dayEndDetail;
                     if (state.dayEndRequest) {
                         const request = state.dayEndRequest;
+                        dayEndDetail = { day: state.day, request, animated: enabled };
+                        trace('day-end-start', { ...dayEndDetail, play: play.resourceCounts(), palette: palette.resourceCounts() });
                         if (enabled && request.kind === 'work') {
                             root.dataset.cardSceneMotion = 'flyer-work';
                             await flyer.work(state, request, signal);
@@ -277,6 +281,9 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
                         records = await recycle(state, resumeRecycle);
                     }
                     if (!signal.aborted) await reconcile(state, records);
+                    if (!signal.aborted && dayEndDetail) {
+                        trace('day-end-complete', { ...dayEndDetail, play: play.resourceCounts(), palette: palette.resourceCounts() });
+                    }
                 }
                 if (!signal.aborted) { cards.adopt(state); cards.busy = false; cards.update(); }
             } finally { if (controller.signal === signal) delete root.dataset.cardSceneMotion; }

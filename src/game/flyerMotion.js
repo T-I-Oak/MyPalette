@@ -1,4 +1,5 @@
 import { MoveObject } from '../ui/areaTransition/MoveObject.js';
+import { trace } from './startupTrace.js';
 import { diagonalReveal } from './achievementMotion.js';
 import { flyMaterials } from './achievementMaterials.js';
 import { flyerFiles, flyerImageSize } from './infoLayout.js';
@@ -41,7 +42,10 @@ export function createFlyerMotion(screen, palette, info) {
         clear,
         async work(state, request, signal) {
             const kind = stages[request.step], nextKind = stages[request.step + 1];
+            const detail = { day: state.day, dieId: request.dieId, kind, nextKind };
+            trace('flyer-decode-start', detail);
             const [next, sourceImage] = await Promise.all([loadFlyer(nextKind), active ? null : loadFlyer(kind)]);
+            trace('flyer-decode-complete', detail);
             if (signal.aborted) return;
             if (!active) {
                 const sheet = document.createElement('div');

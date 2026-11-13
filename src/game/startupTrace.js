@@ -21,3 +21,8 @@ export function trace(event, data) {
 export function traceText() {
     return JSON.stringify({ storageError, entries }, null, 2);
 }
+
+export function traceWebGL(canvas, area) {
+    canvas.addEventListener('webglcontextlost', () => trace('webgl-lost', { area }));
+    canvas.addEventListener('webglcontextrestored', () => trace('webgl-restored', { area }));
+}

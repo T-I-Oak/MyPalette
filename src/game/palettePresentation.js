@@ -1,4 +1,5 @@
 import { DiceGroup } from '../dice/DiceGroup.js';
+import { traceWebGL } from './startupTrace.js';
 import { DiceScene } from '../dice/DiceScene.js';
 import { loadResultGraphics } from '../dice/resultGraphics.js';
 import { syncPaletteSnapshot } from './paletteSnapshot.js';
@@ -117,6 +118,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
                     pixelRatio: Math.min(devicePixelRatio, 2) * area.layoutFrame.scale }),
             });
             scene = next; group = pendingGroup;
+            traceWebGL(next.renderer.domElement, 'palette');
             next.setSelected(actions.selectedDice);
             next.renderer.domElement.setAttribute('aria-hidden', 'true');
             syncSnapshot(); notice.remove(); updateActions(); update();
@@ -147,6 +149,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
         if (group) syncSnapshot();
     }
     return {
+        resourceCounts: () => scene ? { ...scene.renderer.info.memory, dice: group.dice.length } : null,
         hideCreditMaterials(ids) {
             for (const id of ids) {
                 creditMaterials.add(id);

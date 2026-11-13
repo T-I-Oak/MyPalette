@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { traceWebGL } from './startupTrace.js';
 import { createEasel } from './easel/createEasel.js';
 import { createPaintingCamera, cardPlaneMatrix, canvasPlaneMatrix, orientPainting } from './easel/paintingView.js';
 import { shippedCanvas } from './infoLayout.js';
@@ -18,6 +19,7 @@ export function createPlayPresentation(area, host, relayout) {
     root.querySelector('.LayoutCorkBoard').before(endDay);
     const layer = document.createElement('div'); layer.className = 'PersistentEaselLayer'; root.append(layer);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    traceWebGL(renderer.domElement, 'play');
     renderer.setClearColor(0, 0); renderer.domElement.className = 'PlayPaintingSurface'; layer.append(renderer.domElement);
     const row = document.createElement('div'); row.className = 'PlayPaintings'; layer.append(row);
     const scene = new THREE.Scene(); scene.add(new THREE.HemisphereLight(0xfff5e2, 0x74695c, 2.4));
@@ -84,6 +86,7 @@ export function createPlayPresentation(area, host, relayout) {
         render();
     }
     return {
+        resourceCounts: () => ({ ...renderer.info.memory, activeEasels: order.length, retainedEasels: entries.size - order.length }),
         bindScene(value) { cards = value; },
         update,
         begin() { motion = true; for (const entry of entries.values()) entry.from = { ...entry.frame }; },
