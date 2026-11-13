@@ -10,6 +10,9 @@ import '../dice/layout.css';
 import '../dice/states.css';
 import './palette.css';
 
+// MP28-02 comparison build.
+const domDice = true;
+
 export function createPalettePresentation(area, host, relayout, resultGraphics) {
     host.classList.add('PaletteArea');
     area.bottomRightOffset = { x: 0, y: 40 };
@@ -28,6 +31,11 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
     const viewport = document.createElement('div');
     viewport.className = 'PaletteViewport';
     viewport.setAttribute('role', 'img');
+    if (domDice) {
+        viewport.classList.add('PaletteDomDice');
+        viewport.setAttribute('role', 'group');
+    }
+    let domGraphics;
     let scene, group, canvasTrace, disposed = false, generation = 0, started = false, snapshot = [];
     let request = null, actions;
     let pendingSearch = null;
@@ -66,19 +74,21 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             retryRoll.className = 'Button texture-raised'; retryRoll.textContent = 'ロールを再試行';
             retryRoll.addEventListener('click', () => { failedRequest = null; updateActions(); });
             controls.append(retryRoll);
-        } else if (!rollScheduled && group && request.status === 'ready' && actions.canStartRoll() && !group.dice.some(die => die.readyMotion)) {
+        } else if (!rollScheduled && (domGraphics || group) && request.status === 'ready' && actions.canStartRoll() && !group?.dice.some(die => die.readyMotion)) {
             rollScheduled = true;
             queueMicrotask(() => { rollScheduled = false; if (!disposed) performRoll(); });
         }
     }
     async function performRoll() {
-        if (!group || request?.status !== 'ready' || !actions.canStartRoll() || group.dice.some(die => die.readyMotion)) return;
+        if ((!group && !domGraphics) || request?.status !== 'ready' || !actions.canStartRoll() || group?.dice.some(die => die.readyMotion)) return;
         const token = generation, activeGroup = group, id = request.id, ids = [...request.ids];
         const callbacks = actions;
         callbacks.beginRoll(id);
         notice.remove();
         try {
-            const results = await activeGroup.roll(ids);
+            const results = domDice
+                ? ids.map(id => ({ id, status: 'settled', index: Math.floor(Math.random() * 6) }))
+                : await activeGroup.roll(ids);
             if (disposed || token !== generation) return;
             if (results.some(result => result.status !== 'settled')) throw new Error('出目が確定しませんでした。もう一度お試しください。');
             callbacks.completeRoll(id, results);
@@ -104,6 +114,12 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
         try {
             graphics = resultGraphics ?? await loadResultGraphics();
             if (disposed || token !== generation) { graphics.dispose(); return; }
+            if (domDice) {
+                domGraphics = graphics;
+                drawDomDice();
+                updateActions();
+                return;
+            }
             pendingGroup = new DiceGroup();
             const next = new DiceScene(viewport, pendingGroup, graphics, updateActions, {
                 transparent: true,
@@ -139,6 +155,33 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
         syncPaletteSnapshot(group, snapshot.map(die => held.has(die.id) ? {...die,used:false} : die), request,
             { animateReady: !matchMedia('(prefers-reduced-motion: reduce)').matches });
     }
+    function drawDomDice() {
+        const buttons = snapshot.map(die => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.tabIndex = -1;
+            button.className = 'Button texture-raised';
+            button.dataset.dieId = die.id;
+            button.disabled = die.current === null || (die.used && !held.has(die.id));
+            button.hidden = creditMaterials.has(die.id);
+            button.setAttribute('aria-pressed', String(actions.selectedDice.includes(die.id)));
+            button.setAttribute('aria-label', die.id + (die.current === null ? ' ロール待ち' : ` 面${die.current + 1}`));
+            if (die.current === null) button.textContent = '？';
+            else {
+                const image = document.createElement('img');
+                image.src = domGraphics.get(die.faces[die.current]);
+                image.alt = '';
+                button.append(image);
+            }
+            button.onclick = () => {
+                actions.selectedDice = actions.toggleDie(die.id);
+                drawDomDice();
+                updateActions();
+            };
+            return button;
+        });
+        viewport.replaceChildren(...buttons);
+    }
     function endAchievement() {
         held.clear();
         if (scene) {
@@ -147,27 +190,37 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             scene.interactionLocked = false;
         }
         if (group) syncSnapshot();
+        if (domGraphics) drawDomDice();
     }
     return {
-        resourceCounts: () => scene ? { ...scene.renderer.info.memory, dice: group.dice.length, canvasWrites: canvasTrace.read() } : null,
+        resourceCounts: () => domGraphics ? { mode: 'dom', dice: snapshot.length }
+            : scene ? { ...scene.renderer.info.memory, dice: group.dice.length, canvasWrites: canvasTrace.read() } : null,
         hideCreditMaterials(ids) {
             for (const id of ids) {
                 creditMaterials.add(id);
                 scene?.travelling.add(id);
             }
+            if (domGraphics) drawDomDice();
         },
         waitReady(signal) {
             return new Promise(resolve => {
                 let frame;
                 const done = () => { cancelAnimationFrame(frame); signal.removeEventListener('abort', done); resolve(); };
                 const tick = () => {
-                    if (disposed || signal.aborted || group && group.dice.every(die => die.state === 'ready' && !die.readyMotion)) done();
+                    if (disposed || signal.aborted || domGraphics || group && group.dice.every(die => die.state === 'ready' && !die.readyMotion)) done();
                     else frame = requestAnimationFrame(tick);
                 };
                 signal.addEventListener('abort', done, { once: true }); tick();
             });
         },
         searchFaces(condition) {
+            if (domDice) {
+                const hits = snapshot.filter(die => !die.used && die.faces.some(face =>
+                    Object.entries(condition).every(([key, value]) => face[key] === value)));
+                searchNotice.textContent = `条件に合う画材：${hits.length}個`;
+                searchNotice.hidden = false;
+                return;
+            }
             if (scene) return scene.showFaceSearch(condition);
             pendingSearch = {...condition};
         },
@@ -177,6 +230,21 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
         },
         endAchievement,
         captureMaterial(id) {
+            if (domDice) {
+                const button = viewport.querySelector(`[data-die-id="${id}"]`);
+                const element = document.createElement('div');
+                element.className = 'AchievementMaterial';
+                element.append(button.querySelector('img').cloneNode());
+                const read = () => {
+                    const rect = button.getBoundingClientRect();
+                    const x = rect.x + rect.width / 2, y = rect.y + rect.height / 2;
+                    return { x, y, size: rect.width, body: { x, y } };
+                };
+                return { id, element, read,
+                    start() { button.style.visibility = 'hidden'; },
+                    consume() { held.delete(id); },
+                };
+            }
             const owner = scene, die = group.get(id), visual = owner.visuals.get(id);
             const element = visual.result.cloneNode(true);
             element.className = `AchievementMaterial${visual.result.classList.contains('state-special') ? ' state-special' : ''}`;
@@ -218,7 +286,8 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
                 `${die.lifetime === 'permanent' ? '永続' : '一時'}ダイス、${die.used ? '消費済み' : '未使用'}、${die.current === null ? 'ロール待ち' : `面${die.current + 1}`}`).join('。')}`);
             if (viewport.parentNode !== host) host.append(viewport);
             section.remove();
-            if (group) syncSnapshot();
+            if (domGraphics) drawDomDice();
+            else if (group) syncSnapshot();
             else if (!started) initialize();
             scene?.setSelected(actions.selectedDice);
             if(resized)relayout?.();
@@ -231,6 +300,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             creditMaterials.clear();
             pendingSearch = null; searchNotice.hidden = true; searchNotice.replaceChildren();
             failedRequest = null;
+            domGraphics?.dispose(); domGraphics = null;
             generation++; canvasTrace?.stop(); scene?.dispose(); scene = null; group = null;
             snapshot = []; request = null; actions = null; viewport.replaceChildren(); controls.replaceChildren(); rerolls.hidden = true; started = false;
         },
