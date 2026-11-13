@@ -12,6 +12,19 @@ import './ui/textures.css';
 import './ui/states.css';
 import './ui/screenLayout/layout.css';
 
+const diagnosis = new URLSearchParams(location.search).has('diagnose-start');
+if (diagnosis) {
+    const report = document.createElement('pre');
+    report.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;margin:0;padding:8px;background:white;color:black;white-space:pre-wrap;max-height:40vh;overflow:auto;user-select:text;-webkit-user-select:text';
+    report.textContent = '起動診断: 「ゲーム開始」を押してください。';
+    document.body.append(report);
+    const show = error => {
+        report.textContent = error?.stack || error?.message || String(error);
+    };
+    window.addEventListener('error', event => show(event.error ?? event.message));
+    window.addEventListener('unhandledrejection', event => show(event.reason));
+}
+
 const version = initializeAppVersion(__APP_VERSION__);
 const root = document.querySelector('#layout-screen');
 export const layoutScreen = createLayoutScreen(root, document.querySelector('#panel-toggle'));
