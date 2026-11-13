@@ -1,5 +1,5 @@
 import { FIELD_WIDTH, FIELD_DEPTH, FIELD_VIEW_COSINE, fieldCenterVertices } from './field.js';
-import { READY_HEIGHT } from './pose.js';
+import { READY_HEIGHT } from './readyHeight.js';
 
 export const paletteMetrics = Object.freeze({ pixelsPerUnit: 20, padding: 8 });
 const projectedHeight = FIELD_DEPTH * FIELD_VIEW_COSINE;

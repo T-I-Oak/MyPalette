@@ -1,9 +1,6 @@
-import { DiceGroup } from '../dice/DiceGroup.js';
 import { faceCanvas } from '../dice/icons.js';
 import { traceWebGL } from './startupTrace.js';
-import { DiceScene } from '../dice/DiceScene.js';
 import { loadResultGraphics } from '../dice/resultGraphics.js';
-import { syncPaletteSnapshot } from './paletteSnapshot.js';
 import { rerollTicketCanvas } from '../icons/render.js';
 import {paletteScaleForCount} from '../dice/field.js';
 import {paletteSizeForScale} from '../dice/paletteLayout.js';
@@ -36,7 +33,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
         viewport.classList.add('PaletteDomDice');
         viewport.setAttribute('role', 'group');
     }
-    let domGraphics;
+    let domGraphics, syncPaletteSnapshot;
     const domFaces = new Map();
     let scene, group, canvasTrace, disposed = false, generation = 0, started = false, snapshot = [];
     let request = null, actions;
@@ -122,6 +119,10 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
                 updateActions();
                 return;
             }
+            const [{ DiceGroup }, { DiceScene }, { syncPaletteSnapshot: sync }] = await Promise.all([
+                import('../dice/DiceGroup.js'), import('../dice/DiceScene.js'), import('./paletteSnapshot.js'),
+            ]);
+            syncPaletteSnapshot = sync;
             pendingGroup = new DiceGroup();
             const next = new DiceScene(viewport, pendingGroup, graphics, updateActions, {
                 transparent: true,

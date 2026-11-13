@@ -1,4 +1,4 @@
-import { READY_HEIGHT } from './pose.js';
+import { READY_HEIGHT } from './readyHeight.js';
 export const FIELD_WIDTH=26;
 export const FIELD_MARGIN=1.8;
 export const FIELD_CAMERA_POSITION=Object.freeze([0,15,9]);

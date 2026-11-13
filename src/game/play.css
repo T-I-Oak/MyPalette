@@ -42,3 +42,4 @@
 .PersistentEaselLayer .PlayCard { height: 414px; }
 
 .PersistentEaselLayer .PlayPaintingViewport { pointer-events: auto; }
+.PlayFlatPainting .PlayCard, .PlayFlatArtwork { position: absolute; left: 53px; top: 113px; width: 294px; height: 414px; }
