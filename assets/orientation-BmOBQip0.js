@@ -1,0 +1,1 @@
+import{V as o}from"./dice-physics-B6ei7FbA.js";const s=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];function i(e){const t=s.map(a=>e.vmult(new o(...a)).y),n=Math.max(...t);return{index:t.indexOf(n),alignment:n}}export{s as F,i as t};
