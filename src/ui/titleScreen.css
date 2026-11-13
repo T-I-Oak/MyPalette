@@ -95,17 +95,17 @@
     outline-offset: -2px;
 }
 
-.TitlePlaque {
-    width: 7rem;
+.TitleMenuButton .TitlePlaque {
+    width: var(--title-plaque-width, max-content);
     padding: .4rem .3rem;
-    background: #f8eacc;
-    border: 1px solid #a38255;
-    box-shadow: 1px 2px 3px #61462933;
+    font-size: 1rem;
+    white-space: nowrap;
+    pointer-events: none;
+    cursor: inherit;
 }
 
-.TitleMenuButton:hover:not(:disabled) .TitlePlaque, .TitleMenuButton:focus-visible .TitlePlaque { background: #fff8df; }
-.TitleMenuButton:active:not(:disabled) .TitlePlaque { background: #e9d3a3; }
-.TitleMenuButton:disabled { opacity: .82; cursor: wait; }
+.TitleMenuButton:disabled { cursor: wait; }
+.TitleMenuButton:disabled:not(.is-preparing) .TitleFrame { filter: grayscale(1); }
 .TitleScreen :focus-visible { outline: 3px solid #fff5cf; outline-offset: 4px; }
 
 .TitleNotice {
@@ -150,7 +150,7 @@
     .TitleMenu ul { grid-template-columns: minmax(0, 1fr); gap: .8rem; }
     .TitleMenuButton { gap: .5rem; }
     .TitleFrame { padding: .4rem; }
-    .TitlePlaque { width: 6.5rem; padding: .45rem .25rem; font-size: .85rem; }
+    .TitleMenuButton .TitlePlaque { padding: .45rem .25rem; font-size: .85rem; }
 }
 
 @media (orientation: portrait) and (max-height: 835px) {
@@ -170,5 +170,5 @@
     .TitleMenu ul { gap: clamp(.6rem, 3vw, 1.7rem); }
     .TitleMenuButton { gap: .35rem; }
     .TitleFrame { padding: .4rem; }
-    .TitlePlaque { width: 6rem; padding: .25rem .4rem; font-size: .85rem; }
+    .TitleMenuButton .TitlePlaque { padding: .25rem .4rem; font-size: .85rem; }
 }

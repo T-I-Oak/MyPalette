@@ -1,8 +1,9 @@
 import { initializeAppVersion } from './version.js';
 import { createTitleScreen } from './ui/createTitleScreen.js';
-import startPainting from './ui/title/start-painting.webp';
+import { titleMenuEntries } from './ui/title/menuEntries.js';
 import { createLayoutScreen } from './ui/screenLayout/createLayoutScreen.js';
 import { loadSettings } from './settingsStorage.js';
+import { loadResultGraphics } from './dice/resultGraphics.js';
 import { gameIssues } from './game/engine.js';
 import { mountGame } from './game/view.js';
 import { createLayoutPresentation } from './game/layoutPresentation.js';
@@ -12,25 +13,21 @@ import './ui/textures.css';
 import './ui/states.css';
 import './ui/screenLayout/layout.css';
 
-const report = document.createElement('pre');
-report.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;margin:0;padding:8px;background:white;color:black;white-space:pre-wrap;max-height:40vh;overflow:auto;user-select:text;-webkit-user-select:text';
-report.textContent = '起動診断: 「ゲーム開始」を押してください。';
-document.body.append(report);
-const show = error => {
-    report.textContent = error?.stack || error?.message || String(error);
-};
-window.addEventListener('error', event => show(event.error ?? event.message));
-window.addEventListener('unhandledrejection', event => show(event.reason));
-
 const version = initializeAppVersion(__APP_VERSION__);
 const root = document.querySelector('#layout-screen');
 export const layoutScreen = createLayoutScreen(root, document.querySelector('#panel-toggle'));
 const gameLayout = root.querySelector('.LayoutContent');
 const { screen: title, notice, setMenuItems } = createTitleScreen(version);
-const startLabel = 'ゲーム開始';
-const [{ button: startButton, plaque: startPlaque }] = setMenuItems([
-    { label: startLabel, artwork: startPainting, onSelect: start },
-]);
+const startLabel = titleMenuEntries[0].label;
+const menuActions = { start };
+const menuItems = setMenuItems(titleMenuEntries.filter(entry => entry.unlocked)
+    .map(entry => ({ ...entry, onSelect: menuActions[entry.id] })));
+const [{ button: startButton, plaque: startPlaque }] = menuItems;
+
+function setPreparing(preparing) {
+    for (const { button } of menuItems) button.disabled = preparing;
+    startButton.classList.toggle('is-preparing', preparing);
+}
 
 const result = document.createElement('section');
 result.className = 'GameStartup';
@@ -49,28 +46,30 @@ function showTitle() {
     title.hidden = false;
     notice.textContent = '';
     startPlaque.textContent = startLabel;
-    startButton.disabled = false;
+    setPreparing(false);
 }
 
 async function start() {
     if (startButton.disabled) return;
-    startButton.disabled = true;
-    notice.textContent = 'ゲーム設定を読み込んでいます…';
-    let settings;
+    setPreparing(true);
+    notice.textContent = 'ゲームの準備をしています…';
+    let settings, graphics;
     try {
-        settings = (await loadSettings()).document;
+        const [saved, resultGraphics] = await Promise.all([loadSettings(), loadResultGraphics()]);
+        settings = saved.document;
+        graphics = resultGraphics;
         const issues = gameIssues(settings);
         if (issues.length) throw new Error(`設定が制作途中のため開始できません。\n${issues.join('\n')}`);
     } catch (error) {
-        notice.textContent = `ゲーム設定を開けませんでした。\n${error.message}`;
+        notice.textContent = `ゲームを開始できませんでした。\n${error.message}`;
         startPlaque.textContent = '再読み込み';
-        startButton.disabled = false;
+        setPreparing(false);
         return;
     }
     title.hidden = true;
     gameLayout.hidden = false;
     layoutScreen.render();
-    const presentation = createLayoutPresentation(layoutScreen);
+    const presentation = createLayoutPresentation(layoutScreen, graphics);
     mountGame(root, settings, () => {
         presentation.dispose();
         showTitle();

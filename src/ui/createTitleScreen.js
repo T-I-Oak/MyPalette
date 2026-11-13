@@ -71,9 +71,11 @@ export function createTitleScreen(version, { onSettings } = {}) {
         const frameHeight = size(frameStyle, 'paddingTop') + size(frameStyle, 'paddingBottom')
             + size(frameStyle, 'borderTopWidth') + size(frameStyle, 'borderBottomWidth');
         const gap = size(getComputedStyle(item), 'gap');
+        list.style.removeProperty('--title-plaque-width');
         const plaques = [...list.querySelectorAll('.TitlePlaque')].map(plaque => plaque.getBoundingClientRect());
         const plaqueWidth = Math.max(...plaques.map(plaque => plaque.width));
         const plaqueHeight = Math.max(...plaques.map(plaque => plaque.height));
+        list.style.setProperty('--title-plaque-width', `${plaqueWidth}px`);
         const below = Math.min(340, cellWidth - frameWidth, (cellHeight - frameHeight - plaqueHeight - gap) * paintingRatio);
         const right = Math.min(340, cellWidth - frameWidth - plaqueWidth - gap, (cellHeight - frameHeight) * paintingRatio);
         // The same size gets the plaque below, as on a gallery wall.
@@ -96,7 +98,7 @@ export function createTitleScreen(version, { onSettings } = {}) {
             picture.width = 3;
             picture.height = 2;
             frame.append(picture);
-            const plaque = element('span', 'TitlePlaque', label);
+            const plaque = element('span', 'TitlePlaque Button texture-raised', label);
             button.append(frame, plaque);
             button.addEventListener('click', onSelect);
             return { button, plaque };

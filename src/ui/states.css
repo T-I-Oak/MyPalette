@@ -1,6 +1,6 @@
 .texture-label-inverse.state-consumed, .state-consumed .texture-label-inverse { background: var(--ui-inverse-inactive-surface); }
 .Button:disabled { cursor: default; }
-.texture-raised:disabled { color: var(--ui-inactive-text); background: var(--ui-inactive-surface); border-color: var(--ui-control-border); box-shadow: none; }
+.texture-raised:disabled, .TitleMenuButton:disabled .texture-raised { color: var(--ui-inactive-text); background: var(--ui-inactive-surface); border-color: var(--ui-control-border); box-shadow: none; }
 .Button.state-attention { animation: ButtonAttentionPulse 1.6s ease-in-out infinite; }
 @keyframes ButtonAttentionPulse {
     0%, 100% { scale: 1; }
