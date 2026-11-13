@@ -1,5 +1,5 @@
 import { createGameSession } from './session.js';
-import { trace } from './startupTrace.js';
+import { sampleResources, trace } from './startupTrace.js';
 import { gameIssues } from './engine.js';
 import { matchingDice, satisfiesSelection } from './goals.js';
 import { displayLabel } from '../effectCatalog.js';
@@ -277,8 +277,10 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
         node.append(list, footer);
         update();
     }
+    let sampledDay = 0;
     function render() {
         if (onFinished && !moving && game.state.phase === 'finished') {
+            if (presentation) sampleResources('before-dispose', presentation.resourceCounts(), game.state.day);
             dispose();
             onFinished();
             return;
@@ -478,6 +480,10 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
             node.scrollTop = position?.top ?? 0; node.scrollLeft = position?.left ?? 0;
         }
         transitions.refresh();
+        if (presentation && s.phase === 'awaitingStart' && sampledDay !== s.day) {
+            sampledDay = s.day;
+            sampleResources('day-ready', presentation.resourceCounts(), s.day);
+        }
         if (moving) setActionLock(true);
         else openChoice();
     }

@@ -59,6 +59,8 @@ export function createLayoutPresentation(screen, resultGraphics) {
     }
     return {
         cards, play,
+        resourceCounts: () => ({ play: play.resourceCounts(), palette: palette.resourceCounts(),
+            canvases: document.querySelectorAll('canvas').length }),
         initialize: (definitions, state) => cards.initialize(definitions, state),
         cardComponent: cards.component,
         setAchievable: cards.achievable,

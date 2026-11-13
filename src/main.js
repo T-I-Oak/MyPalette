@@ -7,7 +7,7 @@ import { loadResultGraphics } from './dice/resultGraphics.js';
 import { gameIssues } from './game/engine.js';
 import { mountGame } from './game/view.js';
 import { createLayoutPresentation } from './game/layoutPresentation.js';
-import { trace, traceText } from './game/startupTrace.js';
+import { sampleResources, startTraceGame, trace, traceText } from './game/startupTrace.js';
 import './ui/theme.css';
 import './ui/layout.css';
 import './ui/textures.css';
@@ -90,6 +90,7 @@ async function start() {
         return;
     }
     title.hidden = true;
+    startTraceGame();
     trace('game-open');
     gameLayout.hidden = false;
     layoutScreen.render();
@@ -99,6 +100,7 @@ async function start() {
         showTitle('game-menu');
     }, presentation, () => {
         presentation.dispose();
+        sampleResources('disposed', presentation.resourceCounts());
         gameLayout.hidden = true;
         result.hidden = false;
         trace('game-finished');
@@ -107,6 +109,7 @@ async function start() {
 }
 returnButton.addEventListener('click', () => {
     showTitle('result-button');
+    sampleResources('title', { canvases: document.querySelectorAll('canvas').length });
     startButton.focus();
 });
 showTitle('page-startup');
