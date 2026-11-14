@@ -25,5 +25,6 @@ export function animateProgress(duration, draw, signal, stage) {
         }
         signal.addEventListener('abort', abort, { once: true });
         frame = requestAnimationFrame(tick);
+        if (stage) trace('frame-queued', { stage }, action);
     });
 }

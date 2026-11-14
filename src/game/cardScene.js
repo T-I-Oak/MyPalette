@@ -3,6 +3,7 @@ import { releasePaintingIcons } from '../cardIcons.js';
 import { CardSceneState } from './cardSceneState.js';
 import { cardSceneSnapshot, locateSceneCards, scatteredPlacement, sceneCardPose } from './cardSceneLayout.js';
 import { animateProgress } from './playAnimation.js';
+import { trace } from './startupTrace.js';
 import { shippedCanvas } from './infoLayout.js';
 import './cardScene.css';
 
@@ -150,6 +151,7 @@ export function createCardScene(screen, play) {
             draw();
         },
         async move(state, duration, owner, options = {}) {
+            trace('card-move-prepare', { stage: owner });
             const signal = controller.signal, activeModel = model;
             const shipment = options.shipment;
             const previous = new Map([...activeModel.cards].map(([id, record]) => [id, { area: record.area, grade: record.grade }]));

@@ -83,10 +83,30 @@ diagnosticLabel.textContent = '調査記録';
 const diagnosticText = document.createElement('textarea');
 diagnosticText.readOnly = true;
 diagnosticText.setAttribute('aria-label', '調査記録');
-diagnostics.append(diagnosticLabel, diagnosticText);
+const diagnosticCopy = document.createElement('button');
+diagnosticCopy.type = 'button';
+diagnosticCopy.className = 'Button texture-raised';
+diagnosticCopy.textContent = '調査記録をコピー';
+const diagnosticCopyStatus = document.createElement('span');
+diagnosticCopyStatus.setAttribute('role', 'status');
+diagnosticCopy.addEventListener('click', async () => {
+    const log = traceText();
+    diagnosticText.value = log;
+    diagnosticCopyStatus.textContent = '';
+    try {
+        await navigator.clipboard.writeText(log);
+        diagnosticCopyStatus.textContent = 'コピーしました';
+    } catch {
+        diagnosticCopyStatus.textContent = 'コピーできませんでした。記録欄から手動でコピーできます。';
+    }
+});
+diagnostics.append(diagnosticLabel, diagnosticText, diagnosticCopy, diagnosticCopyStatus);
 title.append(diagnostics);
 diagnostics.addEventListener('toggle', () => {
-    if (diagnostics.open) diagnosticText.value = traceText();
+    if (diagnostics.open) {
+        diagnosticText.value = traceText();
+        diagnosticCopyStatus.textContent = '';
+    }
 });
 
 function showTitle(reason) {
