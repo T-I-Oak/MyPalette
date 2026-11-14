@@ -41,6 +41,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Halve artwork PNG dimensions for the device comparison
+        if: github.ref == 'refs/heads/fix/v0.28-device-game-flow'
+        run: |
+          python3 -m venv "$RUNNER_TEMP/artwork-comparison"
+          "$RUNNER_TEMP/artwork-comparison/bin/pip" install Pillow==11.3.0
+          "$RUNNER_TEMP/artwork-comparison/bin/python" scripts/resizeComparisonArtwork.py
+
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
