@@ -5,6 +5,7 @@ import { cardSceneSnapshot, locateSceneCards, scatteredPlacement, sceneCardPose 
 import { animateProgress } from './playAnimation.js';
 import { currentTraceAction, trace, traceCardFrame } from './startupTrace.js';
 import { shippedCanvas } from './infoLayout.js';
+import { omitArtworkImages } from './artworkComparison.js';
 import './cardScene.css';
 
 function createShippedArtwork(id, wrapper, image) {
@@ -19,6 +20,7 @@ function createShippedArtwork(id, wrapper, image) {
     canvas.style.setProperty('--shipped-angle', `${angle}deg`);
     canvas.style.setProperty('--shipped-perspective', `${perspective}px`);
     canvas.style.setProperty('--shipped-thickness', `${thickness}px`);
+    if (!image && omitArtworkImages) image = document.createElement('div');
     if (!image) {
         image = document.createElement('img');
         image.alt = '';
