@@ -2,6 +2,7 @@ const key = 'MyPalette:MP28-02';
 const page = Date.now().toString(36);
 let entries = [];
 let samples = [];
+let cardFrames = [];
 let game = 0;
 let previousDays = 0;
 let day = 0;
@@ -11,6 +12,7 @@ let actionId = 0;
 try {
     entries = JSON.parse(sessionStorage.getItem(key) ?? '[]');
     samples = JSON.parse(sessionStorage.getItem(key + ':samples') ?? '[]');
+    cardFrames = JSON.parse(sessionStorage.getItem(key + ':card-frames') ?? '[]');
 } catch (error) {
     storageError = String(error);
 }
@@ -30,8 +32,18 @@ export function trace(event, data, action = actionId) {
 export function startTraceAction() { actionId++; }
 export function currentTraceAction() { return actionId; }
 
+export function traceCardFrame(event, data, action) {
+    cardFrames.push({ page, seq: ++sequence, action, at: new Date().toISOString(), event, data });
+    cardFrames = cardFrames.slice(-24);
+    try {
+        sessionStorage.setItem(key + ':card-frames', JSON.stringify(cardFrames));
+    } catch (error) {
+        storageError = String(error);
+    }
+}
+
 export function traceText() {
-    return JSON.stringify({ storageError, samples, entries }, null, 2);
+    return JSON.stringify({ storageError, samples, entries, cardFrames }, null, 2);
 }
 
 export function startTraceGame() {
