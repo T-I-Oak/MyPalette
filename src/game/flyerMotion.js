@@ -26,11 +26,11 @@ export function createFlyerMotion(screen, palette, info) {
         return { x: frame.x + (frame.width - width) / 2, y: frame.y + (frame.height - height) / 2, width, height };
     }
     function draw(object, rect) { screen.surface.renderMoving(object, rect, 1); }
-    function transfer(object, from, to, signal) {
+    function transfer(object, from, to, signal, stage) {
         return animateProgress(transferDuration, amount => {
             const start = from(), end = to(), progress = amount * amount * (3 - 2 * amount);
             draw(object, Object.fromEntries(['x', 'y', 'width', 'height'].map(key => [key, start[key] + (end[key] - start[key]) * progress])));
-        }, signal);
+        }, signal, stage);
     }
     function clear() {
         if (!active) return;
@@ -55,7 +55,7 @@ export function createFlyerMotion(screen, palette, info) {
                 active = new MoveObject('flyer-work', sheet);
                 const source = info.holdFlyer(state, kind);
                 draw(active, source());
-                if (!await transfer(active, source, workRect, signal)) return;
+                if (!await transfer(active, source, workRect, signal, 'flyer-work')) return;
             }
             const object = active;
             object.element.append(next);
@@ -80,7 +80,7 @@ export function createFlyerMotion(screen, palette, info) {
         },
         async returnToInfo(state, request, signal) {
             const target = info.flyerTarget(state, stages[request.step]);
-            try { await transfer(active, workRect, target.read, signal); }
+            try { await transfer(active, workRect, target.read, signal, 'flyer-return'); }
             finally { target.dispose(); }
         },
     };

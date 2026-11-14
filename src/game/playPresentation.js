@@ -107,7 +107,7 @@ export function createPlayPresentation(area, host, relayout) {
         async fadeOut(id, image, signal) {
             const entry = find(id); entry.painting?.remove();
             entry.painting = image; image.className = 'PlayFlatArtwork'; entry.pair.append(image);
-            await animateProgress(achievementTiming.fade, progress => cards.opacity(id, 1 - progress), signal);
+            await animateProgress(achievementTiming.fade, progress => cards.opacity(id, 1 - progress), signal, 'achievement-fade-out');
         },
         async repaint(id, before, after, signal, duration = 520) {
             const entry = find(id), image = document.createElement('canvas'); image.width = after.width; image.height = after.height;
@@ -116,11 +116,11 @@ export function createPlayPresentation(area, host, relayout) {
                 context.clearRect(0, 0, image.width, image.height); context.drawImage(before, 0, 0, image.width, image.height);
                 context.save(); context.beginPath(); diagonalReveal(progress).forEach(([x,y],index) => index ? context.lineTo(x*image.width,y*image.height) : context.moveTo(x*image.width,y*image.height));
                 context.closePath(); context.clip(); context.drawImage(after, 0, 0, image.width, image.height); context.restore();
-            }, signal);
+            }, signal, 'achievement-repaint');
         },
         async fadeIn(id, definition, step, signal) {
             cards.showStep(id, step);
-            await animateProgress(achievementTiming.fade, progress => cards.opacity(id, progress), signal);
+            await animateProgress(achievementTiming.fade, progress => cards.opacity(id, progress), signal, 'achievement-fade-in');
             if (!signal.aborted) this.releaseCanvas(id);
         },
         releaseCanvas(id) {

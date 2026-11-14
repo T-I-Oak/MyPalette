@@ -1,5 +1,5 @@
 import { createGameSession } from './session.js';
-import { sampleResources, trace } from './startupTrace.js';
+import { sampleResources, startTraceAction, trace } from './startupTrace.js';
 import { gameIssues } from './engine.js';
 import { matchingDice, satisfiesSelection } from './goals.js';
 import { displayLabel } from '../effectCatalog.js';
@@ -95,6 +95,7 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
     }
     function act(action, source = null, animation = null) {
         if (moving) return;
+        if (presentation) startTraceAction();
         const firstLog = game.state.logs.length;
         const step = animation?.id ? game.state.field.find(card => card.id === animation.id)?.step : undefined;
         presentation?.beginAction(animation, game.state, game.definitions);
@@ -121,10 +122,10 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
         selected = new Set();
         activeTab = 'play';
         moving = presentation ? presentation.hasAnimation(game.state, game.deckEvents) : transfers.length > 0;
-        render();
+        render('action');
         if (!moving) return;
         if (presentation) {
-            presentation.animate(game.state, render, () => {
+            presentation.animate(game.state, () => render('animation-refresh'), () => {
                 trace('achievement-complete', game.state.achievement);
                 session.dispatch(() => game.completeAchievement());
                 return game.deckEvents;
@@ -155,7 +156,7 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
                 if (disposed) return;
                 trace('animation-end', { day: game.state.day, phase: game.state.phase });
                 if (game.state.phase === 'betweenDays') session.dispatch(() => game.nextDay());
-                moving = false; render();
+                moving = false; render('animation-end');
             });
             return;
         }
@@ -278,7 +279,13 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
         update();
     }
     let sampledDay = 0;
-    function render() {
+    function render(source = 'view') {
+        const data = { source, day: game.state.day, phase: game.state.phase };
+        const start = presentation ? trace('view-render-start', data) : undefined;
+        renderView();
+        if (presentation) trace('view-render-end', { ...data, start });
+    }
+    function renderView() {
         if (onFinished && !moving && game.state.phase === 'finished') {
             if (presentation) sampleResources('before-dispose', presentation.resourceCounts(), game.state.day);
             dispose();

@@ -1,5 +1,5 @@
 import { faceCanvas } from '../dice/icons.js';
-import { traceWebGL } from './startupTrace.js';
+import { currentTraceAction, trace, traceWebGL } from './startupTrace.js';
 import { loadResultGraphics } from '../dice/resultGraphics.js';
 import { rerollTicketCanvas } from '../icons/render.js';
 import {paletteScaleForCount} from '../dice/field.js';
@@ -75,12 +75,20 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             controls.append(retryRoll);
         } else if (!rollScheduled && (domGraphics || group) && request.status === 'ready' && actions.canStartRoll() && !group?.dice.some(die => die.readyMotion)) {
             rollScheduled = true;
-            queueMicrotask(() => { rollScheduled = false; if (!disposed) performRoll(); });
+            const action = currentTraceAction();
+            const start = trace('roll-queued', { id: request.id }, action);
+            queueMicrotask(() => {
+                rollScheduled = false;
+                trace('roll-microtask', { start, disposed }, action);
+                if (!disposed) performRoll();
+            });
         }
     }
     async function performRoll() {
         if ((!group && !domGraphics) || request?.status !== 'ready' || !actions.canStartRoll() || group?.dice.some(die => die.readyMotion)) return;
         const token = generation, activeGroup = group, id = request.id, ids = [...request.ids];
+        const action = currentTraceAction();
+        const start = trace('roll-start', { id }, action);
         const callbacks = actions;
         callbacks.beginRoll(id);
         notice.remove();
@@ -91,6 +99,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             if (disposed || token !== generation) return;
             if (results.some(result => result.status !== 'settled')) throw new Error('出目が確定しませんでした。もう一度お試しください。');
             callbacks.completeRoll(id, results);
+            trace('roll-end', { id, start }, action);
         } catch (error) {
             if (disposed || token !== generation) return;
             noticeText.textContent = `ロールを完了できませんでした。${error.message}`;

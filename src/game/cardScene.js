@@ -192,7 +192,7 @@ export function createCardScene(screen, play) {
                         record.grade = arrived ? where.grade : from.grade;
                     }
                     draw();
-                }, signal);
+                }, signal, owner);
                 if (complete) { activeModel.interrupt(); play.finish(); for (const [id, where] of next) { activeModel.get(id).area = options.areaOnArrival?.(id) ?? where.area; activeModel.get(id).grade = where.grade; } }
             } finally {
                 if (shipment && activeShipment?.id === shipment.id) activeShipment = undefined;

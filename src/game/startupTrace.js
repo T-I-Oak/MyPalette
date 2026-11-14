@@ -6,6 +6,8 @@ let game = 0;
 let previousDays = 0;
 let day = 0;
 let storageError = '';
+let sequence = 0;
+let actionId = 0;
 try {
     entries = JSON.parse(sessionStorage.getItem(key) ?? '[]');
     samples = JSON.parse(sessionStorage.getItem(key + ':samples') ?? '[]');
@@ -13,15 +15,20 @@ try {
     storageError = String(error);
 }
 
-export function trace(event, data) {
-    entries.push({ page, at: new Date().toISOString(), event, data });
+export function trace(event, data, action = actionId) {
+    const seq = ++sequence;
+    entries.push({ page, seq, action, at: new Date().toISOString(), event, data });
     entries = entries.slice(-80);
     try {
         sessionStorage.setItem(key, JSON.stringify(entries));
     } catch (error) {
         storageError = String(error);
     }
+    return seq;
 }
+
+export function startTraceAction() { actionId++; }
+export function currentTraceAction() { return actionId; }
 
 export function traceText() {
     return JSON.stringify({ storageError, samples, entries }, null, 2);

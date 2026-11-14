@@ -1,6 +1,9 @@
+import { currentTraceAction, trace } from './startupTrace.js';
+
 export const achievementTiming = Object.freeze({ fade: 900 });
 
-export function animateProgress(duration, draw, signal) {
+export function animateProgress(duration, draw, signal, stage) {
+    const action = currentTraceAction();
     return new Promise((resolve, reject) => {
         if (signal.aborted) { resolve(false); return; }
         let start, frame;
@@ -8,9 +11,14 @@ export function animateProgress(duration, draw, signal) {
         const abort = () => { cancelAnimationFrame(frame); cleanup(); resolve(false); };
         function tick(time) {
             try {
+                const first = start === undefined;
                 start ??= time;
                 const progress = duration === 0 ? 1 : Math.min(1, (time - start) / duration);
+                const boundary = stage && (first || progress === 1);
+                const data = boundary ? { stage, first, last: progress === 1 } : undefined;
+                const entry = boundary ? trace('frame-start', data, action) : undefined;
                 draw(progress);
+                if (boundary) trace('frame-end', { ...data, start: entry }, action);
                 if (progress === 1) { cleanup(); resolve(true); }
                 else frame = requestAnimationFrame(tick);
             } catch (error) { cleanup(); reject(error); }
