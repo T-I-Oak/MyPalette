@@ -15,11 +15,39 @@ import './ui/states.css';
 import './ui/screenLayout/layout.css';
 
 const version = initializeAppVersion(__APP_VERSION__);
-trace('page-open', { version, navigation: performance.getEntriesByType('navigation')[0]?.type });
-document.addEventListener('visibilitychange', () => trace('visibility', { state: document.visibilityState }));
+const pageState = () => ({
+    path: location.pathname,
+    hash: location.hash,
+    visibility: document.visibilityState,
+    historyLength: history.length,
+});
+trace('page-open', {
+    version,
+    navigation: performance.getEntriesByType('navigation')[0]?.type,
+    navigationApi: Boolean(window.navigation),
+    ...pageState(),
+});
+document.addEventListener('visibilitychange', () => trace('visibility', pageState()));
 for (const event of ['pagehide', 'pageshow']) {
-    window.addEventListener(event, ({ persisted }) => trace(event, { persisted }));
+    window.addEventListener(event, ({ persisted }) => trace(event, { persisted, ...pageState() }));
 }
+for (const event of ['popstate', 'hashchange']) {
+    window.addEventListener(event, () => trace(event, pageState()));
+}
+document.addEventListener('click', event => {
+    const link = event.target.closest?.('a[href]');
+    if (link) trace('link-click', { destination: link.href, target: link.target, trusted: event.isTrusted });
+}, true);
+window.navigation?.addEventListener('navigate', event => {
+    trace('navigate', {
+        type: event.navigationType,
+        destination: event.destination.url,
+        sameDocument: event.destination.sameDocument,
+        userInitiated: event.userInitiated,
+        source: event.sourceElement?.tagName,
+        ...pageState(),
+    });
+});
 window.addEventListener('error', event => trace('error', { message: event.message, stack: event.error?.stack }));
 window.addEventListener('unhandledrejection', event => trace('rejection', { message: String(event.reason), stack: event.reason?.stack }));
 const root = document.querySelector('#layout-screen');
