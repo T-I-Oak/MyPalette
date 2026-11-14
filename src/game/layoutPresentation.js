@@ -89,7 +89,7 @@ export function createLayoutPresentation(screen, resultGraphics) {
             info.present(state);
             const status = board.querySelector('.GameStatus');
             const infoControls = board.querySelector('.GameControls');
-            palette.present(move('palette', '.GameDicePane'), state, actions);
+            palette.present(state, actions);
             play.present(move('play', '.field'), { ...state, field: cards.display.field });
             play.setEndDayButton(infoControls.querySelector('[data-game-end-day]'));
             const gameActions = document.createElement('div'); gameActions.className = 'PlaySessionActions';

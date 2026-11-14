@@ -115,6 +115,8 @@
 .PaintingBlock > .CardIconSequence { padding-inline: 3px; }
 .PaintingBlock .CardIconSequence > .CardIcon { min-width: 0; min-height: 0; flex: 0 1 auto; }
 .PaintingIconFrame { display: block; position: relative; max-width: 100%; }
+.PaintingPanel { position: relative; }
+.PaintingIconCanvas { position: absolute; pointer-events: none; }
 .PaintingBlock .PaintingIconFrame canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .PaintingEmpty { align-self: center; text-align: center; color: var(--ui-text-muted); }
 .PaintingCard.GameTransferPiece { margin: 0; height: auto; overflow: visible; }

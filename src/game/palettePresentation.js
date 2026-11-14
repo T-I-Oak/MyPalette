@@ -273,7 +273,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
                 },
             };
         },
-        present(section, state, callbacks) {
+        present(state, callbacks) {
             if (state.phase === 'play' && creditMaterials.size) {
                 for (const id of creditMaterials) scene?.travelling.delete(id);
                 creditMaterials.clear();
@@ -291,7 +291,6 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             viewport.setAttribute('aria-label', `パレット：${snapshot.map(die =>
                 `${die.lifetime === 'permanent' ? '永続' : '一時'}ダイス、${die.used ? '消費済み' : '未使用'}、${die.current === null ? 'ロール待ち' : `面${die.current + 1}`}`).join('。')}`);
             if (viewport.parentNode !== host) host.append(viewport);
-            section.remove();
             if (domGraphics) drawDomDice();
             else if (group) syncSnapshot();
             else if (!started) initialize();

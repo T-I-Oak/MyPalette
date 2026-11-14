@@ -1,4 +1,4 @@
-import { effectIconCanvas, goalIconCanvas, iconAspect } from './icons/render.js';
+import { drawIconPlan, effectIconCanvas, goalIconCanvas, iconAspect } from './icons/render.js';
 import { effectIconPlan, goalIconPlan } from './icons/iconPlan.js';
 import { faceCanvas } from './dice/icons.js';
 import { describeEffect, describeGoals } from './cardSummary.js';
@@ -40,12 +40,58 @@ export function effectBody(effects) {
     return body;
 }
 const paintingDrawers = new WeakMap();
+const paintingPlans = new WeakMap();
+const cardDrawings = new WeakMap();
+function drawCardIcons(panel, scale) {
+    const frames = [...panel.querySelectorAll('.PaintingIconFrame')];
+    const boxes = frames.map(frame => {
+        let x = 0, y = 0;
+        for (let node = frame; node !== panel; node = node.offsetParent) {
+            x += node.offsetLeft; y += node.offsetTop;
+        }
+        return { x, y, width: frame.offsetWidth, height: frame.offsetHeight };
+    });
+    if (!boxes.some(box => box.width && box.height)) return;
+    const x = Math.min(...boxes.map(box => box.x)), y = Math.min(...boxes.map(box => box.y));
+    const width = Math.max(...boxes.map(box => box.x + box.width)) - x;
+    const height = Math.max(...boxes.map(box => box.y + box.height)) - y;
+    const ratio = Math.min(2048 / Math.max(width, height), scale * devicePixelRatio);
+    const pixelWidth = Math.max(1, Math.ceil(width * ratio)), pixelHeight = Math.max(1, Math.ceil(height * ratio));
+    const signature = JSON.stringify([pixelWidth, pixelHeight, boxes]);
+    let drawing = cardDrawings.get(panel);
+    if (!drawing || drawing.canvas.parentNode !== panel) {
+        const canvas = document.createElement('canvas');
+        canvas.className = 'PaintingIconCanvas';
+        canvas.setAttribute('aria-hidden', 'true');
+        panel.append(canvas);
+        drawing = { canvas };
+        cardDrawings.set(panel, drawing);
+    }
+    if (signature === drawing.signature && frames.every((frame, index) => frame === drawing.frames[index])) return;
+    const { canvas } = drawing;
+    Object.assign(canvas.style, { left: `${x}px`, top: `${y}px`, width: `${width}px`, height: `${height}px` });
+    if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
+    if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, pixelWidth, pixelHeight);
+    boxes.forEach((box, index) => {
+        if (box.width && box.height) drawIconPlan(ctx, paintingPlans.get(frames[index]),
+            (box.x - x) * ratio, (box.y - y) * ratio, box.width * ratio, box.height * ratio);
+    });
+    drawing.signature = signature;
+    drawing.frames = frames;
+}
 const paintingObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(entries => {
+    const panels = new Map();
     for (const { target, contentRect } of entries) {
         const viewport = target.closest('.GameCardDetailViewport, .GameCardAreaContent, .GameChoice .GameGrid');
         const scale = viewport ? Number(getComputedStyle(viewport).zoom) || 1 : 1;
-        paintingDrawers.get(target)?.(target, contentRect.height, scale);
+        const panel = target.closest('.PaintingPanel');
+        if (panel) {
+            if (contentRect.height && !target.closest('.CardSceneCard')) panels.set(panel, scale);
+        } else paintingDrawers.get(target)?.(target, contentRect.height, scale);
     }
+    for (const [panel, scale] of panels) drawCardIcons(panel, scale);
 });
 function icon(value, description, render, edit, plan, withTooltip = true) {
     const node = el(undefined, 'CardIcon');
@@ -64,6 +110,7 @@ function icon(value, description, render, edit, plan, withTooltip = true) {
         const aspect = iconAspect(plan);
         frame.style.width = `calc(var(--painting-icon-size, 28px) * ${aspect})`;
         frame.style.aspectRatio = String(aspect);
+        paintingPlans.set(frame, plan);
         paintingDrawers.set(frame, (target, height, scale) => {
             if (!height) return;
             const pixels = Math.max(16, Math.min(2048, Math.round(height * scale * window.devicePixelRatio)));
@@ -114,12 +161,11 @@ export function copyPaintingIconDrawers(source, destination) {
     const originals = source.querySelectorAll('.PaintingIconFrame');
     destination.querySelectorAll('.PaintingIconFrame').forEach((frame, index) => {
         paintingDrawers.set(frame, paintingDrawers.get(originals[index]));
+        paintingPlans.set(frame, paintingPlans.get(originals[index]));
     });
 }
 export function drawPaintingIcons(root, scale) {
-    for (const frame of root.querySelectorAll('.PaintingIconFrame')) {
-        paintingDrawers.get(frame)?.(frame, parseFloat(getComputedStyle(frame).height), scale);
-    }
+    for (const panel of root.querySelectorAll('.PaintingPanel')) drawCardIcons(panel, scale);
 }
 export function paintingIcons(values, kind, describe) {
     const row = el(undefined, 'CardIconSequence');

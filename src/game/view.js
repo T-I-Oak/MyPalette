@@ -317,25 +317,27 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
         };
         const selectingReroll = Boolean(presentation && !notices.busy && s.pending?.kind === 'dice' && s.pending.effectType === 'reroll');
         const selectingReturn = Boolean(presentation && s.pending?.kind === 'handReturn');
-        const visibleDice = s.phase === 'betweenDays' ? s.dayEndDice : s.dice;
-        const diceSection = section(`画材ダイス ${visibleDice.length}個${s.phase === 'betweenDays' ? '（仕事終了時）' : ''}`, workspace, 'GameDicePane'), diceList = el('div', undefined, 'GameGrid');
-        diceList.dataset.pane = 'dice';
         const achieveButtons = [];
         const updateAchievements = () => {
             for (const { card, node } of achieveButtons) node.disabled = !canPlay || card.step === 3 || !satisfiesSelection(game.step(card).goals, s.dice, [...selected]);
         };
-        for (const die of visibleDice) {
-            const node = diceView(die);
-            if (canPlay && !die.used) {
-                checkbox(node, die.id, `${die.id}を達成に使用`, updateAchievements);
-                node.querySelector('input').dataset.gameAction = '';
+        if (!presentation) {
+            const visibleDice = s.phase === 'betweenDays' ? s.dayEndDice : s.dice;
+            const diceSection = section(`画材ダイス ${visibleDice.length}個${s.phase === 'betweenDays' ? '（仕事終了時）' : ''}`, workspace, 'GameDicePane'), diceList = el('div', undefined, 'GameGrid');
+            diceList.dataset.pane = 'dice';
+            for (const die of visibleDice) {
+                const node = diceView(die);
+                if (canPlay && !die.used) {
+                    checkbox(node, die.id, `${die.id}を達成に使用`, updateAchievements);
+                    node.querySelector('input').dataset.gameAction = '';
+                }
+                const reroll = gameButton('↻', () => act(() => game.reroll(die.id)), !canPlay || die.used || !s.rerolls);
+                reroll.setAttribute('aria-label', `${die.id}をリロール`); reroll.title = `${die.id}をリロール`;
+                node.append(reroll); diceList.append(node);
             }
-            const reroll = gameButton('↻', () => act(() => game.reroll(die.id)), !canPlay || die.used || !s.rerolls);
-            reroll.setAttribute('aria-label', `${die.id}をリロール`); reroll.title = `${die.id}をリロール`;
-            node.append(reroll); diceList.append(node);
+            diceSection.append(diceList, gameButton('全未使用ダイスをリロール', () => act(() => game.reroll()), !canChangeAll()));
+            diceSection.title = 'ダイスにチェックを付け、制作中の作品の達成ボタンで確定します。';
         }
-        diceSection.append(diceList, gameButton('全未使用ダイスをリロール', () => act(() => game.reroll()), !canChangeAll()));
-        diceSection.title = 'ダイスにチェックを付け、制作中の作品の達成ボタンで確定します。';
         const cardZones = [['field', '制作中'], ['hand', '手札'], ['shipped', '出荷済み作品']];
         if (presentation) cardZones.push(['discard', '捨て札']);
         for (const [key, label] of cardZones) {
