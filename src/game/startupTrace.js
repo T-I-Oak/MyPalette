@@ -9,6 +9,7 @@ let day = 0;
 let storageError = '';
 let sequence = 0;
 let actionId = 0;
+let version;
 try {
     entries = JSON.parse(sessionStorage.getItem(key) ?? '[]');
     samples = JSON.parse(sessionStorage.getItem(key + ':samples') ?? '[]');
@@ -17,9 +18,11 @@ try {
     storageError = String(error);
 }
 
+export function setTraceVersion(value) { version = value; }
+
 export function trace(event, data, action = actionId) {
     const seq = ++sequence;
-    entries.push({ page, seq, action, at: new Date().toISOString(), event, data });
+    entries.push({ page, version, seq, action, at: new Date().toISOString(), event, data });
     entries = entries.slice(-80);
     try {
         sessionStorage.setItem(key, JSON.stringify(entries));
@@ -33,7 +36,7 @@ export function startTraceAction() { actionId++; }
 export function currentTraceAction() { return actionId; }
 
 export function traceCardFrame(event, data, action) {
-    cardFrames.push({ page, seq: ++sequence, action, at: new Date().toISOString(), event, data });
+    cardFrames.push({ page, version, seq: ++sequence, action, at: new Date().toISOString(), event, data });
     cardFrames = cardFrames.slice(-24);
     try {
         sessionStorage.setItem(key + ':card-frames', JSON.stringify(cardFrames));
@@ -43,7 +46,7 @@ export function traceCardFrame(event, data, action) {
 }
 
 export function traceText() {
-    return JSON.stringify({ storageError, samples, entries, cardFrames }, null, 2);
+    return JSON.stringify({ page, version, storageError, samples, entries, cardFrames }, null, 2);
 }
 
 export function startTraceGame() {
@@ -54,7 +57,7 @@ export function startTraceGame() {
 
 export function sampleResources(stage, resources, currentDay = day) {
     day = currentDay;
-    samples.push({ page, game, day, cumulativeDays: previousDays + day, stage, at: new Date().toISOString(), resources });
+    samples.push({ page, version, game, day, cumulativeDays: previousDays + day, stage, at: new Date().toISOString(), resources });
     try {
         sessionStorage.setItem(key + ':samples', JSON.stringify(samples));
     } catch (error) {

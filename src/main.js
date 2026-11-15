@@ -4,7 +4,7 @@ import { titleMenuEntries } from './ui/title/menuEntries.js';
 import { loadSettings } from './settingsStorage.js';
 import { gameIssues } from './game/engine.js';
 import { mountTextComparison } from './game/textComparison.js';
-import { sampleResources, startTraceGame, trace, traceText } from './game/startupTrace.js';
+import { sampleResources, setTraceVersion, startTraceGame, trace, traceText } from './game/startupTrace.js';
 import './ui/theme.css';
 import './ui/layout.css';
 import './ui/textures.css';
@@ -12,6 +12,7 @@ import './ui/states.css';
 import './ui/screenLayout/layout.css';
 
 const version = initializeAppVersion(__APP_VERSION__);
+setTraceVersion(version);
 const pageState = () => ({
     path: location.pathname,
     hash: location.hash,
