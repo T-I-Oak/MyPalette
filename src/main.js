@@ -151,3 +151,16 @@ returnButton.addEventListener('click', () => {
     sampleResources('title', { canvases: document.querySelectorAll('canvas').length });
 });
 showTitle('page-startup');
+
+// MP28-02: restore only the page-wide frame loop from the layout screen.
+let pixelRatio = window.devicePixelRatio;
+function watchResolution() {
+    const next = window.devicePixelRatio;
+    if (next !== pixelRatio) {
+        trace('pixel-ratio-change', { before: pixelRatio, after: next });
+        pixelRatio = next;
+    }
+    requestAnimationFrame(watchResolution);
+}
+requestAnimationFrame(watchResolution);
+trace('resolution-watch-start', { pixelRatio });
