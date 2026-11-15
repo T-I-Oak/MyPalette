@@ -1,12 +1,9 @@
 import { initializeAppVersion } from './version.js';
 import { createTitleScreen } from './ui/createTitleScreen.js';
 import { titleMenuEntries } from './ui/title/menuEntries.js';
-import { createLayoutScreen } from './ui/screenLayout/createLayoutScreen.js';
 import { loadSettings } from './settingsStorage.js';
-import { loadResultGraphics } from './dice/resultGraphics.js';
 import { gameIssues } from './game/engine.js';
-import { mountGame } from './game/view.js';
-import { createLayoutPresentation } from './game/layoutPresentation.js';
+import { mountTextComparison } from './game/textComparison.js';
 import { sampleResources, startTraceGame, trace, traceText } from './game/startupTrace.js';
 import './ui/theme.css';
 import './ui/layout.css';
@@ -51,8 +48,9 @@ window.navigation?.addEventListener('navigate', event => {
 window.addEventListener('error', event => trace('error', { message: event.message, stack: event.error?.stack }));
 window.addEventListener('unhandledrejection', event => trace('rejection', { message: String(event.reason), stack: event.reason?.stack }));
 const root = document.querySelector('#layout-screen');
-export const layoutScreen = createLayoutScreen(root, document.querySelector('#panel-toggle'));
-const gameLayout = root.querySelector('.LayoutContent');
+const gameLayout = document.createElement('section');
+gameLayout.className = 'TextComparison';
+root.append(gameLayout);
 const { screen: title, notice, setMenuItems } = createTitleScreen(version);
 const startLabel = titleMenuEntries[0].label;
 const menuActions = { start };
@@ -69,11 +67,12 @@ const result = document.createElement('section');
 result.className = 'GameStartup';
 const resultHeading = document.createElement('h1');
 resultHeading.textContent = 'ゲーム終了';
+const resultScore = document.createElement('p');
 const returnButton = document.createElement('button');
 returnButton.type = 'button';
 returnButton.className = 'Button texture-raised';
 returnButton.textContent = 'タイトルへ戻る';
-result.append(resultHeading, returnButton);
+result.append(resultHeading, resultScore, returnButton);
 root.append(title, result);
 
 const diagnostics = document.createElement('details');
@@ -124,11 +123,10 @@ async function start() {
     if (startButton.disabled) return;
     setPreparing(true);
     notice.textContent = 'ゲームの準備をしています…';
-    let settings, graphics;
+    let settings;
     try {
-        const [saved, resultGraphics] = await Promise.all([loadSettings(), loadResultGraphics()]);
+        const saved = await loadSettings();
         settings = saved.document;
-        graphics = resultGraphics;
         const issues = gameIssues(settings);
         if (issues.length) throw new Error(`設定が制作途中のため開始できません。\n${issues.join('\n')}`);
     } catch (error) {
@@ -139,25 +137,17 @@ async function start() {
     }
     title.hidden = true;
     startTraceGame();
-    trace('game-open');
+    trace('game-open', { mode: 'text' });
     gameLayout.hidden = false;
-    layoutScreen.render();
-    const presentation = createLayoutPresentation(layoutScreen, graphics);
-    mountGame(root, settings, () => {
-        presentation.dispose();
-        showTitle('game-menu');
-    }, presentation, () => {
-        presentation.dispose();
-        sampleResources('disposed', presentation.resourceCounts());
+    mountTextComparison(gameLayout, settings, (fame, shipped) => {
         gameLayout.hidden = true;
+        resultScore.textContent = `名声 ${fame} / 出荷 ${shipped}枚`;
         result.hidden = false;
         trace('game-finished');
-        returnButton.focus();
     });
 }
 returnButton.addEventListener('click', () => {
     showTitle('result-button');
     sampleResources('title', { canvases: document.querySelectorAll('canvas').length });
-    startButton.focus();
 });
 showTitle('page-startup');
