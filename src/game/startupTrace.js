@@ -9,20 +9,40 @@ let day = 0;
 let storageError = '';
 let sequence = 0;
 let actionId = 0;
-let version;
+let versions = {};
 try {
     entries = JSON.parse(sessionStorage.getItem(key) ?? '[]');
     samples = JSON.parse(sessionStorage.getItem(key + ':samples') ?? '[]');
     cardFrames = JSON.parse(sessionStorage.getItem(key + ':card-frames') ?? '[]');
+    versions = JSON.parse(sessionStorage.getItem(key + ':versions') ?? '{}');
 } catch (error) {
     storageError = String(error);
 }
 
-export function setTraceVersion(value) { version = value; }
+export function setTraceVersion(value) {
+    for (const record of [...entries, ...samples, ...cardFrames]) {
+        const version = record.version ?? (record.event === 'page-open' ? record.data?.version : undefined);
+        if (version) versions[record.page] = version;
+    }
+    versions[page] = value;
+    try {
+        sessionStorage.setItem(key + ':versions', JSON.stringify(versions));
+    } catch (error) {
+        storageError = String(error);
+    }
+}
+
+function exportRecord({ version, ...record }) {
+    if (record.event === 'page-open' && record.data?.version) {
+        const { version: startupVersion, ...data } = record.data;
+        return { ...record, data };
+    }
+    return record;
+}
 
 export function trace(event, data, action = actionId) {
     const seq = ++sequence;
-    entries.push({ page, version, seq, action, at: new Date().toISOString(), event, data });
+    entries.push({ page, seq, action, at: new Date().toISOString(), event, data });
     entries = entries.slice(-80);
     try {
         sessionStorage.setItem(key, JSON.stringify(entries));
@@ -36,7 +56,7 @@ export function startTraceAction() { actionId++; }
 export function currentTraceAction() { return actionId; }
 
 export function traceCardFrame(event, data, action) {
-    cardFrames.push({ page, version, seq: ++sequence, action, at: new Date().toISOString(), event, data });
+    cardFrames.push({ page, seq: ++sequence, action, at: new Date().toISOString(), event, data });
     cardFrames = cardFrames.slice(-24);
     try {
         sessionStorage.setItem(key + ':card-frames', JSON.stringify(cardFrames));
@@ -46,7 +66,14 @@ export function traceCardFrame(event, data, action) {
 }
 
 export function traceText() {
-    return JSON.stringify({ page, version, storageError, samples, entries, cardFrames }, null, 2);
+    const pages = new Set([page, ...[...samples, ...entries, ...cardFrames].map(record => record.page)]);
+    const pageVersions = Object.fromEntries([...pages].map(id => [id, versions[id] ?? null]));
+    return JSON.stringify({
+        page, pageVersions, storageError,
+        samples: samples.map(exportRecord),
+        entries: entries.map(exportRecord),
+        cardFrames: cardFrames.map(exportRecord),
+    }, null, 2);
 }
 
 export function startTraceGame() {
@@ -57,7 +84,7 @@ export function startTraceGame() {
 
 export function sampleResources(stage, resources, currentDay = day) {
     day = currentDay;
-    samples.push({ page, version, game, day, cumulativeDays: previousDays + day, stage, at: new Date().toISOString(), resources });
+    samples.push({ page, game, day, cumulativeDays: previousDays + day, stage, at: new Date().toISOString(), resources });
     try {
         sessionStorage.setItem(key + ':samples', JSON.stringify(samples));
     } catch (error) {

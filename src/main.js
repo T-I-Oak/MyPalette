@@ -1,5 +1,6 @@
 import { initializeAppVersion } from './version.js';
 import { createTitleScreen } from './ui/createTitleScreen.js';
+import { ScreenLayout } from './ui/screenLayout/ScreenLayout.js';
 import { titleMenuEntries } from './ui/title/menuEntries.js';
 import { loadSettings } from './settingsStorage.js';
 import { gameIssues } from './game/engine.js';
@@ -20,7 +21,6 @@ const pageState = () => ({
     historyLength: history.length,
 });
 trace('page-open', {
-    version,
     navigation: performance.getEntriesByType('navigation')[0]?.type,
     navigationApi: Boolean(window.navigation),
     ...pageState(),
@@ -153,15 +153,26 @@ returnButton.addEventListener('click', () => {
 });
 showTitle('page-startup');
 
-// MP28-02: restore only the page-wide frame loop from the layout screen.
+// MP28-02: calculate the normal area geometry without mounting its drawing surfaces.
+const layout = new ScreenLayout();
 let pixelRatio = window.devicePixelRatio;
+function recalculateLayout(source) {
+    const width = root.clientWidth;
+    const height = root.getBoundingClientRect().height;
+    if (!width || !height) return;
+    const start = trace('layout-start', { source, width, height, pixelRatio });
+    const frame = layout.calculate(width, height);
+    trace('layout-end', { source, start, mode: frame.mode });
+}
 function watchResolution() {
     const next = window.devicePixelRatio;
     if (next !== pixelRatio) {
         trace('pixel-ratio-change', { before: pixelRatio, after: next });
         pixelRatio = next;
+        recalculateLayout('pixel-ratio');
     }
     requestAnimationFrame(watchResolution);
 }
+recalculateLayout('startup');
 requestAnimationFrame(watchResolution);
 trace('resolution-watch-start', { pixelRatio });
