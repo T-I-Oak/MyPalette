@@ -140,11 +140,15 @@ async function start() {
     startTraceGame();
     trace('game-open', { mode: 'text' });
     gameLayout.hidden = false;
+    let layoutCalculations = 0;
     mountTextComparison(gameLayout, settings, (fame, shipped) => {
         gameLayout.hidden = true;
         resultScore.textContent = `名声 ${fame} / 出荷 ${shipped}枚`;
         result.hidden = false;
         trace('game-finished');
+    }, () => {
+        if (recalculateLayout('game-render')) layoutCalculations++;
+        return layoutCalculations;
     });
 }
 returnButton.addEventListener('click', () => {
@@ -163,6 +167,7 @@ function recalculateLayout(source) {
     const start = trace('layout-start', { source, width, height, pixelRatio });
     const frame = layout.calculate(width, height);
     trace('layout-end', { source, start, mode: frame.mode });
+    return true;
 }
 function watchResolution() {
     const next = window.devicePixelRatio;

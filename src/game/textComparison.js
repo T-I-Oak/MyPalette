@@ -23,7 +23,7 @@ function faceText(face) {
     return face.special ? displayLabel(face.special) : [face.color, face.material].filter(Boolean).map(displayLabel).join('・');
 }
 
-export function mountTextComparison(root, settings, onFinished) {
+export function mountTextComparison(root, settings, onFinished, calculateLayout) {
     const session = createGameSession(settings, { manualDayStart: true });
     const { game } = session;
     const s = game.state;
@@ -52,14 +52,14 @@ export function mountTextComparison(root, settings, onFinished) {
     function render() {
         const state = { day: s.day, phase: s.phase };
         const start = trace('view-render-start', state);
-        renderView();
+        renderView(calculateLayout());
         trace('view-render-end', { ...state, start });
     }
 
-    function renderView() {
+    function renderView(layoutCalculations) {
         root.replaceChildren();
         if (s.phase === 'finished') {
-            sampleResources('disposed', { mode: 'text', canvases: root.querySelectorAll('canvas').length }, s.day);
+            sampleResources('disposed', { mode: 'text', canvases: root.querySelectorAll('canvas').length, layoutCalculations }, s.day);
             onFinished(s.fame, s.shipped.length);
             return;
         }
@@ -67,7 +67,7 @@ export function mountTextComparison(root, settings, onFinished) {
             `名声 ${s.fame} / 信用 ${s.credit} / リロール権 ${s.rerolls} / チラシ ${s.flyers}枚（制作 ${s.progress}/2、次回発注 ${s.orderCost}枚）`));
         if (s.phase === 'awaitingStart' && sampledDay !== s.day) {
             sampledDay = s.day;
-            sampleResources('day-ready', { mode: 'text', canvases: root.querySelectorAll('canvas').length }, s.day);
+            sampleResources('day-ready', { mode: 'text', canvases: root.querySelectorAll('canvas').length, layoutCalculations }, s.day);
         }
         if (s.pending) renderChoice(s.pending);
         if (s.phase === 'awaitingStart') root.append(button('今日の仕事を始める', () => act('begin-day', () => game.beginDay())));
