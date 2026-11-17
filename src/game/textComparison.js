@@ -28,6 +28,8 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
     const { game } = session;
     const s = game.state;
     let sampledDay = 0;
+    let layoutApplications = 0;
+    let panelOpen = false;
     const cardName = id => `${id} ${game.definitions[id].name}`;
     const dieText = die => `${die.id} ${faceText(currentFace(die))}${die.used ? '（消費済み）' : ''}`;
 
@@ -42,39 +44,41 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
         render();
     }
 
-    function section(title) {
+    function section(title, parent = root) {
         const node = element('section');
         node.append(element('h2', title));
-        root.append(node);
+        parent.append(node);
         return node;
     }
 
     function render() {
         const state = { day: s.day, phase: s.phase };
         const start = trace('view-render-start', state);
-        renderView(calculateLayout());
+        renderView();
         trace('view-render-end', { ...state, start });
     }
 
-    function renderView(layoutCalculations) {
+    function renderView() {
+        const sample = stage => sampleResources(stage, {
+            mode: 'text', canvases: root.querySelectorAll('canvas').length, layoutApplications,
+        }, s.day);
         root.replaceChildren();
         if (s.phase === 'finished') {
-            sampleResources('disposed', { mode: 'text', canvases: root.querySelectorAll('canvas').length, layoutCalculations }, s.day);
+            sample('disposed');
             onFinished(s.fame, s.shipped.length);
             return;
         }
-        root.append(element('h1', `${s.day}日目`), element('p',
-            `名声 ${s.fame} / 信用 ${s.credit} / リロール権 ${s.rerolls} / チラシ ${s.flyers}枚（制作 ${s.progress}/2、次回発注 ${s.orderCost}枚）`));
-        if (s.phase === 'awaitingStart' && sampledDay !== s.day) {
-            sampledDay = s.day;
-            sampleResources('day-ready', { mode: 'text', canvases: root.querySelectorAll('canvas').length, layoutCalculations }, s.day);
-        }
         if (s.pending) renderChoice(s.pending);
-        if (s.phase === 'awaitingStart') root.append(button('今日の仕事を始める', () => act('begin-day', () => game.beginDay())));
+        const board = element('div');
+        board.className = 'TextComparisonBoard';
+        const info = section(`${s.day}日目`, board);
+        info.append(element('p',
+            `名声 ${s.fame} / 信用 ${s.credit} / リロール権 ${s.rerolls} / チラシ ${s.flyers}枚（制作 ${s.progress}/2、次回発注 ${s.orderCost}枚）`));
+        if (s.phase === 'awaitingStart') info.append(button('今日の仕事を始める', () => act('begin-day', () => game.beginDay())));
         const canPlay = s.phase === 'play' && !s.pending;
         const selected = new Set();
         const controls = [];
-        const dice = section('画材ダイス');
+        const dice = section('画材ダイス', board);
         for (const die of s.dice) {
             const row = element('div');
             const label = element('label', dieText(die));
@@ -91,8 +95,8 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
             row.append(label);
             dice.append(row);
         }
-        const hand = section(`手札 ${s.hand.length}枚`);
-        const field = section(`制作中 ${s.field.length}枚`);
+        const hand = section(`手札 ${s.hand.length}枚`, board);
+        const field = section(`制作中 ${s.field.length}枚`, board);
         for (const [zone, cards] of [[hand, s.hand], [field, s.field]]) {
             for (const card of cards) {
                 const row = element('div');
@@ -113,12 +117,14 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
                 zone.append(row);
             }
         }
-        const stock = section(`ストック・デッキ ${s.deck.length}枚・捨て札 ${s.discard.length}枚`);
+        const stock = section('ストック', board);
+        const deck = section(`デッキ ${s.deck.length}枚`, board);
+        const discard = section(`捨て札 ${s.discard.length}枚`, board);
         for (const grade of ['A', 'B', 'C']) {
             const id = s.public[grade];
             stock.append(element('p', `${grade}：${s.stocks[grade].length}枚${id ? ' · ' + cardName(id) : ''}`));
         }
-        const shipped = section(`出荷済み ${s.shipped.length}枚`);
+        const shipped = section(`出荷済み ${s.shipped.length}枚`, field);
         for (const card of s.shipped) shipped.append(element('p', cardName(card.id)));
         if (canPlay) {
             const all = button('すべての画材を更新する', () => act('reroll-all', () => game.reroll()));
@@ -128,10 +134,41 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
                 { node: all, enabled: () => s.rerolls > 0 && s.dice.some(die => !die.used) },
                 { node: one, enabled: () => s.rerolls > 0 && selected.size === 1 },
             );
-            root.append(button('今日の仕事を終える', () => act('end-day', () => game.endDay())));
+            info.append(button('今日の仕事を終える', () => act('end-day', () => game.endDay())));
         }
-        root.append(element('p', s.logs.at(-1)));
+        info.append(element('p', s.logs.at(-1)));
+        const panel = button('ストックを開く', () => {
+            panelOpen = !panelOpen;
+            applyLayout();
+        });
+        root.append(board, panel);
+        const areas = { info, play: field, palette: dice, hand, stock, deck, discard };
+        applyLayout();
+        if (s.phase === 'awaitingStart' && sampledDay !== s.day) {
+            sampledDay = s.day;
+            sample('day-ready');
+        }
         updateControls();
+
+        function applyLayout() {
+            const frame = calculateLayout(panelOpen ? 1 : 0);
+            if (!frame) return;
+            const start = trace('layout-apply-start', { mode: frame.mode, panelOpen });
+            board.style.height = `${frame.height}px`;
+            for (const [id, node] of Object.entries(areas)) {
+                const { rect, visible } = frame.areas[id];
+                Object.assign(node.style, {
+                    left: `${rect.x}px`, top: `${rect.y}px`,
+                    width: `${rect.width}px`, height: `${rect.height}px`,
+                });
+                node.hidden = !visible;
+                node.dataset.textArea = id;
+            }
+            panel.hidden = frame.mode === 'A';
+            panel.textContent = panelOpen ? 'ストックを閉じる' : 'ストックを開く';
+            panel.setAttribute('aria-expanded', String(panelOpen));
+            trace('layout-apply-end', { start, count: ++layoutApplications });
+        }
 
         function updateControls() {
             for (const { node, enabled } of controls) node.disabled = !enabled();

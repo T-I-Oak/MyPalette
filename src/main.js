@@ -140,16 +140,12 @@ async function start() {
     startTraceGame();
     trace('game-open', { mode: 'text' });
     gameLayout.hidden = false;
-    let layoutCalculations = 0;
     mountTextComparison(gameLayout, settings, (fame, shipped) => {
         gameLayout.hidden = true;
         resultScore.textContent = `名声 ${fame} / 出荷 ${shipped}枚`;
         result.hidden = false;
         trace('game-finished');
-    }, () => {
-        if (recalculateLayout('game-render')) layoutCalculations++;
-        return layoutCalculations;
-    });
+    }, progress => recalculateLayout('game-render', progress));
 }
 returnButton.addEventListener('click', () => {
     showTitle('result-button');
@@ -160,14 +156,14 @@ showTitle('page-startup');
 // MP28-02: calculate the normal area geometry without mounting its drawing surfaces.
 const layout = new ScreenLayout();
 let pixelRatio = window.devicePixelRatio;
-function recalculateLayout(source) {
+function recalculateLayout(source, progress = 0) {
     const width = root.clientWidth;
     const height = root.getBoundingClientRect().height;
     if (!width || !height) return;
     const start = trace('layout-start', { source, width, height, pixelRatio });
-    const frame = layout.calculate(width, height);
+    const frame = layout.calculate(width, height, progress);
     trace('layout-end', { source, start, mode: frame.mode });
-    return true;
+    return frame;
 }
 function watchResolution() {
     const next = window.devicePixelRatio;
