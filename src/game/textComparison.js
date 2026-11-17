@@ -143,6 +143,20 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
         trace('view-render-end', { ...state, start });
     }
 
+    function stationaryFace(card) {
+        let entry = stationaryCards.get(card.id);
+        if (!entry || entry.step !== card.step) {
+            const component = entry?.component ?? new Card(card.id);
+            if (entry) releasePaintingIcons(component.element);
+            component.setFace(game.definitions[card.id], card.step, card.step, () => {
+                if (component.element.getClientRects().length) component.render({ scale: 1 });
+            });
+            entry = { component, step: card.step };
+            stationaryCards.set(card.id, entry);
+        }
+        return entry.component.element;
+    }
+
     function renderView() {
         const sample = stage => sampleResources(stage, {
             mode: 'text', canvases: root.querySelectorAll('canvas').length, layoutApplications,
@@ -151,7 +165,8 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
             stationaryCards: stationaryCards.size, peakStationaryCanvases,
         }, s.day);
         root.replaceChildren();
-        const visibleIds = new Set(s.phase === 'finished' ? [] : [...s.hand, ...s.field].map(card => card.id));
+        const publicCards = Object.values(s.stocks).map(pile => pile[0]).filter(card => card && s.public[card.id[0]] === card.id);
+        const visibleIds = new Set(s.phase === 'finished' ? [] : [...s.hand, ...s.field, ...s.discard, ...publicCards].map(card => card.id));
         for (const [id, { component }] of stationaryCards) {
             if (visibleIds.has(id)) continue;
             releasePaintingIcons(component.element);
@@ -198,15 +213,7 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
                 row.dataset.cardId = card.id;
                 row.dataset.cardStep = card.step;
                 const step = game.step(card);
-                let entry = stationaryCards.get(card.id);
-                if (!entry || entry.step !== card.step) {
-                    const component = entry?.component ?? new Card(card.id);
-                    if (entry) releasePaintingIcons(component.element);
-                    component.setFace(game.definitions[card.id], card.step, card.step, () => component.render({ scale: 1 }));
-                    entry = { component, step: card.step };
-                    stationaryCards.set(card.id, entry);
-                }
-                row.append(entry.component.element);
+                row.append(stationaryFace(card));
                 if (canPlay && zone === hand && s.hand.length >= 2) {
                     row.append(button('着手', () => act('play', () => game.play(card.id), { id: card.id })));
                 }
@@ -223,8 +230,10 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
         const discard = section(`捨て札 ${s.discard.length}枚`, board);
         for (const grade of ['A', 'B', 'C']) {
             const id = s.public[grade];
-            stock.append(element('p', `${grade}：${s.stocks[grade].length}枚${id ? ' · ' + cardName(id) : ''}`));
+            stock.append(element('p', `${grade}：${s.stocks[grade].length}枚`));
+            if (id) stock.append(stationaryFace(s.stocks[grade][0]));
         }
+        for (const card of s.discard) discard.append(stationaryFace(card));
         const shipped = section(`出荷済み ${s.shipped.length}枚`, field);
         for (const card of s.shipped) {
             const row = element('p');
@@ -251,10 +260,6 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
         root.append(board, panel);
         const areas = { info, play: field, palette: dice, hand, stock, deck, discard };
         applyLayout();
-        for (const { component } of stationaryCards.values()) component.render({ scale: 1 });
-        const stationaryCanvases = hand.querySelectorAll('canvas').length + field.querySelectorAll('canvas').length;
-        peakStationaryCanvases = Math.max(peakStationaryCanvases, stationaryCanvases);
-        trace('stationary-cards-rendered', { cards: stationaryCards.size, canvases: stationaryCanvases });
         if (s.phase === 'awaitingStart' && sampledDay !== s.day) {
             sampledDay = s.day;
             sample('day-ready');
@@ -284,6 +289,13 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
             panel.textContent = panelOpen ? 'ストックを閉じる' : 'ストックを開く';
             panel.setAttribute('aria-expanded', String(panelOpen));
             trace('layout-apply-end', { start, count: ++layoutApplications });
+            let stationaryCanvases = 0;
+            for (const { component } of stationaryCards.values()) {
+                if (component.element.getClientRects().length) component.render({ scale: 1 });
+                stationaryCanvases += component.element.querySelectorAll('canvas').length;
+            }
+            peakStationaryCanvases = Math.max(peakStationaryCanvases, stationaryCanvases);
+            trace('stationary-cards-rendered', { cards: stationaryCards.size, canvases: stationaryCanvases });
         }
 
         function updateControls() {
