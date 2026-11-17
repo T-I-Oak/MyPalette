@@ -7,6 +7,8 @@ import { sampleResources, startTraceAction, trace } from './startupTrace.js';
 import { CanvasArea } from '../ui/screenLayout/CanvasArea.js';
 import { areaDefinitions } from '../ui/screenLayout/ScreenLayout.js';
 import { animateProgress } from './playAnimation.js';
+import { Card } from './Card.js';
+import { releasePaintingIcons } from '../cardIcons.js';
 
 class ComparisonCanvasArea extends CanvasArea {
     draws = 0;
@@ -50,6 +52,7 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
     let panelOpen = false;
     let cardMoves = 0;
     let cardMoveFrames = 0;
+    let cardFaceCanvases = 0;
     const canvasAreas = Object.entries(areaDefinitions).map(([id, definition]) => {
         const canvas = element('canvas');
         canvas.setAttribute('aria-hidden', 'true');
@@ -87,13 +90,20 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
             if (source ? source.area === target.area : target.area !== 'hand') continue;
             const from = source?.rect ?? deck;
             if (!from || !target.rect.width) continue;
-            const marker = element('span', cardName(id));
+            const marker = element('div');
             marker.className = 'TextComparisonMovingCard';
             marker.setAttribute('aria-hidden', 'true');
+            marker.inert = true;
+            const step = target.node.dataset.cardStep;
+            const card = new Card(id);
+            card.setFace(game.definitions[id], Number(step), Number(step), () => {});
+            marker.append(card.element);
             marker.style.left = `${from.left}px`;
             marker.style.top = `${from.top}px`;
             target.node.firstElementChild.style.visibility = 'hidden';
             root.append(marker);
+            card.render({ scale: 1 });
+            cardFaceCanvases += marker.querySelectorAll('canvas').length;
             moves.push({ target, marker, x: target.rect.left - from.left, y: target.rect.top - from.top });
         }
         if (!moves.length) return;
@@ -110,6 +120,7 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
             trace('text-card-move-end', { start, cardMoves, cardMoveFrames });
         } finally {
             for (const { target, marker } of moves) {
+                releasePaintingIcons(marker);
                 marker.remove();
                 target.node.firstElementChild.style.visibility = '';
             }
@@ -135,7 +146,7 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
         const sample = stage => sampleResources(stage, {
             mode: 'text', canvases: root.querySelectorAll('canvas').length, layoutApplications,
             canvasDraws: canvasAreas.reduce((count, area) => count + area.draws, 0),
-            cardMoves, cardMoveFrames,
+            cardMoves, cardMoveFrames, cardFaceCanvases,
         }, s.day);
         root.replaceChildren();
         if (s.phase === 'finished') {
@@ -177,6 +188,7 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
             for (const card of cards) {
                 const row = element('div');
                 row.dataset.cardId = card.id;
+                row.dataset.cardStep = card.step;
                 const step = game.step(card);
                 const goals = goalGroups(step.goals).map(group => group.map(faceText).join(' ＋ ')).join(' または ');
                 row.append(element('strong', `${cardName(card.id)} · Step ${card.step}`), element('p', `目標 ${goals}`));
@@ -204,6 +216,7 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
         for (const card of s.shipped) {
             const row = element('p');
             row.dataset.cardId = card.id;
+            row.dataset.cardStep = card.step;
             row.append(element('strong', cardName(card.id)));
             shipped.append(row);
         }
