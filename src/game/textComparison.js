@@ -10,6 +10,12 @@ import { areaDefinitions } from '../ui/screenLayout/ScreenLayout.js';
 class ComparisonCanvasArea extends CanvasArea {
     draws = 0;
 
+    applyLayout(frame, pixelRatio) {
+        const drawsBefore = this.draws;
+        super.applyLayout(frame, pixelRatio);
+        if (frame.drawable && this.draws === drawsBefore) this.draw();
+    }
+
     draw() {
         super.draw();
         this.draws++;
