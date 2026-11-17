@@ -6,6 +6,7 @@ import { displayLabel } from '../effectCatalog.js';
 import { sampleResources, startTraceAction, trace } from './startupTrace.js';
 import { CanvasArea } from '../ui/screenLayout/CanvasArea.js';
 import { areaDefinitions } from '../ui/screenLayout/ScreenLayout.js';
+import { animateProgress } from './playAnimation.js';
 
 class ComparisonCanvasArea extends CanvasArea {
     draws = 0;
@@ -47,6 +48,8 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
     let sampledDay = 0;
     let layoutApplications = 0;
     let panelOpen = false;
+    let cardMoves = 0;
+    let cardMoveFrames = 0;
     const canvasAreas = Object.entries(areaDefinitions).map(([id, definition]) => {
         const canvas = element('canvas');
         canvas.setAttribute('aria-hidden', 'true');
@@ -55,7 +58,17 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
     const cardName = id => `${id} ${game.definitions[id].name}`;
     const dieText = die => `${die.id} ${faceText(currentFace(die))}${die.used ? '（消費済み）' : ''}`;
 
-    function act(kind, change, detail = {}) {
+    function cardPositions() {
+        return new Map([...root.querySelectorAll('[data-card-id]')].map(node => [
+            node.dataset.cardId,
+            { node, area: node.closest('[data-text-area]').dataset.textArea, rect: node.getBoundingClientRect() },
+        ]));
+    }
+
+    async function act(kind, change, detail = {}) {
+        const animate = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const before = animate ? cardPositions() : null;
+        const deck = animate ? root.querySelector('[data-text-area="deck"]:not([hidden]), [aria-expanded="false"]:not([hidden])')?.getBoundingClientRect() : null;
         startTraceAction();
         const firstLog = s.logs.length;
         trace('action-start', { kind, day: s.day, phase: s.phase, ...detail });
@@ -64,6 +77,44 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
         trace('action', { kind, day: s.day, phase: s.phase, ...detail, logs: s.logs.slice(firstLog) });
         s.effectNotices.length = 0;
         render();
+        if (animate) await moveCards(before, deck);
+    }
+
+    async function moveCards(before, deck) {
+        const moves = [];
+        for (const [id, target] of cardPositions()) {
+            const source = before.get(id);
+            if (source ? source.area === target.area : target.area !== 'hand') continue;
+            const from = source?.rect ?? deck;
+            if (!from || !target.rect.width) continue;
+            const marker = element('span', cardName(id));
+            marker.className = 'TextComparisonMovingCard';
+            marker.setAttribute('aria-hidden', 'true');
+            marker.style.left = `${from.left}px`;
+            marker.style.top = `${from.top}px`;
+            target.node.firstElementChild.style.visibility = 'hidden';
+            root.append(marker);
+            moves.push({ target, marker, x: target.rect.left - from.left, y: target.rect.top - from.top });
+        }
+        if (!moves.length) return;
+        root.inert = true;
+        const start = trace('text-card-move-start', { cards: moves.length });
+        try {
+            await animateProgress(420, progress => {
+                for (const { marker, x, y } of moves) {
+                    marker.style.transform = `translate(${x * progress}px, ${y * progress}px)`;
+                }
+                cardMoveFrames++;
+            }, new AbortController().signal, 'text-card-move');
+            cardMoves++;
+            trace('text-card-move-end', { start, cardMoves, cardMoveFrames });
+        } finally {
+            for (const { target, marker } of moves) {
+                marker.remove();
+                target.node.firstElementChild.style.visibility = '';
+            }
+            root.inert = false;
+        }
     }
 
     function section(title, parent = root) {
@@ -84,6 +135,7 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
         const sample = stage => sampleResources(stage, {
             mode: 'text', canvases: root.querySelectorAll('canvas').length, layoutApplications,
             canvasDraws: canvasAreas.reduce((count, area) => count + area.draws, 0),
+            cardMoves, cardMoveFrames,
         }, s.day);
         root.replaceChildren();
         if (s.phase === 'finished') {
@@ -149,7 +201,12 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
             stock.append(element('p', `${grade}：${s.stocks[grade].length}枚${id ? ' · ' + cardName(id) : ''}`));
         }
         const shipped = section(`出荷済み ${s.shipped.length}枚`, field);
-        for (const card of s.shipped) shipped.append(element('p', cardName(card.id)));
+        for (const card of s.shipped) {
+            const row = element('p');
+            row.dataset.cardId = card.id;
+            row.append(element('strong', cardName(card.id)));
+            shipped.append(row);
+        }
         if (canPlay) {
             const all = button('すべての画材を更新する', () => act('reroll-all', () => game.reroll()));
             const one = button('1つの画材を更新する', () => act('reroll-one', () => game.reroll([...selected][0])));
