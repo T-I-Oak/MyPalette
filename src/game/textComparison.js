@@ -1,7 +1,6 @@
 import { createGameSession } from './session.js';
 import { currentFace } from './dice.js';
 import { satisfiesSelection } from './goals.js';
-import { goalGroups } from '../goalGroups.js';
 import { displayLabel } from '../effectCatalog.js';
 import { sampleResources, startTraceAction, trace } from './startupTrace.js';
 import { CanvasArea } from '../ui/screenLayout/CanvasArea.js';
@@ -53,6 +52,8 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
     let cardMoves = 0;
     let cardMoveFrames = 0;
     let cardFaceCanvases = 0;
+    let peakStationaryCanvases = 0;
+    const stationaryCards = new Map();
     const canvasAreas = Object.entries(areaDefinitions).map(([id, definition]) => {
         const canvas = element('canvas');
         canvas.setAttribute('aria-hidden', 'true');
@@ -62,7 +63,7 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
     const dieText = die => `${die.id} ${faceText(currentFace(die))}${die.used ? '（消費済み）' : ''}`;
 
     function cardPositions() {
-        return new Map([...root.querySelectorAll('[data-card-id]')].map(node => [
+        return new Map([...root.querySelectorAll('[data-card-step]')].map(node => [
             node.dataset.cardId,
             { node, area: node.closest('[data-text-area]').dataset.textArea, rect: node.getBoundingClientRect() },
         ]));
@@ -147,8 +148,15 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
             mode: 'text', canvases: root.querySelectorAll('canvas').length, layoutApplications,
             canvasDraws: canvasAreas.reduce((count, area) => count + area.draws, 0),
             cardMoves, cardMoveFrames, cardFaceCanvases,
+            stationaryCards: stationaryCards.size, peakStationaryCanvases,
         }, s.day);
         root.replaceChildren();
+        const visibleIds = new Set(s.phase === 'finished' ? [] : [...s.hand, ...s.field].map(card => card.id));
+        for (const [id, { component }] of stationaryCards) {
+            if (visibleIds.has(id)) continue;
+            releasePaintingIcons(component.element);
+            stationaryCards.delete(id);
+        }
         if (s.phase === 'finished') {
             sample('disposed');
             onFinished(s.fame, s.shipped.length);
@@ -190,10 +198,15 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
                 row.dataset.cardId = card.id;
                 row.dataset.cardStep = card.step;
                 const step = game.step(card);
-                const goals = goalGroups(step.goals).map(group => group.map(faceText).join(' ＋ ')).join(' または ');
-                row.append(element('strong', `${cardName(card.id)} · Step ${card.step}`), element('p', `目標 ${goals}`));
-                if (step.playEffects.length) row.append(element('p', `着手時 ${step.playEffects.map(effect => game.effectLabel(effect)).join('、')}`));
-                if (step.achievementEffects.length) row.append(element('p', `達成時 ${step.achievementEffects.map(effect => game.effectLabel(effect)).join('、')}`));
+                let entry = stationaryCards.get(card.id);
+                if (!entry || entry.step !== card.step) {
+                    const component = entry?.component ?? new Card(card.id);
+                    if (entry) releasePaintingIcons(component.element);
+                    component.setFace(game.definitions[card.id], card.step, card.step, () => component.render({ scale: 1 }));
+                    entry = { component, step: card.step };
+                    stationaryCards.set(card.id, entry);
+                }
+                row.append(entry.component.element);
                 if (canPlay && zone === hand && s.hand.length >= 2) {
                     row.append(button('着手', () => act('play', () => game.play(card.id), { id: card.id })));
                 }
@@ -238,6 +251,10 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
         root.append(board, panel);
         const areas = { info, play: field, palette: dice, hand, stock, deck, discard };
         applyLayout();
+        for (const { component } of stationaryCards.values()) component.render({ scale: 1 });
+        const stationaryCanvases = hand.querySelectorAll('canvas').length + field.querySelectorAll('canvas').length;
+        peakStationaryCanvases = Math.max(peakStationaryCanvases, stationaryCanvases);
+        trace('stationary-cards-rendered', { cards: stationaryCards.size, canvases: stationaryCanvases });
         if (s.phase === 'awaitingStart' && sampledDay !== s.day) {
             sampledDay = s.day;
             sample('day-ready');
