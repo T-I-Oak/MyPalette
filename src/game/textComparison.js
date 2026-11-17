@@ -4,6 +4,17 @@ import { satisfiesSelection } from './goals.js';
 import { goalGroups } from '../goalGroups.js';
 import { displayLabel } from '../effectCatalog.js';
 import { sampleResources, startTraceAction, trace } from './startupTrace.js';
+import { CanvasArea } from '../ui/screenLayout/CanvasArea.js';
+import { areaDefinitions } from '../ui/screenLayout/ScreenLayout.js';
+
+class ComparisonCanvasArea extends CanvasArea {
+    draws = 0;
+
+    draw() {
+        super.draw();
+        this.draws++;
+    }
+}
 
 function element(tag, text = '') {
     const node = document.createElement(tag);
@@ -30,6 +41,11 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
     let sampledDay = 0;
     let layoutApplications = 0;
     let panelOpen = false;
+    const canvasAreas = Object.entries(areaDefinitions).map(([id, definition]) => {
+        const canvas = element('canvas');
+        canvas.setAttribute('aria-hidden', 'true');
+        return new ComparisonCanvasArea(id, null, definition, canvas);
+    });
     const cardName = id => `${id} ${game.definitions[id].name}`;
     const dieText = die => `${die.id} ${faceText(currentFace(die))}${die.used ? '（消費済み）' : ''}`;
 
@@ -61,6 +77,7 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
     function renderView() {
         const sample = stage => sampleResources(stage, {
             mode: 'text', canvases: root.querySelectorAll('canvas').length, layoutApplications,
+            canvasDraws: canvasAreas.reduce((count, area) => count + area.draws, 0),
         }, s.day);
         root.replaceChildren();
         if (s.phase === 'finished') {
@@ -71,6 +88,7 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
         if (s.pending) renderChoice(s.pending);
         const board = element('div');
         board.className = 'TextComparisonBoard';
+        board.append(...canvasAreas.map(area => area.canvas));
         const info = section(`${s.day}日目`, board);
         info.append(element('p',
             `名声 ${s.fame} / 信用 ${s.credit} / リロール権 ${s.rerolls} / チラシ ${s.flyers}枚（制作 ${s.progress}/2、次回発注 ${s.orderCost}枚）`));
@@ -164,6 +182,11 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
                 node.hidden = !visible;
                 node.dataset.textArea = id;
             }
+            const canvasStart = trace('canvas-layout-start', { mode: frame.mode });
+            for (const area of canvasAreas) area.applyLayout(frame.areas[area.id], window.devicePixelRatio);
+            trace('canvas-layout-end', {
+                start: canvasStart, draws: canvasAreas.reduce((count, area) => count + area.draws, 0),
+            });
             panel.hidden = frame.mode === 'A';
             panel.textContent = panelOpen ? 'ストックを閉じる' : 'ストックを開く';
             panel.setAttribute('aria-expanded', String(panelOpen));
