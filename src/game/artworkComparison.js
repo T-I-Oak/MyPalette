@@ -1,2 +1,2 @@
 // Device comparison MP28-02.
-export const omitArtworkImages = true;
+export const omitArtworkImages = false;
