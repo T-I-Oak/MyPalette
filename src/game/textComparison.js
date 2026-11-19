@@ -8,6 +8,8 @@ import { areaDefinitions } from '../ui/screenLayout/ScreenLayout.js';
 import { animateProgress } from './playAnimation.js';
 import { Card } from './Card.js';
 import { releasePaintingIcons } from '../cardIcons.js';
+import { paintingPreview } from './easel/paintingPreview.js';
+import { diagonalReveal } from './achievementMotion.js';
 
 class ComparisonCanvasArea extends CanvasArea {
     draws = 0;
@@ -53,6 +55,8 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
     let cardMoveFrames = 0;
     let cardFaceCanvases = 0;
     let peakStationaryCanvases = 0;
+    let paintingRepaints = 0;
+    let paintingFrames = 0;
     const stationaryCards = new Map();
     const canvasAreas = Object.entries(areaDefinitions).map(([id, definition]) => {
         const canvas = element('canvas');
@@ -76,12 +80,54 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
         startTraceAction();
         const firstLog = s.logs.length;
         trace('action-start', { kind, day: s.day, phase: s.phase, ...detail });
+        if (animate && kind === 'achieve') await repaintAchievement(detail.id);
         session.dispatch(change);
         if (s.phase === 'betweenDays') session.dispatch(() => game.nextDay());
         trace('action', { kind, day: s.day, phase: s.phase, ...detail, logs: s.logs.slice(firstLog) });
         s.effectNotices.length = 0;
         render();
         if (animate) await moveCards(before, deck);
+    }
+
+    async function repaintAchievement(id) {
+        const card = s.field.find(item => item.id === id);
+        const artwork = stationaryCards.get(id).component.element.querySelector('.PaintingArtwork');
+        root.inert = true;
+        let canvas;
+        const start = trace('painting-repaint-start', { id, step: card.step });
+        try {
+            const [before, after] = await Promise.all([
+                paintingPreview(id, card.step), paintingPreview(id, card.step + 1),
+            ]);
+            trace('painting-repaint-decoded', { start, width: after.width, height: after.height });
+            canvas = element('canvas');
+            canvas.className = 'PaintingImage';
+            canvas.style.maskImage = 'none';
+            canvas.width = after.width;
+            canvas.height = after.height;
+            const context = canvas.getContext('2d');
+            artwork.append(canvas);
+            await animateProgress(1600, progress => {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(before, 0, 0, canvas.width, canvas.height);
+                context.save();
+                context.beginPath();
+                diagonalReveal(progress).forEach(([x, y], index) => {
+                    if (index) context.lineTo(x * canvas.width, y * canvas.height);
+                    else context.moveTo(x * canvas.width, y * canvas.height);
+                });
+                context.closePath();
+                context.clip();
+                context.drawImage(after, 0, 0, canvas.width, canvas.height);
+                context.restore();
+                paintingFrames++;
+            }, new AbortController().signal, 'achievement-repaint');
+            paintingRepaints++;
+            trace('painting-repaint-end', { start, paintingRepaints, paintingFrames });
+        } finally {
+            canvas?.remove();
+            root.inert = false;
+        }
     }
 
     async function moveCards(before, deck) {
@@ -163,6 +209,7 @@ export function mountTextComparison(root, settings, onFinished, calculateLayout)
             canvasDraws: canvasAreas.reduce((count, area) => count + area.draws, 0),
             cardMoves, cardMoveFrames, cardFaceCanvases,
             stationaryCards: stationaryCards.size, peakStationaryCanvases,
+            paintingRepaints, paintingFrames,
         }, s.day);
         root.replaceChildren();
         const publicCards = Object.values(s.stocks).map(pile => pile[0]).filter(card => card && s.public[card.id[0]] === card.id);
