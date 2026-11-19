@@ -1,0 +1,18 @@
+.SceneComparisonControls {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    z-index: 30000;
+    box-sizing: border-box;
+    width: min(34rem, 48vw);
+    max-height: 45dvh;
+    overflow: auto;
+    padding: 16px;
+    color: #222;
+    background: #fff8e8;
+    line-height: 1.5;
+}
+.SceneComparisonControls section { margin: 16px 0; }
+.SceneComparisonControls button { margin: 4px; padding: 8px 16px; }
+.SceneComparisonControls p { margin: 4px 0; }
+.SceneComparisonControls[inert] { opacity: .65; }

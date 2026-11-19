@@ -154,7 +154,7 @@ export function createCardScene(screen, play) {
         },
         async move(state, duration, owner, options = {}) {
             const action = currentTraceAction();
-            const move = trace('card-move-prepare', { stage: owner, duration, comparisonDuration: 0 }, action);
+            const move = trace('card-move-prepare', { stage: owner, duration }, action);
             const recordFrame = (event, data) => traceCardFrame(event, { move, stage: owner, ...data }, action);
             const signal = controller.signal, activeModel = model;
             const shipment = options.shipment;
@@ -183,7 +183,7 @@ export function createCardScene(screen, play) {
                     draw();
                     play.releaseCanvas(shipment.id);
                 }
-                const complete = await animateProgress(0, (progress, frame) => {
+                const complete = await animateProgress(duration, (progress, frame) => {
                     play.sample(progress);
                     activeModel.sample(options.progressFor ? id => options.progressFor(id, progress) : options.ease ? options.ease(progress) : progress);
                     if (shipment) activeShipment.progress = options.ease?.(progress) ?? progress;
