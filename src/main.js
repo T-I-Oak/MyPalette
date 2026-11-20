@@ -7,7 +7,7 @@ import { loadResultGraphics } from './dice/resultGraphics.js';
 import { gameIssues } from './game/engine.js';
 import { mountGame } from './game/view.js';
 import { createLayoutPresentation } from './game/layoutPresentation.js';
-import { sampleResources, setTraceVersion, startTraceGame, trace, traceText } from './game/startupTrace.js';
+import { sampleResources, startTraceGame, trace, traceText } from './game/startupTrace.js';
 import './ui/theme.css';
 import './ui/layout.css';
 import './ui/textures.css';
@@ -15,7 +15,6 @@ import './ui/states.css';
 import './ui/screenLayout/layout.css';
 
 const version = initializeAppVersion(__APP_VERSION__);
-setTraceVersion(version);
 const pageState = () => ({
     path: location.pathname,
     hash: location.hash,
@@ -23,6 +22,7 @@ const pageState = () => ({
     historyLength: history.length,
 });
 trace('page-open', {
+    version,
     navigation: performance.getEntriesByType('navigation')[0]?.type,
     navigationApi: Boolean(window.navigation),
     ...pageState(),

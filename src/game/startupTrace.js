@@ -9,35 +9,12 @@ let day = 0;
 let storageError = '';
 let sequence = 0;
 let actionId = 0;
-let versions = {};
 try {
     entries = JSON.parse(sessionStorage.getItem(key) ?? '[]');
     samples = JSON.parse(sessionStorage.getItem(key + ':samples') ?? '[]');
     cardFrames = JSON.parse(sessionStorage.getItem(key + ':card-frames') ?? '[]');
-    versions = JSON.parse(sessionStorage.getItem(key + ':versions') ?? '{}');
 } catch (error) {
     storageError = String(error);
-}
-
-export function setTraceVersion(value) {
-    for (const record of [...entries, ...samples, ...cardFrames]) {
-        const version = record.version ?? (record.event === 'page-open' ? record.data?.version : undefined);
-        if (version) versions[record.page] = version;
-    }
-    versions[page] = value;
-    try {
-        sessionStorage.setItem(key + ':versions', JSON.stringify(versions));
-    } catch (error) {
-        storageError = String(error);
-    }
-}
-
-function exportRecord({ version, ...record }) {
-    if (record.event === 'page-open' && record.data?.version) {
-        const { version: startupVersion, ...data } = record.data;
-        return { ...record, data };
-    }
-    return record;
 }
 
 export function trace(event, data, action = actionId) {
@@ -66,14 +43,7 @@ export function traceCardFrame(event, data, action) {
 }
 
 export function traceText() {
-    const pages = new Set([page, ...[...samples, ...entries, ...cardFrames].map(record => record.page)]);
-    const pageVersions = Object.fromEntries([...pages].map(id => [id, versions[id] ?? null]));
-    return JSON.stringify({
-        page, pageVersions, storageError,
-        samples: samples.map(exportRecord),
-        entries: entries.map(exportRecord),
-        cardFrames: cardFrames.map(exportRecord),
-    }, null, 2);
+    return JSON.stringify({ storageError, samples, entries, cardFrames }, null, 2);
 }
 
 export function startTraceGame() {
