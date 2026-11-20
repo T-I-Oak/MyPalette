@@ -18,13 +18,30 @@ export function createSceneComparison(screen) {
     const cards = createCardScene(screen, play);
     play.bindScene(cards);
     cards.inspect(() => {});
-    let preparing = false, draws = 0, moves = 0;
+    let preparing = false, draws = 0, moves = 0, controlsRoot;
+    const labels = [...screen.areas.values()].map(owner => owner.fixedLayer.querySelector('.LayoutAreaName'));
+    for (const id of ['info', 'palette', 'hand']) screen.areas.get(id).fixedLayer.querySelector('.LayoutAreaName').hidden = true;
+    function layoutControls() {
+        if (!controlsRoot) return;
+        for (const node of controlsRoot.querySelectorAll('[data-comparison-area]')) {
+            const owner = screen.areas.get(node.dataset.comparisonArea), frame = owner.layoutFrame;
+            node.hidden = !frame.visible;
+            Object.assign(node.style, { left: `${frame.rect.x}px`, top: `${frame.rect.y}px`,
+                width: `${frame.rect.width / frame.fixedScale}px`, height: `${frame.rect.height / frame.fixedScale}px`,
+                transform: `scale(${frame.fixedScale})` });
+            for (const row of node.querySelectorAll('[data-card-id]')) {
+                const matrix = cards.poseFor(row.dataset.cardId).matrix;
+                row.style.left = `${(matrix[12] + 147 * matrix[0] - frame.rect.x) / frame.fixedScale}px`;
+            }
+        }
+    }
     cards.onDraw(() => { draws++; });
     const unsubscribe = screen.subscribe(() => {
         place();
         if (preparing) return;
         play.update();
         cards.update();
+        layoutControls();
     });
     function field(state) {
         const section = document.createElement('section');
@@ -42,6 +59,13 @@ export function createSceneComparison(screen) {
         return section;
     }
     return {
+        renderControls(root, state) {
+            controlsRoot = root;
+            for (const [id, name] of [['deck', 'デッキ'], ['discard', '捨て札']]) {
+                screen.areas.get(id).fixedLayer.querySelector('.LayoutAreaName').textContent = `${name} ${state[id].length}枚`;
+            }
+            layoutControls();
+        },
         resources: () => ({ mode: 'normal-scene-sync-engine', sceneCards: cards.model?.cards.size ?? 0,
             sceneDraws: draws, sceneMoves: moves, canvases: document.querySelectorAll('canvas').length }),
         initialize(definitions, state) {
@@ -72,6 +96,7 @@ export function createSceneComparison(screen) {
             cards.dispose();
             play.dispose();
             object.area.remove(object);
+            for (const label of labels) label.hidden = false;
         },
     };
 }

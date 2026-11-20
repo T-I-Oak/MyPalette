@@ -142,7 +142,7 @@ async function start() {
     layoutScreen.render();
     const controls = document.createElement('section');
     controls.className = 'SceneComparisonControls';
-    gameLayout.after(controls);
+    gameLayout.append(controls);
     const presentation = createSceneComparison(layoutScreen);
     mountSynchronousComparison(controls, settings, presentation, () => {
         controls.remove();

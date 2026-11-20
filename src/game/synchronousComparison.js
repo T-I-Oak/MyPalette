@@ -1,7 +1,6 @@
 import { createGameSession } from './session.js';
 import { currentFace } from './dice.js';
 import { satisfiesSelection } from './goals.js';
-import { goalGroups } from '../goalGroups.js';
 import { displayLabel } from '../effectCatalog.js';
 import { sampleResources, startTraceAction, trace } from './startupTrace.js';
 
@@ -14,6 +13,8 @@ function element(tag, text = '') {
 function button(text, click) {
     const node = element('button', text);
     node.type = 'button';
+    node.tabIndex = -1;
+    node.className = 'Button texture-raised';
     node.addEventListener('click', click);
     return node;
 }
@@ -50,8 +51,9 @@ export function mountSynchronousComparison(root, settings, presentation, onFinis
         }
     }
 
-    function section(title) {
+    function section(title, area) {
         const node = element('section');
+        if (area) node.dataset.comparisonArea = area;
         node.append(element('h2', title));
         root.append(node);
         return node;
@@ -61,6 +63,7 @@ export function mountSynchronousComparison(root, settings, presentation, onFinis
         const state = { day: s.day, phase: s.phase };
         const start = trace('view-render-start', state);
         renderView();
+        if (s.phase !== 'finished') presentation.renderControls(root, s);
         trace('view-render-end', { ...state, start });
     }
 
@@ -72,21 +75,29 @@ export function mountSynchronousComparison(root, settings, presentation, onFinis
             onFinished(s.fame, s.shipped.length);
             return;
         }
-        root.append(element('h1', `${s.day}日目（比較用操作）`), element('p',
-            `名声 ${s.fame} / 信用 ${s.credit} / リロール権 ${s.rerolls} / チラシ ${s.flyers}枚（制作 ${s.progress}/2、次回発注 ${s.orderCost}枚）`));
+        const info = section(`${s.day}日目`, 'info');
+        info.append(element('p', `名声 ${s.fame}　信用 ${s.credit}　チラシ ${s.flyers}枚`),
+            element('p', `制作 ${s.progress}/2　次回発注 ${s.orderCost}枚　出荷済み ${s.shipped.length}枚`));
         if (s.phase === 'awaitingStart' && sampledDay !== s.day) {
             sampledDay = s.day;
             sampleResources('day-ready', presentation.resources(), s.day);
         }
         if (s.pending) renderChoice(s.pending);
-        if (s.phase === 'awaitingStart') root.append(button('今日の仕事を始める', () => act('begin-day', () => game.beginDay())));
+        const dayActions = section('', 'play');
+        dayActions.classList.add('ComparisonDayActions');
+        if (s.phase === 'awaitingStart') dayActions.append(button('今日の仕事を始める', () => act('begin-day', () => game.beginDay())));
         const canPlay = s.phase === 'play' && !s.pending;
         const selected = new Set();
         const controls = [];
-        const dice = section('画材ダイス');
+        const dice = section(`リロール権 ${s.rerolls}`, 'palette');
+        const faces = element('div');
+        faces.className = 'ComparisonDice';
+        dice.append(faces);
         for (const die of s.dice) {
             const row = element('div');
-            const label = element('label', dieText(die));
+            row.className = 'ComparisonDie';
+            const label = element('label', faceText(currentFace(die)));
+            row.classList.toggle('is-used', die.used);
             if (canPlay && !die.used) {
                 const input = element('input');
                 input.type = 'checkbox';
@@ -98,19 +109,17 @@ export function mountSynchronousComparison(root, settings, presentation, onFinis
                 label.prepend(input);
             }
             row.append(label);
-            dice.append(row);
+            faces.append(row);
         }
-        const hand = section(`手札 ${s.hand.length}枚`);
-        const field = section(`制作中 ${s.field.length}枚`);
+        const hand = section('', 'hand');
+        const field = section('', 'play');
+        hand.classList.add('ComparisonCardActions');
+        field.classList.add('ComparisonCardActions');
         for (const [zone, cards] of [[hand, s.hand], [field, s.field]]) {
             for (const card of cards) {
                 const row = element('div');
                 row.dataset.cardId = card.id;
                 const step = game.step(card);
-                const goals = goalGroups(step.goals).map(group => group.map(faceText).join(' ＋ ')).join(' または ');
-                row.append(element('strong', `${cardName(card.id)} · Step ${card.step}`), element('p', `目標 ${goals}`));
-                if (step.playEffects.length) row.append(element('p', `着手時 ${step.playEffects.map(effect => game.effectLabel(effect)).join('、')}`));
-                if (step.achievementEffects.length) row.append(element('p', `達成時 ${step.achievementEffects.map(effect => game.effectLabel(effect)).join('、')}`));
                 if (canPlay && zone === hand && s.hand.length >= 2) {
                     row.append(button('着手', () => act('play', () => game.play(card.id), { id: card.id })));
                 }
@@ -122,13 +131,6 @@ export function mountSynchronousComparison(root, settings, presentation, onFinis
                 zone.append(row);
             }
         }
-        const stock = section(`ストック・デッキ ${s.deck.length}枚・捨て札 ${s.discard.length}枚`);
-        for (const grade of ['A', 'B', 'C']) {
-            const id = s.public[grade];
-            stock.append(element('p', `${grade}：${s.stocks[grade].length}枚${id ? ' · ' + cardName(id) : ''}`));
-        }
-        const shipped = section(`出荷済み ${s.shipped.length}枚`);
-        for (const card of s.shipped) shipped.append(element('p', cardName(card.id)));
         if (canPlay) {
             const all = button('すべての画材を更新する', () => act('reroll-all', () => game.reroll()));
             const one = button('1つの画材を更新する', () => act('reroll-one', () => game.reroll([...selected][0])));
@@ -137,9 +139,8 @@ export function mountSynchronousComparison(root, settings, presentation, onFinis
                 { node: all, enabled: () => s.rerolls > 0 && s.dice.some(die => !die.used) },
                 { node: one, enabled: () => s.rerolls > 0 && selected.size === 1 },
             );
-            root.append(button('今日の仕事を終える', () => act('end-day', () => game.endDay())));
+            dayActions.append(button('今日の仕事を終える', () => act('end-day', () => game.endDay())));
         }
-        root.append(element('p', s.logs.at(-1)));
         updateControls();
 
         function updateControls() {
@@ -149,6 +150,7 @@ export function mountSynchronousComparison(root, settings, presentation, onFinis
 
     function renderChoice(pending) {
         const group = section(pending.title);
+        group.className = 'ComparisonChoice';
         group.append(element('p', `${pending.min}〜${pending.max}個を選択`));
         const selected = new Set();
         const confirm = button('選択を確定', () => act('choose', () => game.choose([...selected]), { choice: pending.kind }));
