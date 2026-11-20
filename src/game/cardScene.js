@@ -154,7 +154,7 @@ export function createCardScene(screen, play) {
         },
         async move(state, duration, owner, options = {}) {
             const action = currentTraceAction();
-            const move = trace('card-move-prepare', { stage: owner, duration }, action);
+            const move = trace('card-move-prepare', { stage: owner }, action);
             const recordFrame = (event, data) => traceCardFrame(event, { move, stage: owner, ...data }, action);
             const signal = controller.signal, activeModel = model;
             const shipment = options.shipment;

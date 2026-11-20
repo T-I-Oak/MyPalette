@@ -3,9 +3,10 @@ import { createTitleScreen } from './ui/createTitleScreen.js';
 import { titleMenuEntries } from './ui/title/menuEntries.js';
 import { createLayoutScreen } from './ui/screenLayout/createLayoutScreen.js';
 import { loadSettings } from './settingsStorage.js';
+import { loadResultGraphics } from './dice/resultGraphics.js';
 import { gameIssues } from './game/engine.js';
-import { mountSynchronousComparison } from './game/synchronousComparison.js';
-import { createSceneComparison } from './game/sceneComparison.js';
+import { mountGame } from './game/view.js';
+import { createLayoutPresentation } from './game/layoutPresentation.js';
 import { sampleResources, setTraceVersion, startTraceGame, trace, traceText } from './game/startupTrace.js';
 import './ui/theme.css';
 import './ui/layout.css';
@@ -123,10 +124,11 @@ async function start() {
     if (startButton.disabled) return;
     setPreparing(true);
     notice.textContent = 'ゲームの準備をしています…';
-    let settings;
+    let settings, graphics;
     try {
-        const saved = await loadSettings();
+        const [saved, resultGraphics] = await Promise.all([loadSettings(), loadResultGraphics()]);
         settings = saved.document;
+        graphics = resultGraphics;
         const issues = gameIssues(settings);
         if (issues.length) throw new Error(`設定が制作途中のため開始できません。\n${issues.join('\n')}`);
     } catch (error) {
@@ -140,12 +142,13 @@ async function start() {
     trace('game-open');
     gameLayout.hidden = false;
     layoutScreen.render();
-    const controls = document.createElement('section');
-    controls.className = 'SceneComparisonControls';
-    gameLayout.append(controls);
-    const presentation = createSceneComparison(layoutScreen);
-    mountSynchronousComparison(controls, settings, presentation, () => {
-        controls.remove();
+    const presentation = createLayoutPresentation(layoutScreen, graphics);
+    mountGame(root, settings, () => {
+        presentation.dispose();
+        showTitle('game-menu');
+    }, presentation, () => {
+        presentation.dispose();
+        sampleResources('disposed', presentation.resourceCounts());
         gameLayout.hidden = true;
         result.hidden = false;
         trace('game-finished');
