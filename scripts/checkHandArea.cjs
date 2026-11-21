@@ -29,7 +29,7 @@ for (const card of settings.cards) for (const step of card.steps) {
             const screen=createLayoutScreen(root,document.querySelector('button'));
             const presentation=createLayoutPresentation(screen);
             const settings=${JSON.stringify(settings)};
-            window.handCheck={screen,...mountGame(root,settings,()=>{},presentation)};
+            window.handCheck={screen,...mountGame(root,settings,presentation)};
             const game=window.handCheck.session.game,complete=game.completeRoll.bind(game);
             let configured=false;
             game.completeRoll=(...args)=>{complete(...args);if(!configured&&game.state.phase==='play'){

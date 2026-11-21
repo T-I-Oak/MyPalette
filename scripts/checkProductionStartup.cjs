@@ -16,7 +16,7 @@ const waitForRoll=page=>page.waitForFunction(()=>{
 },null,{timeout:60000});
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
  const runs=[];
- for(let i=0;i<3;i++){
+ for(let i=0;i<4;i++){
   const viewport=i===1?{width:390,height:844}:{width:1200,height:900};
   const context=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'reduce'});
   const page=await context.newPage(),errors=[];
@@ -27,12 +27,13 @@ const waitForRoll=page=>page.waitForFunction(()=>{
   assert.equal(await page.getByRole('link',{name:'GameWorks OAK',exact:true}).getAttribute('href'),'https://t-i-oak.github.io/GameWorksOAK/');
   assert.equal(await startDay(page).count(),0);
   const before=await titleGeometry(page);
-  if(i<2){
+  if(i<2 || i===3){
    let release;
    const waiting=new Promise(resolve=>{release=resolve;});
    await page.route('**/data/cards.json',async route=>{
     await waiting;
     if(i===0)await route.fulfill({body:'{}'});
+    else if(i===3){const settings=JSON.parse(fs.readFileSync('public/data/cards.json','utf8'));settings.cards[0].steps[0].goals=[];await route.fulfill({body:JSON.stringify(settings)});}
     else await route.continue();
    },{times:1});
    try {
@@ -44,14 +45,27 @@ const waitForRoll=page=>page.waitForFunction(()=>{
     release();
    }
   }else await startTitle(page).click();
-  if(i===0){
-   const retry=page.getByRole('button',{name:'再読み込み',exact:true});
+  if(i===0 || i===3){
+   const retry=startTitle(page);
+   await page.getByRole('status').filter({hasText:'ゲームを開始できませんでした。'}).waitFor();
    await retry.waitFor();
    assert.match(await page.getByRole('status').textContent(),/ゲームを開始できませんでした。/);
-   assert.deepEqual(await titleGeometry(page),before);
+   assert.match(await page.getByRole('status').textContent(),/「ゲーム開始」を押して、もう一度お試しください。/);
+   assert.ok(await page.getByRole('heading',{name:'My Palette',exact:true}).isVisible());
+   assert.equal(await startDay(page).count(),0);
+   assert.doesNotMatch(await page.getByRole('status').textContent(),/提供元|お知らせください/);
+   assert.doesNotMatch(await page.getByRole('status').textContent(),/cards|配列|ステップ|制作途中/);
+   assert.equal(await page.getByRole('button',{name:'再読み込み',exact:true}).count(),0);
+   const retryGeometry=await titleGeometry(page);
+   assert.deepEqual(retryGeometry,before);
+   assert.equal(retryGeometry[1].width / retryGeometry[1].height > 1, true);
+   assert.ok(await page.locator('.TitlePlaque').evaluate(node=>node.scrollWidth<=node.clientWidth), 'retry label must fit its plaque');
+   assert.ok(retryGeometry.every(rect=>rect.left>=0&&rect.top>=0&&rect.right<=viewport.width&&rect.bottom<=viewport.height), 'retry button must remain within viewport');
    await retry.click();
   }
   const start=startDay(page);await start.waitFor();
+  assert.equal(await page.locator('.StartIssues').count(),0);
+  assert.equal(await page.getByRole('button',{name:'入口へ戻る',exact:true}).count(),0);
   assert.equal(await page.locator('.LayoutScreen').getAttribute('data-layout'),i===1?'B':'A');
   await page.waitForFunction(()=>document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
   const readyMs=await page.evaluate(()=>performance.now());

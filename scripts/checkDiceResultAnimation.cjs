@@ -26,7 +26,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             DiceScene.prototype.frame=function(now){window.scene=this;original.call(this,now);};
             const root=document.querySelector('main');
             window.screenCheck=createLayoutScreen(root,document.querySelector('button'));
-            window.gameCheck=mountGame(root,${JSON.stringify(settings)},()=>{},createLayoutPresentation(window.screenCheck));
+            window.gameCheck=mountGame(root,${JSON.stringify(settings)},createLayoutPresentation(window.screenCheck));
             window.starts=new Map();
             document.addEventListener('animationstart',e=>{
                 if(e.animationName==='dice-emerge')window.starts.set(e.target,(window.starts.get(e.target)||0)+1);

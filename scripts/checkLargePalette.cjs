@@ -15,7 +15,7 @@ const base=process.argv[2]||'http://127.0.0.1:3013/MyPalette/';
   import {createLayoutScreen} from './src/ui/screenLayout/createLayoutScreen.js';import {createLayoutPresentation} from './src/game/layoutPresentation.js';import {mountGame} from './src/game/view.js';
   import './src/ui/theme.css';import './src/ui/layout.css';import './src/ui/textures.css';import './src/ui/states.css';import './src/ui/screenLayout/layout.css';
   const root=document.querySelector('main');window.largeScreen=createLayoutScreen(root,document.querySelector('button'));
-  window.largeCheck=mountGame(root,${JSON.stringify(settings)},()=>{},createLayoutPresentation(window.largeScreen));
+  window.largeCheck=mountGame(root,${JSON.stringify(settings)},createLayoutPresentation(window.largeScreen));
   </script>`}));
   await page.goto(base);await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
   await page.evaluate(async()=>{const url=performance.getEntriesByType('resource').find(e=>new URL(e.name).pathname.endsWith('/dice/DiceScene.js')).name;const {DiceScene}=await import(url),project=DiceScene.prototype.project;DiceScene.prototype.project=function(...args){window.largeScene=this;return project.apply(this,args);};});

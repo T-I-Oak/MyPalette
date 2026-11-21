@@ -18,11 +18,10 @@ const root = document.querySelector('#layout-screen');
 export const layoutScreen = createLayoutScreen(root, document.querySelector('#panel-toggle'));
 const gameLayout = root.querySelector('.LayoutContent');
 const { screen: title, notice, setMenuItems } = createTitleScreen(version);
-const startLabel = titleMenuEntries[0].label;
 const menuActions = { start };
 const menuItems = setMenuItems(titleMenuEntries.filter(entry => entry.unlocked)
     .map(entry => ({ ...entry, onSelect: menuActions[entry.id] })));
-const [{ button: startButton, plaque: startPlaque }] = menuItems;
+const [{ button: startButton }] = menuItems;
 
 function setPreparing(preparing) {
     for (const { button } of menuItems) button.disabled = preparing;
@@ -45,7 +44,6 @@ function showTitle() {
     result.hidden = true;
     title.hidden = false;
     notice.textContent = '';
-    startPlaque.textContent = startLabel;
     setPreparing(false);
 }
 
@@ -60,9 +58,8 @@ async function start() {
         graphics = resultGraphics;
         const issues = gameIssues(settings);
         if (issues.length) throw new Error(`設定が制作途中のため開始できません。\n${issues.join('\n')}`);
-    } catch (error) {
-        notice.textContent = `ゲームを開始できませんでした。\n${error.message}`;
-        startPlaque.textContent = '再読み込み';
+    } catch {
+        notice.textContent = 'ゲームを開始できませんでした。\n「ゲーム開始」を押して、もう一度お試しください。';
         setPreparing(false);
         return;
     }
@@ -70,10 +67,7 @@ async function start() {
     gameLayout.hidden = false;
     layoutScreen.render();
     const presentation = createLayoutPresentation(layoutScreen, graphics);
-    mountGame(root, settings, () => {
-        presentation.dispose();
-        showTitle();
-    }, presentation, () => {
+    mountGame(root, settings, presentation, () => {
         presentation.dispose();
         gameLayout.hidden = true;
         result.hidden = false;

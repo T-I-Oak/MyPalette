@@ -16,7 +16,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  import './src/ui/theme.css';import './src/ui/layout.css';import './src/ui/textures.css';import './src/ui/states.css';import './src/ui/screenLayout/layout.css';
  Math.random=()=>.4;
  const root=document.querySelector('main'),screen=createLayoutScreen(root,document.querySelector('button'));
- const presentation=createLayoutPresentation(screen);const mounted=mountGame(root,${JSON.stringify(settings)},()=>{},presentation);window.check={screen,mounted,presentation,settings:${JSON.stringify(settings)}};
+ const presentation=createLayoutPresentation(screen);const mounted=mountGame(root,${JSON.stringify(settings)},presentation);window.check={screen,mounted,presentation,settings:${JSON.stringify(settings)}};
  window.cardSceneFailures=[];window.easelIdentities=new Map();
  window.originalCards=new Map([...document.querySelectorAll('[data-scene-card]')].map(n=>[n.dataset.sceneCard,n]));
  function observe(){

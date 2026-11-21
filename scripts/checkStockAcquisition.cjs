@@ -24,7 +24,7 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
             const screen=createLayoutScreen(root,document.querySelector('button'));
             const presentation=createLayoutPresentation(screen);
             const settings=${JSON.stringify(settings)};
-            const mounted=mountGame(root,settings,()=>{},presentation);
+            const mounted=mountGame(root,settings,presentation);
             window.stockCheck={screen,presentation,mounted,root,settings};
             </script>` }));
         await page.goto(base);

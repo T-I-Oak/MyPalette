@@ -16,7 +16,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  import './src/ui/theme.css';import './src/ui/layout.css';import './src/ui/textures.css';import './src/ui/states.css';import './src/ui/screenLayout/layout.css';
  Math.random=()=>.4;
  const root=document.querySelector('main'),screen=createLayoutScreen(root,document.querySelector('button'));
- const presentation=createLayoutPresentation(screen);const mounted=mountGame(root,${JSON.stringify(settings)},()=>{},presentation);window.check={screen,mounted,presentation,settings:${JSON.stringify(settings)}};
+ const presentation=createLayoutPresentation(screen);const mounted=mountGame(root,${JSON.stringify(settings)},presentation);window.check={screen,mounted,presentation,settings:${JSON.stringify(settings)}};
  window.frames=[];window.cardSceneFailures=[];window.easelIdentities=new Map();
  const finish=presentation.play.finish.bind(presentation.play);
  presentation.play.finish=()=>{
@@ -153,7 +153,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  await page.evaluate(()=>check.mounted.dispose());await page.waitForTimeout(100);
  assert.equal(await page.locator('[data-scene-card]').count(),0);
  await page.emulateMedia({reducedMotion:'reduce'});
- await page.evaluate(async()=>{const {mountGame}=await import('./src/game/view.js');check.mounted=mountGame(document.querySelector('main'),check.settings,()=>{},check.presentation);});
+ await page.evaluate(async()=>{const {mountGame}=await import('./src/game/view.js');check.mounted=mountGame(document.querySelector('main'),check.settings,check.presentation);});
  assert.equal(await page.locator('[data-scene-card]').count(),45);
  await page.locator('#panel-toggle').click();
  assert.equal(await page.locator('.LayoutCorkBoard').isVisible(),false);
