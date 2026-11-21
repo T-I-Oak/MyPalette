@@ -10,7 +10,7 @@ import { createInfoPresentation } from './infoPresentation.js';
 import { createFlyerMotion } from './flyerMotion.js';
 import './layoutGame.css';
 
-export function createLayoutPresentation(screen) {
+export function createLayoutPresentation(screen, resultGraphics) {
     const hosts = new Map();
     for (const [id, area] of screen.areas) {
         const host = document.createElement('div'); host.className = 'GameAreaHost'; host.dataset.gameArea = id;
@@ -21,7 +21,7 @@ export function createLayoutPresentation(screen) {
     }
     const hand = createHandPresentation(screen.areas.get('hand'), hosts.get('hand').host);
     const stock = createStockPresentation(screen.areas.get('stock'), hosts.get('stock').host);
-    const palette = createPalettePresentation(screen.areas.get('palette'), hosts.get('palette').host, () => screen.render());
+    const palette = createPalettePresentation(screen.areas.get('palette'), hosts.get('palette').host, () => screen.render(), resultGraphics);
     const play = createPlayPresentation(screen.areas.get('play'), hosts.get('play').host, () => screen.render());
     const infoArea = screen.areas.get('info');
     const info = createInfoPresentation(infoArea, hosts.get('info').host);

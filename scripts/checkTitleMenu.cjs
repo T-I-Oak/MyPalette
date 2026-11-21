@@ -54,13 +54,16 @@ async function checkLayout(page, count, [width, height]) {
             body: `<!doctype html><html lang="ja" style="height:100%"><meta name="viewport" content="width=device-width">
                 <body style="margin:0;height:100%"><script type="module">
                 import { createTitleScreen } from './src/ui/createTitleScreen.js';
-                import painting from './src/ui/title/start-painting.webp';
-                const labels = ['ゲーム開始', '記録', 'ギャラリー'];
+                import { titleMenuEntries } from './src/ui/title/menuEntries.js';
+                import './src/ui/theme.css';
+                import './src/ui/layout.css';
+                import './src/ui/textures.css';
+                import './src/ui/states.css';
                 const select = label => () => { document.body.dataset.selection = label; };
                 const title = createTitleScreen('0.26.0', { onSettings: select('設定') });
                 document.body.append(title.screen);
-                window.showItems = count => title.setMenuItems(labels.slice(0, count).map(label => ({
-                    label, artwork: painting, onSelect: select(label),
+                window.showItems = count => title.setMenuItems(titleMenuEntries.slice(0, count).map(entry => ({
+                    ...entry, onSelect: select(entry.label),
                 })));
                 </script></body></html>`,
         }));
