@@ -9,7 +9,7 @@ import '../dice/layout.css';
 import '../dice/states.css';
 import './palette.css';
 
-export function createPalettePresentation(area, host, relayout) {
+export function createPalettePresentation(area, host, relayout, resultGraphics) {
     host.classList.add('PaletteArea');
     area.bottomRightOffset = { x: 0, y: 40 };
     const controls = document.createElement('div');
@@ -33,8 +33,10 @@ export function createPalettePresentation(area, host, relayout) {
     let rollScheduled = false, failedRequest = null;
     const held = new Set();
     const creditMaterials = new Set();
-    const notice = document.createElement('div'); notice.className = 'PaletteNotice';
-    notice.setAttribute('role', 'status');
+    const notice = document.createElement('div'); notice.className = 'PaletteNotice Surface texture-floating';
+    const noticeText = document.createElement('div');
+    noticeText.setAttribute('role', 'status');
+    notice.append(noticeText);
     const retry = document.createElement('button'); retry.tabIndex = -1; retry.type = 'button';
     retry.className = 'Button texture-raised'; retry.textContent = '再読み込み';
     retry.addEventListener('click', initialize);
@@ -81,7 +83,7 @@ export function createPalettePresentation(area, host, relayout) {
             callbacks.completeRoll(id, results);
         } catch (error) {
             if (disposed || token !== generation) return;
-            notice.textContent = `ロールを完了できませんでした。${error.message}`;
+            noticeText.textContent = `ロールを完了できませんでした。${error.message}`;
             viewport.append(notice);
             failedRequest = id;
             callbacks.failRoll(id);
@@ -92,10 +94,14 @@ export function createPalettePresentation(area, host, relayout) {
         started = true;
         const token = ++generation;
         scene?.dispose(); scene = null; group = null;
-        notice.textContent = '画材を読み込んでいます…'; viewport.replaceChildren(notice);
+        retry.remove();
+        if (!resultGraphics) {
+            noticeText.textContent = '画材を読み込んでいます…';
+            viewport.replaceChildren(notice);
+        }
         let graphics, pendingGroup;
         try {
-            graphics = await loadResultGraphics();
+            graphics = resultGraphics ?? await loadResultGraphics();
             if (disposed || token !== generation) { graphics.dispose(); return; }
             pendingGroup = new DiceGroup();
             const next = new DiceScene(viewport, pendingGroup, graphics, updateActions, {
@@ -118,8 +124,9 @@ export function createPalettePresentation(area, host, relayout) {
         } catch (error) {
             pendingGroup?.dispose(); graphics?.dispose();
             if (disposed || token !== generation) return;
-            notice.textContent = `画材を表示できませんでした。${error.message}`;
-            viewport.replaceChildren(notice, retry);
+            noticeText.textContent = `画材を表示できませんでした。${error.message}`;
+            notice.append(retry);
+            viewport.replaceChildren(notice);
         }
     }
     function update() {

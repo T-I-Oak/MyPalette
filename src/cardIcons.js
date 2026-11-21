@@ -73,7 +73,7 @@ function icon(value, description, render, edit, plan, withTooltip = true) {
             target.replaceChildren(canvas);
         });
         node.append(frame);
-        paintingObserver?.observe(frame, { box: 'device-pixel-content-box' });
+        paintingObserver?.observe(frame);
     } else queueMicrotask(() => {
         const canvas = render(value, 96); canvas.setAttribute('aria-hidden', 'true'); node.append(canvas);
     });

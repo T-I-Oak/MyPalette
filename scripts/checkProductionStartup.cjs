@@ -37,7 +37,7 @@ const waitForRoll=page=>page.waitForFunction(()=>{
    },{times:1});
    try {
     await startTitle(page).click();
-    await page.getByText('ゲーム設定を読み込んでいます…',{exact:true}).waitFor();
+    await page.getByText('ゲームの準備をしています…',{exact:true}).waitFor();
     assert.ok(await startTitle(page).isDisabled());
     assert.deepEqual(await titleGeometry(page),before);
    } finally {
@@ -47,7 +47,7 @@ const waitForRoll=page=>page.waitForFunction(()=>{
   if(i===0){
    const retry=page.getByRole('button',{name:'再読み込み',exact:true});
    await retry.waitFor();
-   assert.match(await page.getByRole('status').textContent(),/ゲーム設定を開けませんでした。/);
+   assert.match(await page.getByRole('status').textContent(),/ゲームを開始できませんでした。/);
    assert.deepEqual(await titleGeometry(page),before);
    await retry.click();
   }
