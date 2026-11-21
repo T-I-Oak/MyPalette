@@ -1,6 +1,5 @@
 import { Quaternion } from 'cannon-es';
-import { READY_HEIGHT } from './readyHeight.js';
-export { READY_HEIGHT };
+export const READY_HEIGHT = 4.5;
 export const RETURN_DURATION = .3;
 export const LIFT_DURATION = .5;
 export function advanceReadyPose(die, delta) {

@@ -105,16 +105,9 @@ function canvasFor(plan,height){
     if(!Number.isSafeInteger(height)||height<16||height>2048)throw new Error('Icon height must be 16–2048 pixels');
     const width=planWidth(plan);const canvas=document.createElement('canvas');
     canvas.height=height;canvas.width=Math.ceil((width+12)*height/112);
-    drawIconPlan(canvas.getContext('2d'), plan, 0, 0, canvas.width, height);
-    return canvas;
-}
-export function drawIconPlan(ctx, plan, x, y, width, height) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(width / (planWidth(plan) + 12), height / 112);
-    ctx.translate(6, 6);
+    const ctx=canvas.getContext('2d');ctx.scale(height/112,height/112);ctx.translate(6,6);
     ctx.lineJoin='round';ctx.lineCap='round';ctx.lineWidth=3;ctx.strokeStyle=OUTLINE;ctx.fillStyle='#fff';drawPlan(ctx,plan);
-    ctx.restore();
+    return canvas;
 }
 export function effectIconCanvas(effect,height=192){return canvasFor(effectIconPlan(effect),height);}
 export function rerollTicketCanvas(height=192){return canvasFor({nodes:[{kind:'ticket'}]},height);}

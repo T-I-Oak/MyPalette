@@ -3,7 +3,6 @@ import { drawPaintingIcons, paintingIcons, releasePaintingIcons } from '../cardI
 import { goalGroups } from '../goalGroups.js';
 import { cardMessages } from './cardMessages.js';
 import { paintingBlock } from './paintingBlock.js';
-import { omitArtworkImages } from './artworkComparison.js';
 import './card.css';
 
 const make = (tag, className, text) => {
@@ -13,15 +12,6 @@ const make = (tag, className, text) => {
     return node;
 };
 const artwork = (id, step, alt) => {
-    if (omitArtworkImages) {
-        const surface = make('div', 'PaintingImage');
-        surface.style.backgroundColor = '#fffef9';
-        if (alt) {
-            surface.setAttribute('role', 'img');
-            surface.setAttribute('aria-label', alt);
-        }
-        return surface;
-    }
     const image = make('img', 'PaintingImage');
     image.src = `${import.meta.env.BASE_URL}assets/paintings/${id}-${step}.png`;
     image.alt = alt;

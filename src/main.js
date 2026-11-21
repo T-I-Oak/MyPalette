@@ -1,13 +1,11 @@
 import { initializeAppVersion } from './version.js';
 import { createTitleScreen } from './ui/createTitleScreen.js';
-import { titleMenuEntries } from './ui/title/menuEntries.js';
+import startPainting from './ui/title/start-painting.webp';
 import { createLayoutScreen } from './ui/screenLayout/createLayoutScreen.js';
 import { loadSettings } from './settingsStorage.js';
-import { loadResultGraphics } from './dice/resultGraphics.js';
 import { gameIssues } from './game/engine.js';
 import { mountGame } from './game/view.js';
 import { createLayoutPresentation } from './game/layoutPresentation.js';
-import { sampleResources, startTraceGame, trace, traceText } from './game/startupTrace.js';
 import './ui/theme.css';
 import './ui/layout.css';
 import './ui/textures.css';
@@ -15,55 +13,14 @@ import './ui/states.css';
 import './ui/screenLayout/layout.css';
 
 const version = initializeAppVersion(__APP_VERSION__);
-const pageState = () => ({
-    path: location.pathname,
-    hash: location.hash,
-    visibility: document.visibilityState,
-    historyLength: history.length,
-});
-trace('page-open', {
-    version,
-    navigation: performance.getEntriesByType('navigation')[0]?.type,
-    navigationApi: Boolean(window.navigation),
-    ...pageState(),
-});
-document.addEventListener('visibilitychange', () => trace('visibility', pageState()));
-for (const event of ['pagehide', 'pageshow']) {
-    window.addEventListener(event, ({ persisted }) => trace(event, { persisted, ...pageState() }));
-}
-for (const event of ['popstate', 'hashchange']) {
-    window.addEventListener(event, () => trace(event, pageState()));
-}
-document.addEventListener('click', event => {
-    const link = event.target.closest?.('a[href]');
-    if (link) trace('link-click', { destination: link.href, target: link.target, trusted: event.isTrusted });
-}, true);
-window.navigation?.addEventListener('navigate', event => {
-    trace('navigate', {
-        type: event.navigationType,
-        destination: event.destination.url,
-        sameDocument: event.destination.sameDocument,
-        userInitiated: event.userInitiated,
-        source: event.sourceElement?.tagName,
-        ...pageState(),
-    });
-});
-window.addEventListener('error', event => trace('error', { message: event.message, stack: event.error?.stack }));
-window.addEventListener('unhandledrejection', event => trace('rejection', { message: String(event.reason), stack: event.reason?.stack }));
 const root = document.querySelector('#layout-screen');
 export const layoutScreen = createLayoutScreen(root, document.querySelector('#panel-toggle'));
 const gameLayout = root.querySelector('.LayoutContent');
 const { screen: title, notice, setMenuItems } = createTitleScreen(version);
-const startLabel = titleMenuEntries[0].label;
-const menuActions = { start };
-const menuItems = setMenuItems(titleMenuEntries.filter(entry => entry.unlocked)
-    .map(entry => ({ ...entry, onSelect: menuActions[entry.id] })));
-const [{ button: startButton, plaque: startPlaque }] = menuItems;
-
-function setPreparing(preparing) {
-    for (const { button } of menuItems) button.disabled = preparing;
-    startButton.classList.toggle('is-preparing', preparing);
-}
+const startLabel = 'ゲーム開始';
+const [{ button: startButton, plaque: startPlaque }] = setMenuItems([
+    { label: startLabel, artwork: startPainting, onSelect: start },
+]);
 
 const result = document.createElement('section');
 result.className = 'GameStartup';
@@ -76,88 +33,46 @@ returnButton.textContent = 'タイトルへ戻る';
 result.append(resultHeading, returnButton);
 root.append(title, result);
 
-const diagnostics = document.createElement('details');
-diagnostics.className = 'StartupTrace';
-const diagnosticLabel = document.createElement('summary');
-diagnosticLabel.textContent = '調査記録';
-const diagnosticText = document.createElement('textarea');
-diagnosticText.readOnly = true;
-diagnosticText.setAttribute('aria-label', '調査記録');
-const diagnosticCopy = document.createElement('button');
-diagnosticCopy.type = 'button';
-diagnosticCopy.className = 'Button texture-raised';
-diagnosticCopy.textContent = '調査記録をコピー';
-const diagnosticCopyStatus = document.createElement('span');
-diagnosticCopyStatus.setAttribute('role', 'status');
-diagnosticCopy.addEventListener('click', async () => {
-    const log = traceText();
-    diagnosticText.value = log;
-    diagnosticCopyStatus.textContent = '';
-    try {
-        await navigator.clipboard.writeText(log);
-        diagnosticCopyStatus.textContent = 'コピーしました';
-    } catch {
-        diagnosticCopyStatus.textContent = 'コピーできませんでした。記録欄から手動でコピーできます。';
-    }
-});
-diagnostics.append(diagnosticLabel, diagnosticText, diagnosticCopy, diagnosticCopyStatus);
-title.append(diagnostics);
-diagnostics.addEventListener('toggle', () => {
-    if (diagnostics.open) {
-        diagnosticText.value = traceText();
-        diagnosticCopyStatus.textContent = '';
-    }
-});
-
-function showTitle(reason) {
-    trace('title', { reason });
-    diagnostics.open = false;
+function showTitle() {
     gameLayout.hidden = true;
     result.hidden = true;
     title.hidden = false;
     notice.textContent = '';
     startPlaque.textContent = startLabel;
-    setPreparing(false);
+    startButton.disabled = false;
 }
 
 async function start() {
     if (startButton.disabled) return;
-    setPreparing(true);
-    notice.textContent = 'ゲームの準備をしています…';
-    let settings, graphics;
+    startButton.disabled = true;
+    notice.textContent = 'ゲーム設定を読み込んでいます…';
+    let settings;
     try {
-        const [saved, resultGraphics] = await Promise.all([loadSettings(), loadResultGraphics()]);
-        settings = saved.document;
-        graphics = resultGraphics;
+        settings = (await loadSettings()).document;
         const issues = gameIssues(settings);
         if (issues.length) throw new Error(`設定が制作途中のため開始できません。\n${issues.join('\n')}`);
     } catch (error) {
-        notice.textContent = `ゲームを開始できませんでした。\n${error.message}`;
+        notice.textContent = `ゲーム設定を開けませんでした。\n${error.message}`;
         startPlaque.textContent = '再読み込み';
-        setPreparing(false);
+        startButton.disabled = false;
         return;
     }
     title.hidden = true;
-    startTraceGame();
-    trace('game-open');
     gameLayout.hidden = false;
     layoutScreen.render();
-    const presentation = createLayoutPresentation(layoutScreen, graphics);
+    const presentation = createLayoutPresentation(layoutScreen);
     mountGame(root, settings, () => {
         presentation.dispose();
-        showTitle('game-menu');
+        showTitle();
     }, presentation, () => {
         presentation.dispose();
-        sampleResources('disposed', presentation.resourceCounts());
         gameLayout.hidden = true;
         result.hidden = false;
-        trace('game-finished');
         returnButton.focus();
     });
 }
 returnButton.addEventListener('click', () => {
-    showTitle('result-button');
-    sampleResources('title', { canvases: document.querySelectorAll('canvas').length });
+    showTitle();
     startButton.focus();
 });
-showTitle('page-startup');
+showTitle();

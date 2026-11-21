@@ -1,5 +1,4 @@
 import { createGameSession } from './session.js';
-import { sampleResources, startTraceAction, trace } from './startupTrace.js';
 import { gameIssues } from './engine.js';
 import { matchingDice, satisfiesSelection } from './goals.js';
 import { displayLabel } from '../effectCatalog.js';
@@ -95,9 +94,6 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
     }
     function act(action, source = null, animation = null) {
         if (moving) return;
-        if (presentation) startTraceAction();
-        const firstLog = game.state.logs.length;
-        const step = animation?.id ? game.state.field.find(card => card.id === animation.id)?.step : undefined;
         presentation?.beginAction(animation, game.state, game.definitions);
         const before = cardLocations(game.state);
         candidateSource = source;
@@ -106,7 +102,6 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
         } finally {
             candidateSource = null;
         }
-        if (presentation) trace('action', { day: game.state.day, phase: game.state.phase, animation, step, logs: game.state.logs.slice(firstLog) });
         const transfers = changedCardAreas(before, cardLocations(game.state)).map(move => {
             placements.delete(move.to + ':' + move.id);
             inspectedSteps.delete(move.to + ':' + move.id);
@@ -122,11 +117,10 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
         selected = new Set();
         activeTab = 'play';
         moving = presentation ? presentation.hasAnimation(game.state, game.deckEvents) : transfers.length > 0;
-        render('action');
+        render();
         if (!moving) return;
         if (presentation) {
-            presentation.animate(game.state, () => render('animation-refresh'), () => {
-                trace('achievement-complete', game.state.achievement);
+            presentation.animate(game.state, render, () => {
                 session.dispatch(() => game.completeAchievement());
                 return game.deckEvents;
             }, id => {
@@ -136,7 +130,6 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
                 session.dispatch(() => game.completeDayEndRequest(request));
                 return game.deckEvents;
             }).catch(async error => {
-                trace('animation-error', { message: String(error), stack: error.stack });
                 if (game.state.achievement) session.dispatch(() => game.completeAchievement());
                 while (game.state.dayEndRequest && game.state.dayEndRequest.kind !== 'cleanup') {
                     session.dispatch(() => game.completeDayEndRequest(game.state.dayEndRequest));
@@ -154,9 +147,8 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
                 animationError = '演出を表示できなかったため、現在のゲーム状態を表示しました。';
             }).finally(() => {
                 if (disposed) return;
-                trace('animation-end', { day: game.state.day, phase: game.state.phase });
                 if (game.state.phase === 'betweenDays') session.dispatch(() => game.nextDay());
-                moving = false; render('animation-end');
+                moving = false; render();
             });
             return;
         }
@@ -278,22 +270,13 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
         node.append(list, footer);
         update();
     }
-    let sampledDay = 0;
-    function render(source = 'view') {
-        const data = { source, day: game.state.day, phase: game.state.phase };
-        const start = presentation ? trace('view-render-start', data) : undefined;
-        renderView();
-        if (presentation) trace('view-render-end', { ...data, start });
-    }
-    function renderView() {
+    function render() {
         if (onFinished && !moving && game.state.phase === 'finished') {
-            if (presentation) sampleResources('before-dispose', presentation.resourceCounts(), game.state.day);
             dispose();
             onFinished();
             return;
         }
         inspectionRefresh = false;
-        if (presentation && game.state.effectNotices.length) trace('effects', game.state.effectNotices);
         notices.sync(game.state, moving);
         const positions = new Map([...scope.querySelectorAll('[data-pane]')].map(node => [node.dataset.pane, { top: node.scrollTop, left: node.scrollLeft }]));
         // Build controls while detached so intermediate sections cannot change the viewport's scrollbars.
@@ -324,27 +307,25 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
         };
         const selectingReroll = Boolean(presentation && !notices.busy && s.pending?.kind === 'dice' && s.pending.effectType === 'reroll');
         const selectingReturn = Boolean(presentation && s.pending?.kind === 'handReturn');
+        const visibleDice = s.phase === 'betweenDays' ? s.dayEndDice : s.dice;
+        const diceSection = section(`画材ダイス ${visibleDice.length}個${s.phase === 'betweenDays' ? '（仕事終了時）' : ''}`, workspace, 'GameDicePane'), diceList = el('div', undefined, 'GameGrid');
+        diceList.dataset.pane = 'dice';
         const achieveButtons = [];
         const updateAchievements = () => {
             for (const { card, node } of achieveButtons) node.disabled = !canPlay || card.step === 3 || !satisfiesSelection(game.step(card).goals, s.dice, [...selected]);
         };
-        if (!presentation) {
-            const visibleDice = s.phase === 'betweenDays' ? s.dayEndDice : s.dice;
-            const diceSection = section(`画材ダイス ${visibleDice.length}個${s.phase === 'betweenDays' ? '（仕事終了時）' : ''}`, workspace, 'GameDicePane'), diceList = el('div', undefined, 'GameGrid');
-            diceList.dataset.pane = 'dice';
-            for (const die of visibleDice) {
-                const node = diceView(die);
-                if (canPlay && !die.used) {
-                    checkbox(node, die.id, `${die.id}を達成に使用`, updateAchievements);
-                    node.querySelector('input').dataset.gameAction = '';
-                }
-                const reroll = gameButton('↻', () => act(() => game.reroll(die.id)), !canPlay || die.used || !s.rerolls);
-                reroll.setAttribute('aria-label', `${die.id}をリロール`); reroll.title = `${die.id}をリロール`;
-                node.append(reroll); diceList.append(node);
+        for (const die of visibleDice) {
+            const node = diceView(die);
+            if (canPlay && !die.used) {
+                checkbox(node, die.id, `${die.id}を達成に使用`, updateAchievements);
+                node.querySelector('input').dataset.gameAction = '';
             }
-            diceSection.append(diceList, gameButton('全未使用ダイスをリロール', () => act(() => game.reroll()), !canChangeAll()));
-            diceSection.title = 'ダイスにチェックを付け、制作中の作品の達成ボタンで確定します。';
+            const reroll = gameButton('↻', () => act(() => game.reroll(die.id)), !canPlay || die.used || !s.rerolls);
+            reroll.setAttribute('aria-label', `${die.id}をリロール`); reroll.title = `${die.id}をリロール`;
+            node.append(reroll); diceList.append(node);
         }
+        diceSection.append(diceList, gameButton('全未使用ダイスをリロール', () => act(() => game.reroll()), !canChangeAll()));
+        diceSection.title = 'ダイスにチェックを付け、制作中の作品の達成ボタンで確定します。';
         const cardZones = [['field', '制作中'], ['hand', '手札'], ['shipped', '出荷済み作品']];
         if (presentation) cardZones.push(['discard', '捨て札']);
         for (const [key, label] of cardZones) {
@@ -489,10 +470,6 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
             node.scrollTop = position?.top ?? 0; node.scrollLeft = position?.left ?? 0;
         }
         transitions.refresh();
-        if (presentation && s.phase === 'awaitingStart' && sampledDay !== s.day) {
-            sampledDay = s.day;
-            sampleResources('day-ready', presentation.resourceCounts(), s.day);
-        }
         if (moving) setActionLock(true);
         else openChoice();
     }

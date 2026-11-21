@@ -3,9 +3,7 @@ import { releasePaintingIcons } from '../cardIcons.js';
 import { CardSceneState } from './cardSceneState.js';
 import { cardSceneSnapshot, locateSceneCards, scatteredPlacement, sceneCardPose } from './cardSceneLayout.js';
 import { animateProgress } from './playAnimation.js';
-import { currentTraceAction, trace, traceCardFrame } from './startupTrace.js';
 import { shippedCanvas } from './infoLayout.js';
-import { omitArtworkImages } from './artworkComparison.js';
 import './cardScene.css';
 
 function createShippedArtwork(id, wrapper, image) {
@@ -20,7 +18,6 @@ function createShippedArtwork(id, wrapper, image) {
     canvas.style.setProperty('--shipped-angle', `${angle}deg`);
     canvas.style.setProperty('--shipped-perspective', `${perspective}px`);
     canvas.style.setProperty('--shipped-thickness', `${thickness}px`);
-    if (!image && omitArtworkImages) image = document.createElement('div');
     if (!image) {
         image = document.createElement('img');
         image.alt = '';
@@ -153,9 +150,6 @@ export function createCardScene(screen, play) {
             draw();
         },
         async move(state, duration, owner, options = {}) {
-            const action = currentTraceAction();
-            const move = trace('card-move-prepare', { stage: owner }, action);
-            const recordFrame = (event, data) => traceCardFrame(event, { move, stage: owner, ...data }, action);
             const signal = controller.signal, activeModel = model;
             const shipment = options.shipment;
             const previous = new Map([...activeModel.cards].map(([id, record]) => [id, { area: record.area, grade: record.grade }]));
@@ -167,7 +161,6 @@ export function createCardScene(screen, play) {
                 return next.get(id).area === 'field' && previous.get(id).area !== 'field'
                     ? { ...pose, matrix: play.cardDestinationMatrix(id) } : pose;
             }]));
-            recordFrame('targets-ready');
             play.begin();
             if (shipment) {
                 const { id, image } = shipment, entry = cards.get(id), record = activeModel.get(id);
@@ -177,13 +170,12 @@ export function createCardScene(screen, play) {
                 activeShipment = { id, progress: 0 };
             }
             activeModel.begin(targets, owner);
-            recordFrame('model-ready');
             try {
                 if (shipment) {
                     draw();
                     play.releaseCanvas(shipment.id);
                 }
-                const complete = await animateProgress(duration, (progress, frame) => {
+                const complete = await animateProgress(duration, progress => {
                     play.sample(progress);
                     activeModel.sample(options.progressFor ? id => options.progressFor(id, progress) : options.ease ? options.ease(progress) : progress);
                     if (shipment) activeShipment.progress = options.ease?.(progress) ?? progress;
@@ -199,9 +191,8 @@ export function createCardScene(screen, play) {
                         record.area = arrived ? options.areaOnArrival?.(id) ?? where.area : from.area !== where.area && options.departure?.(id, progress) ? 'transit' : from.area;
                         record.grade = arrived ? where.grade : from.grade;
                     }
-                    recordFrame('positions-ready', { frame });
                     draw();
-                }, signal, owner, recordFrame);
+                }, signal);
                 if (complete) { activeModel.interrupt(); play.finish(); for (const [id, where] of next) { activeModel.get(id).area = options.areaOnArrival?.(id) ?? where.area; activeModel.get(id).grade = where.grade; } }
             } finally {
                 if (shipment && activeShipment?.id === shipment.id) activeShipment = undefined;

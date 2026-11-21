@@ -1,4 +1,3 @@
-import { trace } from './startupTrace.js';
 import { cardSceneSnapshot } from './cardSceneLayout.js';
 import { relocateSceneCards, sceneChanges, closingStockCards } from './cardScenePlans.js';
 import { deckTiming } from './deckMotion.js';
@@ -21,11 +20,9 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
     async function move(target, duration, name, options) {
         const signal = controller.signal;
         if (signal.aborted) return;
-        const start = trace('card-move-start', { stage: name });
         root.dataset.cardSceneMotion = name; prepare(target);
         await cards.move(target, enabled ? duration : 0, name, options);
         if (!signal.aborted) refresh();
-        trace('card-move-end', { stage: name, start, aborted: signal.aborted });
     }
     async function reveal(actual) {
         const target = cardSceneSnapshot(cards.display), ids = [];
@@ -228,9 +225,7 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
                 if (state.achievement) {
                     const id = state.achievement.id, card = cards.display.field.find(item => item.id === id), nextStep = card.step + 1;
                     root.dataset.cardSceneMotion = 'achievement-canvas';
-                    const decode = trace('achievement-decode-start', { id, step: card.step });
                     const images = await Promise.all([paintingPreview(id, card.step), paintingPreview(id, card.step + 1)]);
-                    trace('achievement-decode-end', { id, start: decode });
                     palette.beginAchievement(action.diceIds);
                     await play.fadeOut(id, images[0], signal);
                     if (signal.aborted) return;
@@ -255,11 +250,8 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
                 }
                 await reconcile(state, records);
                 while (!signal.aborted && (state.dayEndRequest || state.recycleRequest)) {
-                    let dayEndDetail;
                     if (state.dayEndRequest) {
                         const request = state.dayEndRequest;
-                        dayEndDetail = { day: state.day, request, animated: enabled };
-                        trace('day-end-start', { ...dayEndDetail, play: play.resourceCounts(), palette: palette.resourceCounts() });
                         if (enabled && request.kind === 'work') {
                             root.dataset.cardSceneMotion = 'flyer-work';
                             await flyer.work(state, request, signal);
@@ -285,9 +277,6 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
                         records = await recycle(state, resumeRecycle);
                     }
                     if (!signal.aborted) await reconcile(state, records);
-                    if (!signal.aborted && dayEndDetail) {
-                        trace('day-end-complete', { ...dayEndDetail, play: play.resourceCounts(), palette: palette.resourceCounts() });
-                    }
                 }
                 if (!signal.aborted) { cards.adopt(state); cards.busy = false; cards.update(); }
             } finally { if (controller.signal === signal) delete root.dataset.cardSceneMotion; }

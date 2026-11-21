@@ -1,7 +1,6 @@
 import { ScreenLayout, areaDefinitions } from './ScreenLayout.js';
 import { CanvasArea } from './CanvasArea.js';
 import { createDomTransitionSurface } from '../areaTransition/index.js';
-import { trace } from '../../game/startupTrace.js';
 
 export function createLayoutScreen(viewport, button) {
     const root = document.createElement('div');
@@ -63,15 +62,10 @@ export function createLayoutScreen(viewport, button) {
     let lastTime;
     const durationMs = 260;
 
-    let lastSize;
-    function render(source = 'game', record = true) {
+    function render() {
         const width = viewport.clientWidth;
         const height = viewport.getBoundingClientRect().height;
         if (!width || !height) return;
-        const size = { width, height, pixelRatio: window.devicePixelRatio };
-        const changed = !lastSize || Object.keys(size).some(key => size[key] !== lastSize[key]);
-        const start = record ? trace('layout-start', { source, ...(changed && { before: lastSize, after: size }) }) : undefined;
-        if (record) lastSize = size;
         layout.definitions = Object.fromEntries([...areas].map(([id, area]) => [id, area.getLayoutRequirements()]));
         const frame = layout.calculate(width, height, progress);
         root.style.height = `${frame.height}px`;
@@ -94,15 +88,13 @@ export function createLayoutScreen(viewport, button) {
         button.style.top = `${stock.y}px`;
         button.setAttribute('aria-expanded', String(target === 1));
         button.setAttribute('aria-label', target === 1 ? 'サイドパネルを閉じる' : 'サイドパネルを開く');
-        if (record) trace('layout-end', { source, start });
     }
 
     function tick(time) {
-        const first = lastTime === undefined;
         const delta = lastTime === undefined ? 0 : (time - lastTime) / durationMs;
         lastTime = time;
         progress = target > progress ? Math.min(target, progress + delta) : Math.max(target, progress - delta);
-        render('panel', first || progress === target);
+        render();
         animation = progress === target ? 0 : requestAnimationFrame(tick);
     }
 
@@ -112,31 +104,31 @@ export function createLayoutScreen(viewport, button) {
             cancelAnimationFrame(animation);
             animation = 0;
             progress = target;
-            render('panel');
+            render();
         } else if (!animation) {
             lastTime = undefined;
             animation = requestAnimationFrame(tick);
         }
     });
-    new ResizeObserver(() => render('resize-observer')).observe(viewport);
-    viewport.addEventListener('scroll', () => render('scroll'), { passive: true });
+    new ResizeObserver(render).observe(viewport);
+    viewport.addEventListener('scroll', render, { passive: true });
     // Resolution can change without any change to the CSS display size.
     let pixelRatio = window.devicePixelRatio;
     function watchResolution() {
         if (pixelRatio !== window.devicePixelRatio) {
             pixelRatio = window.devicePixelRatio;
-            render('pixel-ratio');
+            render();
         }
         requestAnimationFrame(watchResolution);
     }
     requestAnimationFrame(watchResolution);
-    render('startup');
+    render();
     return { areas, surface, render,
         openPanel() { if (target !== 1) button.click(); },
         setFixedScale(scale) {
             if (!Number.isFinite(scale) || scale <= 0) throw new RangeError('Expected positive fixed scale');
             layout.fixedScale = scale;
-            render('fixed-scale');
+            render();
         },
         subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); } };
 }
