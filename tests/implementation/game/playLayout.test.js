@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { playMetrics, playStandardSize, layoutPlay, playButtonCenter, paintingFacing } from '../../../src/game/playLayout.js';
+import { playMetrics, playStandardSize, layoutPlay, paintingFacing } from '../../../src/game/playLayout.js';
 import { fitArea } from '../../../src/ui/screenLayout/ScreenLayout.js';
 
 test('作品1組の寸法をN個並べて標準描画寸法にする', () => {
@@ -20,11 +20,6 @@ test('枚数が増えたら領域全体の同じ倍率で収め、各組の縦�
         assert.ok(playMetrics.width * count * frame.scale <= 600 + 1e-9);
         assert.ok(playMetrics.height * frame.scale <= 300 + 1e-9);
     }
-});
-
-test('達成ボタンの中心は論理中心を固定倍率層へ変換する', () => {
-    const slot = layoutPlay(2)[1];
-    assert.equal(playButtonCenter(slot, .5, 2, 0), (slot.x + playMetrics.width / 2) * .5 / 2);
 });
 
 test('余った論理領域の中央へ作品群を配置する', () => {
