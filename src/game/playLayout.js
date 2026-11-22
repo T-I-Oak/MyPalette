@@ -8,10 +8,6 @@ export function layoutPlay(count, width = count * playMetrics.width, height = pl
     const top = (height - playMetrics.height) / 2;
     return Array.from({ length: count }, (_, index) => ({ x: left + index * playMetrics.width, y: top }));
 }
-export function playButtonCenter(slot, areaScale, fixedScale, leftOffset) {
-    return leftOffset + (slot.x + playMetrics.width / 2) * areaScale / fixedScale;
-}
-
 export function paintingFacing(centerX, areaWidth) {
     const playerDistance = 2000;
     return Math.atan2(areaWidth / 2 - centerX, playerDistance);
