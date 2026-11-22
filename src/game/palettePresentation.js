@@ -19,7 +19,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
     rerolls.className = 'PaletteRerolls texture-text-outline'; rerolls.setAttribute('role', 'img'); rerolls.hidden = true;
     const ticket = rerollTicketCanvas(); ticket.setAttribute('aria-hidden', 'true');
     const quantity = document.createElement('span');
-    rerolls.append(ticket, quantity); area.fixedLayer.append(rerolls);
+    rerolls.append(ticket, quantity); controls.append(rerolls);
     const searchNotice = document.createElement('output'); searchNotice.className = 'PaletteSearchNotice Surface texture-floating';
     searchNotice.hidden = true; area.fixedLayer.append(searchNotice);
     const name = area.fixedLayer.querySelector('.LayoutAreaName');
@@ -41,24 +41,27 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
     retry.className = 'Button texture-raised'; retry.textContent = '再読み込み';
     retry.addEventListener('click', initialize);
     function updateActions() {
-        controls.replaceChildren();
+        controls.replaceChildren(rerolls);
         if (!request && actions.rerollSelection) {
             const button = document.createElement('button'); button.type = 'button'; button.tabIndex = -1;
             button.className = 'Button texture-raised state-attention'; button.textContent = '選択して画材を更新する';
             button.disabled = !actions.canConfirmReroll(); button.dataset.gameAction = '';
             button.addEventListener('click', actions.confirmReroll); controls.append(button); return;
         }
-        if (!request) {
+        {
             for (const [text, enabled, handler] of [
-                ['すべての画材を更新する', actions.canChangeAll(), actions.changeAll],
-                ['1つの画材を更新する', actions.canChangeOne(), actions.changeOne],
+                ['すべてリロール', actions.canChangeAll(), actions.changeAll],
+                ['1つリロール', actions.canChangeOne(), actions.changeOne],
             ]) {
                 const button = document.createElement('button'); button.type = 'button'; button.tabIndex = -1;
-                button.className = 'Button texture-raised'; button.textContent = text;
-                button.disabled = !enabled; button.dataset.gameAction = '';
+                button.className = 'Button texture-raised';
+                const cost = document.createElement('span'); cost.className = 'RerollCost'; cost.setAttribute('aria-hidden', 'true');
+                cost.append(rerollTicketCanvas()); button.append(cost, text);
+                button.setAttribute('aria-label', `${text}（リロール権1個消費）`);
+                button.disabled = !!request || !enabled; button.dataset.gameAction = '';
                 button.addEventListener('click', handler); controls.append(button);
             }
-            return;
+            if (!request) return;
         }
         if (failedRequest === request.id) {
             const retryRoll = document.createElement('button'); retryRoll.tabIndex = -1; retryRoll.type = 'button';
@@ -201,7 +204,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
                 for (const id of creditMaterials) scene?.travelling.delete(id);
                 creditMaterials.clear();
             }
-            rerolls.hidden = state.rerolls <= 0;
+            rerolls.hidden = state.phase === 'awaitingStart';
             quantity.textContent = `×${state.rerolls}`;
             rerolls.setAttribute('aria-label', `リロール権 ${state.rerolls}個`);
             request = state.rollRequest ? structuredClone(state.rollRequest) : null;
