@@ -1,5 +1,7 @@
 .theme-atelier {
     --ui-text: #302c28;
+    --ui-disabled-surface: #bcbcbc;
+    --ui-disabled-text: #484848;
     --ui-text-muted: #635b50;
     --ui-canvas: #eee8dc;
     --ui-surface: #fffdf7;
