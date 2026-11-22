@@ -11,7 +11,7 @@ const base=process.argv[2]||'http://127.0.0.1:3007/MyPalette/';
  <script type="module">
  import {createLayoutScreen} from './src/ui/screenLayout/createLayoutScreen.js';import {createLayoutPresentation} from './src/game/layoutPresentation.js';import {mountGame} from './src/game/view.js';
  import './src/ui/theme.css';import './src/ui/layout.css';import './src/ui/textures.css';import './src/ui/states.css';import './src/ui/screenLayout/layout.css';
- const root=document.querySelector('main');window.check=mountGame(root,${JSON.stringify(settings)},()=>{},createLayoutPresentation(createLayoutScreen(root,document.querySelector('button'))));
+ const root=document.querySelector('main');window.check=mountGame(root,${JSON.stringify(settings)},createLayoutPresentation(createLayoutScreen(root,document.querySelector('button'))));
  </script>`}));
  await page.goto(base);
  const start=page.getByRole('button',{name:'今日の仕事を始める',exact:true});

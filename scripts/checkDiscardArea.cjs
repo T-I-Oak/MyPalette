@@ -16,7 +16,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  import {mountGame} from './src/game/view.js';
  import './src/ui/theme.css';import './src/ui/layout.css';import './src/ui/textures.css';import './src/ui/states.css';import './src/ui/screenLayout/layout.css';
  const root=document.querySelector('main');const screen=createLayoutScreen(root,document.querySelector('button'));
- const mounted=mountGame(root,${JSON.stringify(settings)},()=>{},createLayoutPresentation(screen));
+ const mounted=mountGame(root,${JSON.stringify(settings)},createLayoutPresentation(screen));
  window.check={screen,mounted};
  </script>`}));
  await page.goto(base);await page.locator('[data-game-area=discard]').waitFor({state:'attached'});

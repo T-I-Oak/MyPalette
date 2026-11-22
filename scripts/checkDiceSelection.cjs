@@ -14,7 +14,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  import {mountGame} from './src/game/view.js';
  import './src/ui/theme.css';import './src/ui/layout.css';import './src/ui/textures.css';import './src/ui/states.css';import './src/ui/screenLayout/layout.css';
  const root=document.querySelector('main');const screen=createLayoutScreen(root,document.querySelector('button'));
- window.selectionCheck=mountGame(root,${JSON.stringify(settings)},()=>{},createLayoutPresentation(screen));
+ window.selectionCheck=mountGame(root,${JSON.stringify(settings)},createLayoutPresentation(screen));
  </script>`}));
  await page.goto(base);
  await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).waitFor();await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));

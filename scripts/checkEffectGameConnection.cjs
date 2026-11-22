@@ -16,7 +16,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3010/MyPalette/';
             import './src/ui/theme.css'; import './src/ui/textures.css'; import './src/ui/layout.css';
             import {mountGame} from './src/game/view.js';
             Math.random=()=>.23;
-            window.check=mountGame(document.querySelector('main'),${JSON.stringify(settings)},()=>{});
+            window.check=mountGame(document.querySelector('main'),${JSON.stringify(settings)});
             window.notices=[];
             new MutationObserver(()=>{
                 const node=document.querySelector('.EffectNotice');

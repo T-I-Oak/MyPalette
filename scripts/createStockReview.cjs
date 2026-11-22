@@ -32,7 +32,7 @@ try {
     const root=document.querySelector('main');
     const screen=createLayoutScreen(root,document.querySelector('#panel-toggle'));
     const presentation=createLayoutPresentation(screen);
-    mountGame(root,settings,()=>location.reload(),presentation);
+    mountGame(root,settings,presentation);
 } catch(error) {
     document.querySelector('.review-guide p').textContent='確認ページを開けませんでした：'+error.message;
 }

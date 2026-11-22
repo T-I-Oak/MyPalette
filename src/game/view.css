@@ -48,8 +48,7 @@
 .GameControls p { margin: 0; }
 .GameControls .GameLatestLog { flex: 1; min-width: 100px; font-size: .75rem; color: var(--ui-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .GameControls > .Button { margin-left: auto; flex-shrink: 0; }
-.GameLog, .StartIssues { white-space: pre-wrap; font: inherit; font-size: .82rem; }
-.StartIssues { overflow: auto; }
+.GameLog { white-space: pre-wrap; font: inherit; font-size: .82rem; }
 .GameChoice { width: min(1100px, 94%); max-height: 90dvh; padding: 0; border: 0; border-radius: 8px; font: inherit; color: inherit; background: var(--ui-choice-surface); }
 .GameChoice::backdrop { background: var(--ui-scrim); }
 .GameChoice .GameSection { display: flex; flex-direction: column; max-height: 88dvh; margin: 0; }

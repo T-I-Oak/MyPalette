@@ -1,5 +1,4 @@
 import { createGameSession } from './session.js';
-import { gameIssues } from './engine.js';
 import { matchingDice, satisfiesSelection } from './goals.js';
 import { displayLabel } from '../effectCatalog.js';
 import { copyPaintingIconDrawers, dieFaceIcon, releasePaintingIcons } from '../cardIcons.js';
@@ -22,12 +21,7 @@ function button(text, action, disabled = false) {
 export const faceLabel = face => face.special ? `特殊面：${displayLabel(face.special)}` : `${displayLabel(face.color)}・${displayLabel(face.material)}`;
 const phaseLabel = { awaitingStart: '仕事の開始待ち', play: '制作中', start: 'ターン開始処理', end: 'ターン終了処理', betweenDays: '一日の仕事を終了', finished: 'ゲーム終了' };
 
-export function mountGame(root, settings, onMenu, presentation = null, onFinished = null) {
-    const issues = gameIssues(settings);
-    if (issues.length) {
-        root.replaceChildren(el('h2', '設定が制作途中のため開始できません'), el('pre', issues.join('\n'), 'StartIssues'), button('入口へ戻る', onMenu));
-        return;
-    }
+export function mountGame(root, settings, presentation = null, onFinished = null) {
     const candidateOrigins = new Map();
     let candidateSource;
     const session = createGameSession(settings, {
@@ -290,7 +284,6 @@ export function mountGame(root, settings, onMenu, presentation = null, onFinishe
         if (animationError) {
             const notice = el('p', animationError, 'GameAnimationNotice'); notice.setAttribute('role', 'status'); status.append(notice);
         }
-        const menu = button('入口へ戻る', () => { dispose(); onMenu(); }); status.append(menu);
         const tabs = el('nav', undefined, 'GameTabs'); tabs.setAttribute('aria-label', 'ゲーム情報');
         for (const [id, label] of [['play', '制作と手札'], ['stock', `ストック・山札（${s.deck.length}）・捨て札（${s.discard.length}）`], ['shipped', `出荷済み（${s.shipped.length}）`], ['logs', '進行記録']]) {
             const tab = button(label, () => { activeTab = id; render(); });
