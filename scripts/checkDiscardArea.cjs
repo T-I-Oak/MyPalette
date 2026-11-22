@@ -1,3 +1,4 @@
+const { installDayStartGate, releaseDayStart } = require('./dayStartGate.cjs');
 const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -19,10 +20,10 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  const mounted=mountGame(root,${JSON.stringify(settings)},createLayoutPresentation(screen));
  window.check={screen,mounted};
  </script>`}));
- await page.goto(base);await page.locator('[data-game-area=discard]').waitFor({state:'attached'});
+ await installDayStartGate(page);await page.goto(base);await page.locator('[data-game-area=discard]').waitFor({state:'attached'});
  assert.equal(await page.locator('.LayoutAreaFixed[data-area="discard"] .LayoutAreaName').textContent(),'捨て札 0枚');
  await page.evaluate(()=>{const g=check.mounted.session.game;g.state.discard.push(...g.state.stocks.B.splice(0,12));});
- await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});
+ await releaseDayStart(page);
  await page.waitForFunction(()=>document.querySelectorAll('[data-scene-area=discard] .PaintingCard').length===12);
  await page.waitForFunction(()=>check.mounted.session.game.state.phase==='play',null,{timeout:60000});
  assert.equal(await page.locator('.LayoutAreaFixed[data-area="discard"] .LayoutAreaName').textContent(),'捨て札 12枚');

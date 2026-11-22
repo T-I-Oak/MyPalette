@@ -1,3 +1,4 @@
+const { installDayStartGate, releaseDayStart } = require('./dayStartGate.cjs');
 const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
@@ -39,8 +40,8 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
 
 
 
- const begin=async()=>{await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});await page.waitForFunction(()=>check.mounted.session.game.state.phase==='play',null,{timeout:60000});await page.waitForFunction(()=>!check.presentation.cards.busy);};
- await page.goto(base);await page.emulateMedia({reducedMotion:'no-preference'});await begin();
+ const begin=async()=>{await releaseDayStart(page);await page.waitForFunction(()=>check.mounted.session.game.state.phase==='play',null,{timeout:60000});await page.waitForFunction(()=>!check.presentation.cards.busy);};
+ await installDayStartGate(page);await page.goto(base);await page.emulateMedia({reducedMotion:'no-preference'});await begin();
  assert.ok(await page.evaluate(()=>window.frames.some(f=>f.motion==='initial-deal')));
  assert.ok(await page.evaluate(()=>frames.filter(f=>f.motion==='initial-deal').every(f=>initialStock.slice(0,7).every(({id,pose})=>{const c=f.cards.find(c=>c.id===id);return !c.matrix.every((v,i)=>Math.abs(v-pose.matrix[i])<1e-7)||c.z===pose.z;}))),'配分開始を待つカードはストックの重なり順を保つ');
  assert.ok(await page.evaluate(()=>frames.some(f=>f.motion==='initial-deal'&&f.cards.some(c=>c.z>1000))),'配分中のカードはストックの手前を通る');

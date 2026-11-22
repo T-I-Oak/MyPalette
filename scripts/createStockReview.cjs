@@ -15,7 +15,7 @@ body{display:flex;flex-direction:column}
 .review-guide button{font:inherit;cursor:pointer}
 main.LayoutScreen{flex:1;min-height:0;width:100%;height:0}
 </style></head><body class="theme-atelier texture-layout">
-<aside class="review-guide"><p>確認用 ${version}：①仕事を開始 → ②任意の手札で「着手」 → ③「返却」 → ④ストックの「取得」。全カードに手札交換を設定しています。保存済み設定には影響しません。</p><button onclick="location.reload()">最初から確認</button></aside>
+<aside class="review-guide"><p>確認用 ${version}：①自動開始を待つ → ②任意の手札で「着手」 → ③「返却」 → ④ストックの「取得」。全カードに手札交換を設定しています。保存済み設定には影響しません。</p><button onclick="location.reload()">最初から確認</button></aside>
 <main class="LayoutScreen"><button id="panel-toggle" class="PanelToggle" type="button"></button></main>
 <script type="module">
 import {createLayoutScreen} from './src/ui/screenLayout/createLayoutScreen.js';

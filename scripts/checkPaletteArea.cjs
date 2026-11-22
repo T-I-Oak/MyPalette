@@ -1,3 +1,4 @@
+const { installDayStartGate, waitDayStart, releaseDayStart } = require('./dayStartGate.cjs');
 const { chromium } = require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
@@ -11,11 +12,11 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             if (/PCFSoftShadowMap has been removed/.test(message.text())) shadowWarnings.push(message.text());
         });
         await page.addInitScript(() => { Math.random = () => .4; });
-        await page.goto(base);
+        await installDayStartGate(page);await page.goto(base);
         await page.getByRole('button', { name: 'ゲーム開始', exact: true }).click();
         const palette = page.locator('[data-game-area="palette"]');
-        const roll = page.getByRole('button', { name: '今日の仕事を始める', exact: true });
-        await roll.waitFor();
+
+        await waitDayStart(page);
         await page.waitForFunction(() => !!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
         const rerolls = page.locator('.PaletteRerolls');
         assert(await rerolls.isHidden());
@@ -26,24 +27,8 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         assert.deepEqual(initialTabStops, [], '初日の開始前は裏向きカードで説明アイコンもない');
         await page.keyboard.press('Tab');
         assert.equal(await page.evaluate(() => document.activeElement.matches('button,[role="button"],[role="tab"]')), false);
-        assert(await roll.evaluate(node => node.classList.contains('state-attention')));
-        assert.equal(await roll.evaluate(node => getComputedStyle(node).fontSize), '24px');
-        assert.equal(await page.locator('.LayoutAreaFixed[data-area="hand"] .LayoutAreaName').isVisible(), false);
-        const attention = await roll.evaluate(node => {
-            const animation = node.getAnimations().find(item => item.animationName === 'ButtonAttentionPulse');
-            if (!animation) return null;
-            animation.pause(); animation.currentTime = 0;
-            const start = getComputedStyle(node).scale;
-            animation.currentTime = 800;
-            const peak = getComputedStyle(node).scale;
-            animation.play(); return { start, peak };
-        });
-        assert.deepEqual(attention, { start:'1', peak:'1.1' });
-        await page.emulateMedia({ reducedMotion:'reduce' });
-        assert.equal(await roll.evaluate(node => getComputedStyle(node).animationName), 'none');
-        await page.emulateMedia({ reducedMotion:'no-preference' });
+        assert.equal(await page.getByRole('button', {name:'今日の仕事を始める',exact:true}).count(), 0);
         assert.equal(await palette.locator('.DiceResult:not([hidden])').count(), 0);
-        assert(await roll.isEnabled());
         await page.screenshot({ path:'tmp_palette_roll_ready.png' });
         await page.evaluate(async () => {
             window.emergeCounts = new Map();
@@ -64,7 +49,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
                 return results;
             };
         });
-        await roll.click({ force: true });
+        await releaseDayStart(page);
         const endDay=page.getByRole('button',{name:'今日の仕事を終える',exact:true});
         await page.waitForFunction(()=>document.querySelector('[data-game-end-day]')?.disabled===false,null,{timeout:60000});
         assert(await endDay.isEnabled());assert(await rerolls.isVisible());assert.equal(await rerolls.innerText(),'×1');
@@ -150,13 +135,13 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         await page.waitForTimeout(300);
         assert(await rerolls.isHidden());
         assert(await palette.locator('canvas').evaluate(node => node === window.paletteCanvas));
-        await roll.waitFor();assert.equal(await page.locator('.HandFixedActions .Button').count(),0);
+        await waitDayStart(page);assert.equal(await page.locator('.HandFixedActions .Button').count(),0);
         await page.waitForFunction(() => {
             const button = document.querySelector('[data-game-end-day]');
-            return button?.textContent === '今日の仕事を始める' && !button.disabled && !document.querySelector('[data-stock-effect]');
+            return window.dayStartWaiting && !document.querySelector('[data-stock-effect]');
         });
-        // 注目アニメーションで拡縮し続けるため、演出完了と有効状態は上で明示的に待つ。
-        await roll.click({ force: true });
+        // 検証ドライバーの待機を解除して翌日の自動開始を観察する。
+        await releaseDayStart(page);
         await page.waitForFunction(() => {
             const button = document.querySelector('[data-game-end-day]');
             return button?.textContent === '今日の仕事を終える' && !button.disabled;

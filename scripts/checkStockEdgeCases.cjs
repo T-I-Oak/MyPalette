@@ -1,3 +1,4 @@
+const { installDayStartGate, releaseDayStart } = require('./dayStartGate.cjs');
 const { chromium } = require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -27,9 +28,9 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
             const mounted=mountGame(root,settings,presentation);
             window.stockCheck={screen,presentation,mounted,root,settings};
             </script>` }));
-        await page.goto(base);
+        await installDayStartGate(page);await page.goto(base);
         await page.locator('[data-scene-area=stock] .PaintingCard').first().waitFor();
-        await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});
+        await releaseDayStart(page);
         await page.waitForFunction(()=>window.stockCheck.mounted.session.game.state.phase==='play',null,{timeout:60000});
         await page.evaluate(()=>{
             const g=window.stockCheck.mounted.session.game;
@@ -74,8 +75,9 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
         await page.evaluate(()=>{
             const s=window.stockCheck.mounted.session.game.state;s.dice.forEach(d=>d.used=true);s.flyers=s.orderCost;
         });
-        await page.getByRole('button',{name:'今日の仕事を終える',exact:true}).click();
-        await page.waitForFunction(()=>window.stockCheck.mounted.session.game.state.phase==='awaitingStart');
+        if (await page.locator('#panel-toggle').isVisible() && await page.locator('#panel-toggle').getAttribute('aria-expanded')==='true') await page.locator('#panel-toggle').click();
+                await page.getByRole('button',{name:'今日の仕事を終える',exact:true}).click();
+        await page.waitForFunction(()=>window.dayStartWaiting===true);
         assert.equal(await page.locator('[data-stock-acquire]').count(),0);
         assert.deepEqual(errors,[]);
         console.log('stock edges: empty-grade return, same-card acquisition, two exchanges, resize/scale, no duplicates, all-empty gain and ordering passed');

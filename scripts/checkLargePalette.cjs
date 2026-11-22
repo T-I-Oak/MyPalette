@@ -1,7 +1,8 @@
+const { installDayStartGate, releaseDayStart } = require('./dayStartGate.cjs');
 const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const source=JSON.parse(fs.readFileSync('public/data/cards.json','utf8'));
-const base=process.argv[2]||'http://127.0.0.1:3013/MyPalette/';
+const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
  const requested=process.argv.slice(3).map(Number);
  for(const count of requested.length?requested:[13,20,30]){
@@ -17,9 +18,9 @@ const base=process.argv[2]||'http://127.0.0.1:3013/MyPalette/';
   const root=document.querySelector('main');window.largeScreen=createLayoutScreen(root,document.querySelector('button'));
   window.largeCheck=mountGame(root,${JSON.stringify(settings)},createLayoutPresentation(window.largeScreen));
   </script>`}));
-  await page.goto(base);await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
+  await installDayStartGate(page);await page.goto(base);await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
   await page.evaluate(async()=>{const url=performance.getEntriesByType('resource').find(e=>new URL(e.name).pathname.endsWith('/dice/DiceScene.js')).name;const {DiceScene}=await import(url),project=DiceScene.prototype.project;DiceScene.prototype.project=function(...args){window.largeScene=this;return project.apply(this,args);};});
-  await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click();
+  await releaseDayStart(page);
   await page.waitForFunction(()=>window.largeCheck.session.game.state.phase==='play',null,{timeout:60000});
   const baseline=await page.evaluate(()=>window.largeScreen.areas.get('palette').layoutFrame.scale);
   await page.locator('.HandFixedActions .Button').first().click();

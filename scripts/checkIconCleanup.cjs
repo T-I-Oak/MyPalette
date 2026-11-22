@@ -21,7 +21,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         });
         await page.goto(base);
         await page.getByRole('button', { name: 'ゲーム開始', exact: true }).click();
-        await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).waitFor();
+        await page.waitForFunction(()=>document.querySelector('[data-game-end-day]')?.disabled===false,null,{timeout:60000});
         const togglePanel = () => page.locator('#panel-toggle').evaluate(button => button.click());
         async function rememberHosts() {
             await togglePanel();
@@ -44,19 +44,25 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             return result;
         }
         await rememberHosts();
+        await togglePanel();
+        await page.waitForFunction(() => {
+            const frames = [...document.querySelectorAll('[data-scene-area="stock"] [data-scene-back="false"] .PaintingIconFrame')];
+            return frames.length > 0 && frames.every(frame => frame.querySelector('canvas')?.height > 0);
+        });
+        await togglePanel();
+        await checkOwnership('panel closed after redisplay');
         const counts = [await checkOwnership('initial')];
         const updates = 12;
         let endings = 0;
-        const start = page.getByRole('button', { name: '今日の仕事を始める', exact: true });
         const end = page.getByRole('button', { name: '今日の仕事を終える', exact: true });
         for (let step = 0; step < updates; step++) {
             if (await end.count()) {
                 await end.click();
                 await page.waitForFunction(() => {
                     const button = document.querySelector('[data-game-end-day]');
-                    return !button || (button.textContent === '今日の仕事を始める' && !button.disabled);
+                    return !button || !button.disabled;
                 });
-                if (!await start.count()) {
+                if (await page.getByRole('heading',{name:'ゲーム終了',exact:true}).isVisible()) {
                     endings++;
                     const returnToTitle = page.getByRole('button', { name: 'タイトルへ戻る', exact: true });
                     await returnToTitle.waitFor();
@@ -64,21 +70,9 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
                     if (step + 1 < updates) {
                         await returnToTitle.click();
                         await page.getByRole('button', { name: 'ゲーム開始', exact: true }).click();
-                        await start.waitFor();
+                        await page.waitForFunction(()=>document.querySelector('[data-game-end-day]')?.disabled===false,null,{timeout:60000});
                         await rememberHosts();
                     }
-                }
-            } else {
-                await start.click({ force: true });
-                await page.waitForFunction(() => document.querySelector('[data-game-end-day]')?.disabled === false, null, { timeout: 60000 });
-                if (step === 0) {
-                    await togglePanel();
-                    await page.waitForFunction(() => {
-                        const frames = [...document.querySelectorAll('[data-scene-area="stock"] [data-scene-back="false"] .PaintingIconFrame')];
-                        return frames.length > 0 && frames.every(frame => frame.querySelector('canvas')?.height > 0);
-                    });
-                    await togglePanel();
-                    await checkOwnership('panel closed after redisplay');
                 }
             }
             counts.push(await checkOwnership(`update ${step + 1}`));

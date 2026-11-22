@@ -1,3 +1,4 @@
+const { installDayStartGate, releaseDayStart } = require('./dayStartGate.cjs');
 const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
@@ -50,9 +51,9 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
 
 
  const idle=async()=>{await page.waitForFunction(()=>!check.presentation.cards.busy&&!document.querySelector('[data-card-scene-motion]'),null,{timeout:60000});};
- const begin=async()=>{await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});await page.waitForFunction(()=>check.mounted.session.game.state.phase==='play',null,{timeout:60000});await idle();};
+ const begin=async()=>{await releaseDayStart(page);await page.waitForFunction(()=>check.mounted.session.game.state.phase==='play',null,{timeout:60000});await idle();};
  const play=async()=>{await page.locator('.HandFixedActions button:enabled').first().click({force:true});await idle();};
- await page.goto(base);await page.waitForFunction(()=>window.check);await begin();
+ await installDayStartGate(page);await page.goto(base);await page.waitForFunction(()=>window.check);await begin();
  const verify=async label=>{
  const failures=await page.evaluate(async()=>{
  const {playMetrics,layoutPlay}=await import('./src/game/playLayout.js');

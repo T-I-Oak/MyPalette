@@ -1,3 +1,4 @@
+const { installDayStartGate, releaseDayStart } = require('./dayStartGate.cjs');
 const { chromium } = require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -37,8 +38,8 @@ for (const card of settings.cards) for (const step of card.steps) {
                 for(const card of Object.values(game.definitions))for(const step of card.steps)step.goals=[{color:face.color,material:face.material}];configured=true;
             }};
             </script>` }));
-        await page.goto(base);
-        await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});
+        await installDayStartGate(page);await page.goto(base);
+        await releaseDayStart(page);
         await page.waitForFunction(()=>document.querySelector('[data-game-end-day]')?.disabled===false,null,{timeout:60000});
         const hand = page.locator('[data-scene-area=hand] .PaintingCard');
         await hand.first().waitFor();
