@@ -70,7 +70,8 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             const actual = node.getBoundingClientRect(), parent = node.parentElement.getBoundingClientRect();
             return { x:actual.left-parent.left, y:actual.top-parent.top };
         });
-        assert(Math.abs(ticketPosition.x)<1 && Math.abs(ticketPosition.y)<1);
+        assert(ticketPosition.x >= 0 && ticketPosition.y >= 0);
+        assert(await rerolls.evaluate(node => node.parentElement.classList.contains('PaletteFixedActions')));
         const endDayPlacement = await page.locator('[data-game-end-day]').evaluate(node => {
             const rect = node.getBoundingClientRect();
             const play = document.querySelector('.LayoutAreaFixed[data-area="play"]').getBoundingClientRect();
@@ -133,7 +134,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         await page.setViewportSize({ width:1200,height:800 });
         await page.getByRole('button', { name:'今日の仕事を終える',exact:true }).click();
         await page.waitForTimeout(300);
-        assert(await rerolls.isHidden());
+        assert.equal(await rerolls.innerText(),'×0');
         assert(await palette.locator('canvas').evaluate(node => node === window.paletteCanvas));
         await waitDayStart(page);assert.equal(await page.locator('.HandFixedActions .Button').count(),0);
         await page.waitForFunction(() => {

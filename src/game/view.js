@@ -1,4 +1,5 @@
 import { createGameSession } from './session.js';
+import { mountRerollControl } from './rerollControl.js';
 import { createDayStartFlow } from './dayStartFlow.js';
 import { matchingDice, satisfiesSelection } from './goals.js';
 import { displayLabel } from '../effectCatalog.js';
@@ -64,6 +65,8 @@ export function mountGame(root, settings, presentation = null, onFinished = null
     scroll.addEventListener('close', () => queueMicrotask(() => {
         if (inspectionRefresh && !disposed && !inspectionOpen()) render();
     }), true);
+    const rerollControl = mountRerollControl(root, game, () => disposed || moving || notices.busy,
+        id => act(() => game.reroll(id)));
     function searchGoal(event) {
         const icon = event.target.closest?.('[data-goal-condition]');
         if (!icon || !presentation) return;
@@ -324,11 +327,11 @@ export function mountGame(root, settings, presentation = null, onFinished = null
                 checkbox(node, die.id, `${die.id}を達成に使用`, updateAchievements);
                 node.querySelector('input').dataset.gameAction = '';
             }
-            const reroll = gameButton('↻', () => act(() => game.reroll(die.id)), !canPlay || die.used || !s.rerolls);
+            const reroll = gameButton('↻', () => rerollControl.request(die.id), !canPlay || die.used || !s.rerolls);
             reroll.setAttribute('aria-label', `${die.id}をリロール`); reroll.title = `${die.id}をリロール`;
             node.append(reroll); diceList.append(node);
         }
-        diceSection.append(diceList, gameButton('全未使用ダイスをリロール', () => act(() => game.reroll()), !canChangeAll()));
+        diceSection.append(diceList, gameButton('全未使用ダイスをリロール', () => rerollControl.request(), !canChangeAll()));
         diceSection.title = 'ダイスにチェックを付け、制作中の作品の達成ボタンで確定します。';
         const cardZones = [['field', '制作中'], ['hand', '手札'], ['shipped', '出荷済み作品']];
         if (presentation) cardZones.push(['discard', '捨て札']);
@@ -450,9 +453,9 @@ export function mountGame(root, settings, presentation = null, onFinished = null
             confirmReroll: () => act(() => game.choose([...selected])),
             canStartRoll: () => !disposed && !moving && !notices.busy && s.rollRequest?.status === 'ready',
             canChangeAll,
-            canChangeOne: () => canPlay && !moving && s.rerolls > 0 && selected.size === 1 && s.dice.some(die => selected.has(die.id) && !die.used),
-            changeAll: () => act(() => game.reroll()),
-            changeOne: () => { if (selected.size === 1) act(() => game.reroll([...selected][0])); },
+            canChangeOne: () => canPlay && !moving && !notices.busy && s.rerolls > 0 && selected.size === 1 && s.dice.some(die => selected.has(die.id) && !die.used),
+            changeAll: () => rerollControl.request(),
+            changeOne: () => { if (selected.size === 1) rerollControl.request([...selected][0]); },
             toggleDie: id => {
                 const die = s.dice.find(die => die.id === id);
                 const allowed = canPlay || (selectingReroll && s.pending.options.some(option => option.id === id));
@@ -477,6 +480,7 @@ export function mountGame(root, settings, presentation = null, onFinished = null
     }
     function dispose() {
         disposed = true;
+        rerollControl.dispose();
         dayStart?.dispose();
         notices.dispose();
         root.removeEventListener('click', searchGoal, true);
