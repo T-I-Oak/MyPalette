@@ -1,3 +1,4 @@
+const { installDayStartGate, releaseDayStart } = require('./dayStartGate.cjs');
 const { chromium } = require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -32,7 +33,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
                 if(e.animationName==='dice-emerge')window.starts.set(e.target,(window.starts.get(e.target)||0)+1);
             });
             </script>` }));
-        await page.goto(base);
+        await installDayStartGate(page);await page.goto(base);
         await page.waitForFunction(() => window.scene?.group.dice.length === 3).catch(async error => {
             console.error({ errors, body: await page.locator('body').innerText(), scene: await page.evaluate(() => window.scene?.group.dice.length) });
             throw error;
@@ -41,7 +42,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         await page.evaluate(() => window.gameCheck.session.game.state.dice.forEach((die, index) => {
             die.faces = Array.from({ length: 6 }, () => index === 0 ? { special: 'fame1' } : { color: 'orange', material: 'brush' });
         }));
-        await page.getByRole('button', { name: '今日の仕事を始める', exact: true }).click({ force: true });
+        await releaseDayStart(page);
         await page.waitForFunction(() => [...window.scene.visuals.values()].some(v => !v.result.hidden), null, { timeout: 60000 });
         const emerging = await page.evaluate(() => {
             const v = [...window.scene.visuals.values()].find(v => !v.result.hidden);

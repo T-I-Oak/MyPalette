@@ -1,3 +1,4 @@
+const { installDayStartGate, waitDayStart, releaseDayStart } = require('./dayStartGate.cjs');
 const { chromium } = require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
@@ -6,9 +7,9 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
  try {
   const page=await browser.newPage({viewport:{width:1200,height:800}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(base);
+  await installDayStartGate(page);await page.goto(base);
   await page.getByRole('button',{name:'ゲーム開始',exact:true}).click();
-  await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).waitFor();await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
+  await waitDayStart(page);await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
   await page.evaluate(async()=>{
    const loaded=performance.getEntriesByType('resource').find(entry=>new URL(entry.name).pathname.endsWith('/dice/DiceScene.js'));
    const {DiceScene}=await import(loaded.name);
@@ -34,7 +35,8 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
   assert(await page.evaluate(async id=>{
    const {fieldContains}=await import('/MyPalette/src/dice/field.js');return fieldContains(window.dragScene.group.get(id).body.position,1.79);
   },id));
-  await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});
+  await releaseDayStart(page);
+  await page.waitForFunction(()=>window.dragScene.group.rolling===true,null,{timeout:60000});
   const during=await point(ids[1]);await page.mouse.move(during.x,during.y);await page.mouse.down();
   assert.equal(await page.locator('.PaletteViewport.state-dragging').count(),0);await page.mouse.up();
   await page.waitForFunction(()=>{const b=document.querySelector('[data-game-end-day]');return b&&b.textContent==='今日の仕事を終える'&&!b.disabled;},null,{timeout:60000});

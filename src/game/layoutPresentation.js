@@ -24,7 +24,7 @@ export function createLayoutPresentation(screen, resultGraphics) {
     const palette = createPalettePresentation(screen.areas.get('palette'), hosts.get('palette').host, () => screen.render(), resultGraphics);
     const play = createPlayPresentation(screen.areas.get('play'), hosts.get('play').host, () => screen.render());
     const infoArea = screen.areas.get('info');
-    const info = createInfoPresentation(infoArea, hosts.get('info').host);
+    const info = createInfoPresentation(infoArea, hosts.get('info').host, screen);
     const infoLabel = infoArea.fixedLayer.querySelector('.LayoutAreaName');
     infoLabel.hidden = true;
     const cards = createCardScene(screen, play); play.bindScene(cards);
@@ -59,6 +59,7 @@ export function createLayoutPresentation(screen, resultGraphics) {
     }
     return {
         cards, play,
+        startDay: info.startDay,
         initialize: (definitions, state) => cards.initialize(definitions, state),
         cardComponent: cards.component,
         setAchievable: cards.achievable,

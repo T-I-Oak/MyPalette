@@ -1,7 +1,7 @@
 const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const {version}=require('../package.json');
-const base=process.argv[2]||'http://127.0.0.1:4173/MyPalette/';
+const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
 const startTitle=page=>page.getByRole('button',{name:'ゲーム開始',exact:true});
 const startDay=page=>page.getByRole('button',{name:'今日の仕事を始める',exact:true});
 const endDay=page=>page.getByRole('button',{name:'今日の仕事を終える',exact:true});
@@ -63,38 +63,30 @@ const waitForRoll=page=>page.waitForFunction(()=>{
    assert.ok(retryGeometry.every(rect=>rect.left>=0&&rect.top>=0&&rect.right<=viewport.width&&rect.bottom<=viewport.height), 'retry button must remain within viewport');
    await retry.click();
   }
-  const start=startDay(page);await start.waitFor();
+  await page.locator('.InfoDay').waitFor();
+  assert.equal(await startDay(page).count(),0);
   assert.equal(await page.locator('.StartIssues').count(),0);
   assert.equal(await page.getByRole('button',{name:'入口へ戻る',exact:true}).count(),0);
   assert.equal(await page.locator('.LayoutScreen').getAttribute('data-layout'),i===1?'B':'A');
-  await page.waitForFunction(()=>document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
   const readyMs=await page.evaluate(()=>performance.now());
-  assert.equal(await page.locator('[data-scene-area=hand] .PaintingCard').count(),0);
-  assert.equal(await page.locator('.PaletteViewport .DiceResult:not([hidden])').count(),0);
-  await start.click({force:true});
   await waitForRoll(page);
   assert.equal(await page.locator('.PaletteViewport .DiceResult:not([hidden])').count(),3);
-  const metrics=await page.evaluate(()=>({settledMs:performance.now(),javascript:performance.getEntriesByType('resource').filter(e=>new URL(e.name).pathname.endsWith('.js')).map(e=>({file:new URL(e.name).pathname.split('/').at(-1),bytes:e.encodedBodySize}))}));
+  const metrics=await page.evaluate(()=>({settledMs:performance.now()}));
   runs.push({viewport,readyMs:Math.round(readyMs),...metrics});
   if(i<2){
-   await endDay(page).click();
-   await start.waitFor();
-   assert.match(await page.locator('.InfoDay').textContent(),/Day 2/);
-   assert.equal(await page.locator('[data-scene-area=hand] .PaintingCard').count(),0);
    const result=page.getByRole('heading',{name:'ゲーム終了',exact:true});
-   for(let day=2;day<=3;day++){
-    await start.click({force:true});
+   for(let day=1;day<=4;day++){
     await waitForRoll(page);
+    assert.match(await page.locator('.InfoDay').textContent(),new RegExp('Day '+day));
     await endDay(page).click();
-    await start.or(result).waitFor();
+    await page.waitForFunction(()=>document.querySelector('.GameStartup:not([hidden]) h1')?.textContent==='ゲーム終了' || document.querySelector('[data-game-end-day]')?.disabled===false,null,{timeout:60000});
     if(await result.isVisible())break;
    }
    assert.ok(await result.isVisible());
    await page.getByRole('button',{name:'タイトルへ戻る',exact:true}).click();
-   await startTitle(page).click();
-   await start.waitFor();
+   await startTitle(page).click();await waitForRoll(page);
    assert.match(await page.locator('.InfoDay').textContent(),/Day 1/);
-   assert.equal(await page.locator('[data-scene-area=hand] .PaintingCard').count(),0);
+   assert.equal(await startDay(page).count(),0);
   }
   assert.deepEqual(errors,[]);await context.close();
  }

@@ -1,3 +1,4 @@
+const { installDayStartGate, releaseDayStart } = require('./dayStartGate.cjs');
 const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
@@ -69,7 +70,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
 
 
  const idle=async()=>{await page.waitForFunction(()=>!check.presentation.cards.busy&&!document.querySelector('[data-card-scene-motion]'),null,{timeout:60000});};
- const begin=async()=>{await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});await page.waitForFunction(()=>check.mounted.session.game.state.phase==='play',null,{timeout:60000});await idle();};
+ const begin=async()=>{await releaseDayStart(page);await page.waitForFunction(()=>check.mounted.session.game.state.phase==='play',null,{timeout:60000});await idle();};
  const play=async()=>{await page.locator('.HandFixedActions button:enabled').first().click({force:true});await idle();};
  const stock=async()=>{await page.waitForFunction(()=>document.querySelector('[data-stock-acquire]')?.disabled===false);await page.locator('[data-stock-acquire]').first().click({force:true});await idle();};
  const select=async id=>{
@@ -84,7 +85,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  assert.ok(point,'対象ダイスの見えている位置を選ぶ');await page.mouse.click(point.x,point.y);
  assert.equal(await page.locator('.PaletteViewport .DiceResult[data-die-id="'+id+'"]').getAttribute('aria-label'),'選択中');
  };
- await page.goto(base);await page.waitForFunction(()=>window.check);await begin();
+ await installDayStartGate(page);await page.goto(base);await page.waitForFunction(()=>window.check);await begin();
  assert.equal(await page.evaluate(async()=>{
  const {createEasel}=await import('./src/game/easel/createEasel.js');
  const easel=createEasel(),meshes=[];
@@ -123,7 +124,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  const cleanup=await page.evaluate(()=>frames.filter(f=>['day-cleanup','stock-close','stock-rotate'].includes(f.motion)));
  assert.ok(cleanup.some(f=>f.motion==='day-cleanup')&&cleanup.some(f=>f.motion==='stock-rotate'));
  assert.ok(cleanup.every(f=>f.day==='Day 1'));
- assert.equal(await page.locator('.InfoDay .InfoRow').first().textContent(),'Day 2');
+ assert.equal(await page.locator('.InfoDay .InfoRow').first().textContent(),'Day 1');
  assert.ok(await page.evaluate(()=>check.mounted.session.game.state.dice.every(die=>die.current!==null)));
  await page.screenshot({path:'tmp_card_scene_cleanup.png'});
  await begin();console.log('morning recycle');

@@ -1,6 +1,7 @@
 import { drawFameIcon } from '../icons/laurel.js';
 import { compactCountCharacters, creditAtRisk, flyerCounts, flyerFiles, flyerIconWidth, flyerImageSize, flyerReserveCycles, flyerReserveDuration, iconRunWidth, infoDayWidth, infoFormats, logoSize } from './infoLayout.js';
 import './info.css';
+import { createDayStartMotion } from './dayStartMotion.js';
 
 function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -148,7 +149,7 @@ function createCreditRow(reducedMotion) {
     };
 }
 
-export function createInfoPresentation(area, host) {
+export function createInfoPresentation(area, host, screen) {
     const logo = element('img', 'InfoLogo');
     logo.src = `${import.meta.env.BASE_URL}assets/my-palette-logo.png`;
     logo.alt = 'My Palette';
@@ -176,6 +177,7 @@ export function createInfoPresentation(area, host) {
         return { x: rect.x, y: rect.y, width: flyerIconWidth * area.layoutFrame.scale, height: rect.height };
     }
     return {
+        startDay: createDayStartMotion(screen, area, day),
         creditTarget: creditRow.targetRect,
         impactCredit: creditRow.impact,
         clearCreditImpacts: creditRow.clearImpacts,

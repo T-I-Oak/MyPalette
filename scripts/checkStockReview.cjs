@@ -1,3 +1,4 @@
+const { installDayStartGate, releaseDayStart } = require('./dayStartGate.cjs');
 const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwright');
 const assert=require('node:assert/strict');
 (async()=>{
@@ -5,8 +6,10 @@ const assert=require('node:assert/strict');
     try {
         const page=await browser.newPage({viewport:{width:1200,height:800},reducedMotion:'reduce'});
         const errors=[];page.on('pageerror',error=>errors.push(error.message));
-        await page.goto(process.argv[2] || 'http://127.0.0.1:3005/MyPalette/tmp_stock_review.html');
-        await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});
+        await installDayStartGate(page);
+        await page.goto(process.argv[2] || 'http://127.0.0.1:3000/MyPalette/tmp_stock_review.html');
+        await releaseDayStart(page);
+        await page.waitForFunction(()=>document.querySelector('[data-game-end-day]')?.disabled===false,null,{timeout:60000});
         await page.locator('.HandFixedActions button:enabled').first().click();
         await page.locator('[data-hand-return]:enabled').first().waitFor();
         assert.equal(await page.locator('.GameChoice[open]').count(),0);

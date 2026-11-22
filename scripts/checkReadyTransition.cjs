@@ -1,18 +1,23 @@
+const { installDayStartGate, waitDayStart, releaseDayStart } = require('./dayStartGate.cjs');
 const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict');
 const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
  const page=await browser.newPage({viewport:{width:1200,height:900}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(base);
+ await installDayStartGate(page);await page.goto(base);
  await page.getByRole('button',{name:'ゲーム開始',exact:true}).click();
- await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).waitFor();await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
+ await waitDayStart(page);await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
  await page.evaluate(async()=>{
   const url=performance.getEntriesByType('resource').find(e=>new URL(e.name).pathname.endsWith('/dice/DiceScene.js')).name;
   const {DiceScene}=await import(url),original=DiceScene.prototype.project;
   DiceScene.prototype.project=function(...args){window.readyScene=this;return original.apply(this,args);};
  });
- const roll=page.getByRole('button',{name:'今日の仕事を始める',exact:true});
- await roll.click({force:true});await page.getByRole('button',{name:'すべての画材を更新する',exact:true}).waitFor({timeout:60000});
+
+ await releaseDayStart(page);
+ await page.waitForFunction(()=>{
+  const button=[...document.querySelectorAll('.PaletteFixedActions button')].find(node=>node.textContent==='すべての画材を更新する');
+  return button&&!button.disabled;
+ },null,{timeout:60000});
  await page.waitForTimeout(1000);
  const outcome=await page.evaluate(async()=>{
   const scene=window.readyScene,die=scene.group.dice[0],id=die.id;

@@ -1,3 +1,4 @@
+const { installDayStartGate, waitDayStart, releaseDayStart } = require('./dayStartGate.cjs');
 const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE||'playwright');
 const fs=require('node:fs'),assert=require('node:assert/strict');
 const settings=JSON.parse(fs.readFileSync('public/data/cards.json','utf8'));
@@ -14,7 +15,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  const root=document.querySelector('main'),screen=createLayoutScreen(root,document.querySelector('button'));
  window.searchCheck=mountGame(root,${JSON.stringify(settings)},createLayoutPresentation(screen));
  </script>`}));
- await page.goto(base);await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).waitFor();
+ await installDayStartGate(page);await page.goto(base);await waitDayStart(page);
  await page.waitForFunction(()=>performance.getEntriesByType('resource').some(e=>new URL(e.name).pathname.endsWith('/dice/DiceScene.js')));
  await page.evaluate(async()=>{
   const url=performance.getEntriesByType('resource').find(e=>new URL(e.name).pathname.endsWith('/dice/DiceScene.js')).name;
@@ -26,7 +27,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
   g.state.dice[2].faces=Array.from({length:6},()=>face('pastel','orange'));
  });
  const goal=condition=>page.locator(`[data-scene-area="hand"] [data-goal-condition='${JSON.stringify(condition)}']`).first();
- await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).click({force:true});
+ await releaseDayStart(page);
  await goal({material:'brush',color:'orange'}).click();
  await page.waitForFunction(()=>!!window.searchScene?.faceSearch.active);
  assert(await page.evaluate(()=>window.searchScene.group.rolling));

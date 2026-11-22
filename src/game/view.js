@@ -1,4 +1,5 @@
 import { createGameSession } from './session.js';
+import { createDayStartFlow } from './dayStartFlow.js';
 import { matchingDice, satisfiesSelection } from './goals.js';
 import { displayLabel } from '../effectCatalog.js';
 import { copyPaintingIconDrawers, dieFaceIcon, releasePaintingIcons } from '../cardIcons.js';
@@ -40,6 +41,16 @@ export function mountGame(root, settings, presentation = null, onFinished = null
     let activeTab = 'play';
     let moving = false;
     let animationError = '';
+    const dayStart = presentation && createDayStartFlow({
+        state: game.state,
+        present: async (initial, change, signal) => {
+            moving = true; render();
+            await presentation.startDay(initial, () => { change(); render(); }, signal);
+            if (!signal.aborted) { moving = false; render(); }
+        },
+        advance: () => session.dispatch(() => game.nextDay()),
+        begin: () => act(() => game.beginDay()),
+    });
     const scroll = el('div', undefined, 'GameBoard');
     if (presentation) root.append(scroll); else root.replaceChildren(scroll);
     const scope = presentation ? root : scroll;
@@ -141,8 +152,8 @@ export function mountGame(root, settings, presentation = null, onFinished = null
                 animationError = '演出を表示できなかったため、現在のゲーム状態を表示しました。';
             }).finally(() => {
                 if (disposed) return;
-                if (game.state.phase === 'betweenDays') session.dispatch(() => game.nextDay());
                 moving = false; render();
+                void dayStart.start();
             });
             return;
         }
@@ -406,10 +417,8 @@ export function mountGame(root, settings, presentation = null, onFinished = null
         const controls = section('仕事の進行', scroll, 'GameControls');
         controls.append(el('p', s.logs.at(-1), 'GameLatestLog'));
         if (s.phase === 'play' || (presentation && ['awaitingStart', 'start', 'end', 'betweenDays'].includes(s.phase))) {
-            const awaitingStart = s.phase === 'awaitingStart';
-            const endDay = gameButton(awaitingStart ? '今日の仕事を始める' : '今日の仕事を終える',
-                () => act(() => awaitingStart ? game.beginDay() : game.endDay()), !awaitingStart && !canPlay);
-            endDay.classList.toggle('state-attention', awaitingStart);
+            const endDay = gameButton('今日の仕事を終える',
+                () => act(() => game.endDay()), !canPlay);
             endDay.dataset.gameEndDay = '';
             controls.append(el('p', '任意のタイミングで仕事を終了できます。余った画材はチラシ制作・信用更新に使われます。'),
                 endDay);
@@ -468,6 +477,7 @@ export function mountGame(root, settings, presentation = null, onFinished = null
     }
     function dispose() {
         disposed = true;
+        dayStart?.dispose();
         notices.dispose();
         root.removeEventListener('click', searchGoal, true);
         presentation?.cancelEffects();
@@ -478,5 +488,6 @@ export function mountGame(root, settings, presentation = null, onFinished = null
         presentation?.reset?.();
     }
     render();
+    if (dayStart) void dayStart.start();
     return { session, dispose };
 }
