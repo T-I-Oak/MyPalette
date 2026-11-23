@@ -138,3 +138,9 @@ checkCardDetail.cjsでEscape・Tab・Shift+Tab・Enter・Space・左右矢印に
 
 共通.Button自身に24px/1.2 system-ui, sans-serifを指定し、配置先からの基本フォントの継承を廃止。詳細側への個別指定は加えない。共通スタイル仕様を更新し、検証後に既存の開発ブランチ配信を更新する。
 フォント修正後のcheckCardInteraction.cjsとcheckCardDetail.cjsは成功。npm.cmd testは226/226成功、npm.cmd run buildも成功。再配信前の共通masterは48bbb9d5bdd84b5b0c5cdccc7970284824154581でリモートと一致し、src/lib差分なし。
+フォント修正版の配信元はd2a831ab8867e686c353082bf3b00106f2b5fa35。Deploy to GitHub Pages（https://github.com/T-I-Oak/MyPalette/actions/runs/45121058077）とpages build and deployment（https://github.com/T-I-Oak/MyPalette/actions/runs/45121109235）は成功。公開URL https://t-i-oak.github.io/MyPalette/?review=d2a831a でPC幅1200×800・縦長幅390×844の起動、通常と詳細のfontFamily/fontSize/fontWeight/fontStyle一致、Step保持、キー遮断を確認し、HTTPエラーとページ例外はなし。Safari実機での再確認はオーナー判断待ち。
+
+### フォント修正版の版番号の訂正
+
+オーナーから、公開後の修正を0.35.0のまま配信しては新旧を確認できないとの指摘を受領。公開後の修正を継続実装中の変更として同じ版に保った判断は不適切だった。package.jsonとpackage-lock.jsonを0.35.1へ更新し、フォント修正版を識別可能な版として再配信する。以後の確認依頼では公開画面で検証した版番号を明示する。以前の0.35.0の配信・検証記録は当時の履歴として保持する。
+0.35.1でnpm.cmd testは226/226成功、npm.cmd run buildは成功。確認専用ページも0.35.1で再生成。共通masterは48bbb9d5bdd84b5b0c5cdccc7970284824154581でリモートと一致し、src/lib差分なし。
