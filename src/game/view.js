@@ -2,6 +2,7 @@ import { createGameSession } from './session.js';
 import { mountRerollControl } from './rerollControl.js';
 import { createDayStartFlow } from './dayStartFlow.js';
 import { matchingDice, satisfiesSelection } from './goals.js';
+import { endDayAttention } from './endDayAttention.js';
 import { displayLabel } from '../effectCatalog.js';
 import { copyPaintingIconDrawers, dieFaceIcon, releasePaintingIcons } from '../cardIcons.js';
 import { Card } from './Card.js';
@@ -423,6 +424,7 @@ export function mountGame(root, settings, presentation = null, onFinished = null
             const endDay = gameButton('今日の仕事を終える',
                 () => act(() => game.endDay()), !canPlay);
             endDay.dataset.gameEndDay = '';
+            endDay.classList.toggle('state-attention', endDayAttention(game, moving || notices.busy));
             controls.append(el('p', '任意のタイミングで仕事を終了できます。余った画材はチラシ制作・信用更新に使われます。'),
                 endDay);
         } else if (s.phase === 'betweenDays') {
