@@ -438,6 +438,7 @@ export function mountGame(root, settings, presentation = null, onFinished = null
         const selectingStock = Boolean(presentation && s.pending?.kind === 'stock');
         if (s.pending && !selectingReroll && !selectingStock && !selectingReturn && !notices.busy) selectionPanel(s.pending);
         presentation?.present(scroll, s, {
+            waiting: moving || notices.busy,
             inspectCard(id, source) {
                 const all = [...s.hand, ...s.field, ...s.discard, ...s.deck, ...s.shipped, ...Object.values(s.stocks).flat()];
                 const card = all.find(item => item.id === id);

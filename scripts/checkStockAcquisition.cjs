@@ -68,7 +68,7 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
         assert.equal(await page.evaluate(()=>window.stockCheck.mounted.session.game.state.pending),null);
         assert.equal(await page.locator('[data-stock-acquire]').count(),0);
         // Select a return through the hand button, then acquire directly from a stock.
-        await page.locator('#panel-toggle').click();
+        await page.waitForFunction(()=>!window.stockCheck.presentation.cards.busy && window.stockCheck.screen.panelState.progress===0);
         await page.evaluate(()=>{
             const g=window.stockCheck.mounted.session.game;
             g.step(g.state.hand[0]).playEffects=[{type:'exchangeCards',count:1}];

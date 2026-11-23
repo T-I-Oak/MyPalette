@@ -15,7 +15,7 @@ body{display:flex;flex-direction:column}
 .review-guide button{font:inherit;cursor:pointer}
 main.LayoutScreen{flex:1;min-height:0;width:100%;height:0}
 </style></head><body class="theme-atelier texture-layout">
-<aside class="review-guide"><p>確認用 ${version}：手札・場札・公開ストックのカード面で詳細を開き操作を確認。場札は最初のダイス1個で達成可能です。「発注の準備」後は仕事を終えて取得を確認します。保存済み設定は変更しません。</p><select id="scenario"><option value="gain">ストック2枚取得</option><option value="exchange">手札交換</option><option value="achieve">達成・重なり</option></select><button onclick="location.reload()">最初から確認</button><button id="order">発注の準備</button></aside>
+<aside class="review-guide"><p>確認用 ${version}：手札・場札・公開ストックのカード面で詳細を開き操作を確認。場札は最初のダイス1個で達成可能です。「発注の準備」後は仕事を終えて取得を確認します。保存済み設定は変更しません。</p><select id="scenario"><option value="gain">ストック2枚取得</option><option value="exchange">手札交換</option><option value="exchange2">連続手札交換2回</option><option value="achieve">達成・重なり</option></select><button onclick="location.reload()">最初から確認</button><button id="order">発注の準備</button></aside>
 <main class="LayoutScreen"><button id="panel-toggle" class="PanelToggle" type="button"></button></main>
 <script type="module">
 import {createLayoutScreen} from './src/ui/screenLayout/createLayoutScreen.js';
@@ -30,7 +30,7 @@ try {
     const scenario=document.querySelector('#scenario');scenario.value=mode;
     scenario.onchange=()=>{location.search='?mode='+scenario.value;};
     for(const card of settings.cards) for(const step of card.steps) {
-        step.playEffects=mode==='gain'?[{type:'gainStockCards',count:2}]:mode==='exchange'?[{type:'exchangeCards',count:1}]:[];step.achievementEffects=[];
+        step.playEffects=mode==='gain'?[{type:'gainStockCards',count:2}]:mode.startsWith('exchange')?[{type:'exchangeCards',count:mode==='exchange2'?2:1}]:[];step.achievementEffects=[];
     }
     const root=document.querySelector('main');
     const screen=createLayoutScreen(root,document.querySelector('#panel-toggle'));

@@ -60,6 +60,8 @@ export function createLayoutScreen(viewport, button) {
     let target = 0;
     let animation = 0;
     let lastTime;
+    let mode;
+    let manualRevision = 0;
     const durationMs = 260;
 
     function render() {
@@ -68,6 +70,7 @@ export function createLayoutScreen(viewport, button) {
         if (!width || !height) return;
         layout.definitions = Object.fromEntries([...areas].map(([id, area]) => [id, area.getLayoutRequirements()]));
         const frame = layout.calculate(width, height, progress);
+        mode = frame.mode;
         root.style.height = `${frame.height}px`;
         viewport.dataset.layout = frame.mode;
         root.dataset.layout = frame.mode;
@@ -98,8 +101,8 @@ export function createLayoutScreen(viewport, button) {
         animation = progress === target ? 0 : requestAnimationFrame(tick);
     }
 
-    button.addEventListener('click', () => {
-        target = target === 1 ? 0 : 1;
+    function setPanel(open) {
+        target = open ? 1 : 0;
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             cancelAnimationFrame(animation);
             animation = 0;
@@ -109,6 +112,10 @@ export function createLayoutScreen(viewport, button) {
             lastTime = undefined;
             animation = requestAnimationFrame(tick);
         }
+    }
+    button.addEventListener('click', () => {
+        manualRevision++;
+        setPanel(target !== 1);
     });
     new ResizeObserver(render).observe(viewport);
     viewport.addEventListener('scroll', render, { passive: true });
@@ -124,7 +131,9 @@ export function createLayoutScreen(viewport, button) {
     requestAnimationFrame(watchResolution);
     render();
     return { areas, surface, render,
-        openPanel() { if (target !== 1) button.click(); },
+        get panelState() { return { mode, open: target === 1, progress, manualRevision }; },
+        openPanel() { if (target !== 1) setPanel(true); },
+        closePanel() { if (target !== 0) setPanel(false); },
         setFixedScale(scale) {
             if (!Number.isFinite(scale) || scale <= 0) throw new RangeError('Expected positive fixed scale');
             layout.fixedScale = scale;

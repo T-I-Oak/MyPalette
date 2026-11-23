@@ -8,6 +8,7 @@ import { createCardScene } from './cardScene.js';
 import { createCardSceneTimeline } from './cardSceneTimeline.js';
 import { createInfoPresentation } from './infoPresentation.js';
 import { createFlyerMotion } from './flyerMotion.js';
+import { createBoardAcquisition } from './boardAcquisition.js';
 import './layoutGame.css';
 
 export function createLayoutPresentation(screen, resultGraphics) {
@@ -28,7 +29,17 @@ export function createLayoutPresentation(screen, resultGraphics) {
     const infoLabel = infoArea.fixedLayer.querySelector('.LayoutAreaName');
     infoLabel.hidden = true;
     const cards = createCardScene(screen, play); play.bindScene(cards);
-    let renderGame, panelChoice;
+    let renderGame;
+    const boardAcquisition = createBoardAcquisition(screen);
+    let boardSelection;
+    function updateBoardSelection() {
+        if (!boardSelection) return;
+        const [state, actions] = boardSelection;
+        boardAcquisition.update(state, {
+            ready: actions.ready && !cards.busy,
+            waiting: actions.waiting || cards.busy,
+        });
+    }
     const flyer = createFlyerMotion(screen, palette, info);
     const timeline = createCardSceneTimeline(screen, cards, play, palette, flyer, info, () => renderGame());
     function counts() {
@@ -49,6 +60,7 @@ export function createLayoutPresentation(screen, resultGraphics) {
             const area = screen.areas.get(id); area.setSlot(object.id, { x: 0, y: 0, width: area.logicalWidth, height: area.logicalHeight });
         }
         info.update(); hand.update(); stock.update(); palette.update(); play.update(); cards.update();
+        updateBoardSelection();
     });
     function clear() {
         hand.clear(); stock.clear(); palette.clear(); play.clear();
@@ -64,7 +76,7 @@ export function createLayoutPresentation(screen, resultGraphics) {
         cardComponent: cards.component,
         setAchievable: cards.achievable,
         clear,
-        reset() { timeline.cancel(); cards.reset(); play.reset(); palette.reset(); info.reset(); },
+        reset() { boardSelection = undefined; boardAcquisition.reset(); timeline.cancel(); cards.reset(); play.reset(); palette.reset(); info.reset(); },
         searchFaces: palette.searchFaces,
         beginAction(action) { timeline.begin(action); },
         hand: () => cards.display.hand,
@@ -95,8 +107,12 @@ export function createLayoutPresentation(screen, resultGraphics) {
             gameActions.append(...status.querySelectorAll(':scope > .GameAnimationNotice'));
             const handSection = move('hand', '.hand'); handSection.querySelector('h2').remove(); hand.present(handSection);
             stock.present(move('stock', '.GameStockPane'), { ...state, stocks: cards.display.stocks, public: cards.display.public }, actions);
-            const choice = actions.stockSelection || actions.handReturnSelection ? JSON.stringify(state.pending) : null;
-            if (choice && choice !== panelChoice) screen.openPanel(); panelChoice = choice;
+            // Layout updates can run before this render completes; retain its selection snapshot.
+            boardSelection = [{ phase: state.phase, pending: state.pending ? { kind: state.pending.kind } : null }, {
+                ready: actions.stockSelection || actions.handReturnSelection,
+                waiting: actions.waiting,
+            }];
+            updateBoardSelection();
             board.querySelector('.discard').remove();
             play.setSessionActions(gameActions);
             status.remove();

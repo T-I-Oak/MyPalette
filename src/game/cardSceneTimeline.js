@@ -16,15 +16,19 @@ const clamp = value => Math.min(1, Math.max(0, value));
 export function createCardSceneTimeline(screen, cards, play, palette, flyer, info, refresh) {
     const root = screen.areas.get('play').canvas.closest('.LayoutContent');
     let action, records = [], enabled = true, controller = new AbortController();
+    function boardMotionEnabled() {
+        const panel = screen.panelState;
+        return enabled && !(panel.mode === 'B' && panel.progress === 0);
+    }
     function prepare(target) { cards.adopt(target); refresh(); }
-    async function move(target, duration, name, options) {
+    async function move(target, duration, name, options, animate = enabled) {
         const signal = controller.signal;
         if (signal.aborted) return;
         root.dataset.cardSceneMotion = name; prepare(target);
-        await cards.move(target, enabled ? duration : 0, name, options);
+        await cards.move(target, animate ? duration : 0, name, options);
         if (!signal.aborted) refresh();
     }
-    async function reveal(actual) {
+    async function reveal(actual, animate) {
         const target = cardSceneSnapshot(cards.display), ids = [];
         for (const [grade, id] of Object.entries(actual.public)) {
             if (id && target.public[grade] !== id) { target.public[grade] = id; ids.push(id); }
@@ -41,9 +45,9 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
                 const matrix = [...pose.matrix]; matrix[13] -= m.lift * (up - settle) * area.layoutFrame.scale;
                 return { ...pose, matrix, z: up > 0 && settle < 1 ? 10000 : pose.z };
             },
-        });
+        }, animate);
     }
-    async function rotateStocks(actual) {
+    async function rotateStocks(actual, animate) {
         const signal = controller.signal, target = cardSceneSnapshot(cards.display);
         const closingCards = closingStockCards(target, actual), ids = closingCards.map(card => card.id), grades = closingCards.map(card => card.grade);
         if (!ids.length) return;
@@ -57,7 +61,7 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
                 const matrix = [...pose.matrix]; matrix[13] -= m.lift * clamp((p * closing - delay(id)) / 180) * screen.areas.get('stock').layoutFrame.scale;
                 return { ...pose, matrix, z: 10000 };
             },
-        });
+        }, animate);
         if (signal.aborted) return;
         target.stocks = structuredClone(actual.stocks);
         const duration = 700 + maxDelay;
@@ -73,7 +77,7 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
                 matrix[12] -= m.cardWidth * (clamp(time / 260) - clamp((time - 440) / 260)) * screen.areas.get('stock').layoutFrame.scale;
                 return { ...pose, matrix, z: time < 440 ? 10000 : pose.z };
             },
-        });
+        }, animate);
     }
     async function returnToStock(actual, ids) {
         const target = relocateSceneCards(cards.display, actual, ids), held = cardSceneSnapshot(cards.display);
@@ -128,6 +132,7 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
         const actual = cardSceneSnapshot(state);
         const deal = events.find(event => event.kind === 'deal');
         if (deal) {
+            const animate = boardMotionEnabled();
             const target = relocateSceneCards(cards.display, { ...actual, deck: deal.cards, hand: cards.display.hand }, deal.cards.map(card => card.id));
             const ids = deal.cards.map(card => card.id), duration = stockTiming.deal + (ids.length - 1) * stockTiming.dealStagger;
             const sourceZ = new Map(ids.map(id => [id, cards.model.get(id).pose.z]));
@@ -140,7 +145,7 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
                     const time = progress * duration - index * stockTiming.dealStagger;
                     return { ...pose, z: time <= 0 ? sourceZ.get(id) : time < stockTiming.deal ? 10000 + ids.length - index : pose.z };
                 },
-            });
+            }, animate);
         }
         if (signal.aborted) return;
         const changes = sceneChanges(cards.display, actual).filter(item => item.from !== 'deck' && item.from !== 'discard');
@@ -162,22 +167,32 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
             } : undefined);
         }
         if (signal.aborted) return;
+        const animateStocks = boardMotionEnabled();
+        if (!animateStocks) {
+            const target = cardSceneSnapshot(cards.display);
+            target.stocks = structuredClone(actual.stocks);
+            target.public = structuredClone(actual.public);
+            if (JSON.stringify(target) !== JSON.stringify(cards.display)) await move(target, 0, 'stock-update', undefined, false);
+            if (!signal.aborted) await draws(events);
+            return;
+        }
         if (['awaitingStart', 'betweenDays'].includes(state.phase) || state.dayEndRequest?.kind === 'cleanup') {
             const intermediate = cardSceneSnapshot(cards.display);
             for (const change of changes.filter(item => item.from === 'stock' && item.to === 'discard')) {
                 const grade = change.id[0];
                 intermediate.public[grade] = intermediate.stocks[grade][0]?.id ?? null;
             }
-            await reveal(intermediate);
+            await reveal(intermediate, animateStocks);
             if (signal.aborted) return;
         }
-        await rotateStocks(actual);
+        await rotateStocks(actual, animateStocks);
         if (signal.aborted) return;
-        await reveal(actual);
+        await reveal(actual, animateStocks);
         if (signal.aborted) return;
         await draws(events);
     }
     async function recycle(state, resume) {
+        const animate = boardMotionEnabled();
         const signal = controller.signal;
         const source = [...cards.display.discard].reverse(), count = source.length;
         const held = cardSceneSnapshot(cards.display);
@@ -189,14 +204,14 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
             const matrix = new DOMMatrix().translate(rect.x, rect.y).scale(rect.width / m.cardWidth);
             return { matrix: matrix.toFloat64Array(), flip: frame.flip, z: 10000 + count - index };
         };
-        await move(held, recycleTiming.spread, 'recycle-spread', { pose: id => pose(id, recycleTiming.spread), ease: sineProgress });
+        if (animate) await move(held, recycleTiming.spread, 'recycle-spread', { pose: id => pose(id, recycleTiming.spread), ease: sineProgress }, animate);
         if (signal.aborted) return [];
-        await move(held, recycleTiming.gather, 'recycle-gather', { pose: id => pose(id, recycleTiming.spread + recycleTiming.gather), ease: sineProgress });
+        if (animate) await move(held, recycleTiming.gather, 'recycle-gather', { pose: id => pose(id, recycleTiming.spread + recycleTiming.gather), ease: sineProgress }, animate);
         if (signal.aborted) return [];
         const next = resume(state.recycleRequest.id);
         const shuffled = next.find(event => event.kind === 'recycle').cards;
         const target = cardSceneSnapshot(held); target.discard = []; target.deck = structuredClone(shuffled);
-        await move(target, recycleTiming.transfer, 'recycle-transfer', { departure: id => source.some(card => card.id === id) });
+        await move(target, recycleTiming.transfer, 'recycle-transfer', { departure: id => source.some(card => card.id === id) }, animate);
         return next;
     }
     return {
