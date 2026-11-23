@@ -118,15 +118,13 @@
 .GameCardActions { width: min(100%, 260px); margin-inline: auto; }
 .GameCardActions:empty { display: none; }
 .GameCardDetail {
-    max-width: calc(100vw - 16px);
-    max-height: calc(100dvh - 16px);
-    padding: 10px;
-    border: 0;
-    overflow: visible;
-    background: transparent;
-    color: var(--ui-text);
+    position: fixed; inset: 0; z-index: 9500;
+    display: grid; place-items: center; overflow: auto;
+    padding: 10px; box-sizing: border-box; overscroll-behavior: contain;
+    background: var(--ui-scrim); color: var(--ui-text); pointer-events: auto;
 }
-.GameCardDetail::backdrop { background: var(--ui-scrim); }
+.GameCardDetail > .GameCardSlot { max-width: 100%; margin: auto; }
+.GameCardDetail .Button { min-height: 30px; padding: 4px 12px; font-size: 24px; }
 .GameCardDetailViewport {
     width: max-content;
     margin-inline: auto;

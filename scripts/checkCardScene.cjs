@@ -43,7 +43,15 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  const model=presentation.cards.model,counts=presentation.cards.counts;
  if(counts.deck+counts.hand+counts.field+counts.discard+counts.shipped+counts.transit+Object.values(counts.stocks).reduce((a,b)=>a+b,0)!==45)window.cardSceneFailures.push('location count');
  for(const [id,record] of model.cards){
+ if(model.motion?.owner==='hand-return-insert'&&record.area==='transit'){
+ const wrapper=root.querySelector('[data-scene-id="'+id+'"]');
+ if(!wrapper.parentElement.classList.contains('panel'))window.cardSceneFailures.push('return-above-stock:'+id);
+ const grade=presentation.cards.display.stocks[id[0]];
+ if(grade.some(c=>c.id!==id&&model.get(c.id).pose.z<=record.pose.z))window.cardSceneFailures.push('return-stock-order:'+id);
+ }
  if(record.area==='field'&&presentation.cards.display.field.some(c=>c.id===id)){
+ const wrapper=root.querySelector('[data-scene-id="'+id+'"]');
+ if(!wrapper.parentElement.classList.contains('main'))window.cardSceneFailures.push('field-above-board:'+id);
  const expected=presentation.play.cardMatrix(id);
  if(expected.some((v,i)=>Math.abs(v-record.pose.matrix[i])>1e-7))window.cardSceneFailures.push('easel-anchor:'+id);
  }
@@ -140,7 +148,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  assert.ok(await page.evaluate(()=>window.frames.some(f=>f.motion==='achievement-shipment'&&Number(f.tilt)>0&&Number(f.tilt)<1)));
  assert.equal(await page.locator('[data-scene-area="shipped"] .SceneShippedCanvas canvas').count(),1);
  await page.screenshot({path:'tmp_card_scene_shipped.png'});
- await page.locator('[data-scene-area="shipped"] [data-scene-card]').click();await page.locator('.GameCardDetail[open]').waitFor();
+ await page.locator('[data-scene-area="shipped"] [data-scene-card]').click();await page.locator('.GameCardDetail[data-open="true"]').waitFor();
  await page.getByRole('button',{name:'閉じる',exact:true}).click();
  assert.equal(await page.locator('[data-scene-card]').count(),45);
  assert.deepEqual(await page.evaluate(()=>window.cardSceneFailures),[]);

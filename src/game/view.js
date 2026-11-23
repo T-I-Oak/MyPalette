@@ -1,11 +1,13 @@
 import { createGameSession } from './session.js';
 import { mountRerollControl } from './rerollControl.js';
 import { createDayStartFlow } from './dayStartFlow.js';
-import { matchingDice, satisfiesSelection } from './goals.js';
+import { matchingDice } from './goals.js';
 import { endDayAttention } from './endDayAttention.js';
 import { displayLabel } from '../effectCatalog.js';
 import { copyPaintingIconDrawers, dieFaceIcon, releasePaintingIcons } from '../cardIcons.js';
 import { Card } from './Card.js';
+import { createGameCardActions } from './gameCardActions.js';
+import { cardActionButton } from './cardActions.js';
 import { showCardDetail } from './cardDetail.js';
 import { createEffectNotices } from './effectNotices.js';
 import { cardLocations, changedCardAreas, createGameAreaTransitions } from './areaTransitions.js';
@@ -57,15 +59,15 @@ export function mountGame(root, settings, presentation = null, onFinished = null
     if (presentation) root.append(scroll); else root.replaceChildren(scroll);
     const scope = presentation ? root : scroll;
     let inspectionRefresh = false;
-    const inspectionOpen = () => Boolean(scroll.querySelector('.GameCardDetail[open]'));
+    let inspection;
+    const inspectionOpen = () => Boolean(inspection?.isOpen);
     const notices = createEffectNotices(root, () => {
         if (disposed) return;
         if (inspectionOpen()) inspectionRefresh = true;
         else render();
     });
-    scroll.addEventListener('close', () => queueMicrotask(() => {
-        if (inspectionRefresh && !disposed && !inspectionOpen()) render();
-    }), true);
+    const cardActions = createGameCardActions({ game, blocked: () => disposed || moving || notices.busy,
+        selection: () => [...selected], act, animated: Boolean(presentation) });
     const rerollControl = mountRerollControl(root, game, () => disposed || moving || notices.busy,
         id => act(() => game.reroll(id)));
     function searchGoal(event) {
@@ -186,14 +188,14 @@ export function mountGame(root, settings, presentation = null, onFinished = null
         }
         return placements.get(key);
     }
-    function cardView(card, area = 'choice', detail = false) {
+    function cardView(card, area = 'choice', detail = false, selectedStep) {
         const physical = presentation && !detail && ['hand', 'field', 'discard'].includes(area);
         const component = physical ? presentation.cardComponent(card.id) : new Card(card.id);
         const key = area + ':' + card.id;
         if (!physical) component.setPresentation(area, detail ? { x: 0, y: 0, angle: 0 } : cardPlacement(area, card.id));
         const remembered = inspectedSteps.get(key);
         if (!physical) component.setFace(game.definitions[card.id], card.step,
-            remembered?.current === card.step ? remembered.selected : card.step,
+            selectedStep ?? (remembered?.current === card.step ? remembered.selected : card.step),
             selected => inspectedSteps.set(key, { current: card.step, selected }));
         const node = el('div', undefined, 'GameCardSlot');
         const actions = el('div', undefined, 'GameCardActions');
@@ -203,14 +205,18 @@ export function mountGame(root, settings, presentation = null, onFinished = null
         if (!detail && !physical) {
             face.setAttribute('aria-haspopup', 'dialog');
             face.addEventListener('click', event => {
-                if (!moving && (area === 'discard' || !event.target.closest('button, .CardIcon'))) openCardDetail(card, area, face, actions);
+                if (!moving && (area === 'discard' || !event.target.closest('button, .CardIcon'))) openCardDetail(card, area, face);
             });
         }
         return node;
     }
-    function openCardDetail(card, area, source, sourceActions) {
-        showCardDetail({ root: scroll, label: game.definitions[card.id].name,
-            createDetail: () => cardView(card, area, true), source, sourceActions });
+    function openCardDetail(card, area, source) {
+        inspection?.close();
+        inspection = showCardDetail({ root, label: game.definitions[card.id].name,
+            createDetail: step => cardView(card, area, true, step), source, actions: () => cardActions.forCard(card.id),
+            onClose() {
+                if (inspectionRefresh && !disposed) queueMicrotask(() => { if (!disposed) render(); });
+            } });
     }
     function cardArea(section, key) {
         const area = el('div', undefined, 'GameCardArea');
@@ -285,6 +291,7 @@ export function mountGame(root, settings, presentation = null, onFinished = null
             onFinished();
             return;
         }
+        inspection?.close();
         inspectionRefresh = false;
         notices.sync(game.state, moving);
         const positions = new Map([...scope.querySelectorAll('[data-pane]')].map(node => [node.dataset.pane, { top: node.scrollTop, left: node.scrollLeft }]));
@@ -320,7 +327,8 @@ export function mountGame(root, settings, presentation = null, onFinished = null
         diceList.dataset.pane = 'dice';
         const achieveButtons = [];
         const updateAchievements = () => {
-            for (const { card, node } of achieveButtons) node.disabled = !canPlay || card.step === 3 || !satisfiesSelection(game.step(card).goals, s.dice, [...selected]);
+            for (const { card, node } of achieveButtons) node.updateCardAction(cardActions.forCard(card.id)[0]);
+            inspection?.refresh();
         };
         for (const die of visibleDice) {
             const node = diceView(die);
@@ -352,28 +360,22 @@ export function mountGame(root, settings, presentation = null, onFinished = null
                 if (key === 'hand') {
                     const intervals = Math.max(3, s.hand.length - 1);
                     node.style.setProperty('--hand-position', index / intervals);
-                    const action = selectingReturn
-                        ? gameButton('返却', () => {
-                            if (!moving && !notices.busy && game.state.pending?.kind === 'handReturn' &&
-                                game.state.pending.options.some(option => option.id === card.id)) act(() => game.choose([card.id]));
-                        }, moving || notices.busy || !s.pending.options.some(option => option.id === card.id))
-                        : gameButton('場にプレイ', () => act(() => game.play(card.id), null, { kind: 'play', id: card.id }), !canPlay || s.hand.length < 2);
-                    if (selectingReturn) {
-                        action.dataset.handReturn = card.id;
-                        action.classList.toggle('state-attention', !action.disabled);
+                    const definition = cardActions.forCard(card.id).find(action => action.id === (selectingReturn ? 'return' : 'play'));
+                    if (definition) {
+                        const action = cardActionButton(definition);
+                        if (selectingReturn) {
+                            action.dataset.handReturn = card.id;
+                            action.classList.toggle('state-attention', !action.disabled);
+                        }
+                        node.querySelector('.GameCardActions').prepend(action);
                     }
-                    node.querySelector('.GameCardActions').prepend(action);
                 }
                 if (key === 'field') {
-                    const action = gameButton('選択ダイスで達成', () => act(() => {
-                        if (presentation && !matchMedia('(prefers-reduced-motion: reduce)').matches) game.beginAchievement(card.id, [...selected]);
-                        else game.achieve(card.id, [...selected]);
-                    }, null, { kind: 'achieve', id: card.id, diceIds: [...selected] }), true);
-                    if (presentation) {
-                        action.textContent = '達成'; action.setAttribute('aria-label', '選択ダイスで達成');
-                        action.hidden = !canPlay || !match;
+                    const definition = cardActions.forCard(card.id).find(action => action.id === 'achieve');
+                    if (definition) {
+                        const action = cardActionButton(definition);
+                        achieveButtons.push({ card, node: action }); node.querySelector('.GameCardActions').prepend(action);
                     }
-                    achieveButtons.push({ card, node: action }); node.querySelector('.GameCardActions').prepend(action);
                 }
                 list.append(node);
             }
@@ -440,15 +442,12 @@ export function mountGame(root, settings, presentation = null, onFinished = null
                 const all = [...s.hand, ...s.field, ...s.discard, ...s.deck, ...s.shipped, ...Object.values(s.stocks).flat()];
                 const card = all.find(item => item.id === id);
                 const area = cardLocations(s).get(id);
-                const actions = scope.querySelector(`.GameCardActions[data-card-id="${id}"]`) || el('div');
-                openCardDetail(card, area, source, actions);
+                openCardDetail(card, area, source);
             },
             selectedDice: [...selected],
             stockSelection: selectingStock && !notices.busy && !moving,
-            chooseStock: id => {
-                if (!disposed && !moving && !notices.busy && game.state.pending?.kind === 'stock' &&
-                    game.state.pending.options.some(option => option.id === id)) act(() => game.choose([id]));
-            },
+            handReturnSelection: selectingReturn && !notices.busy && !moving,
+            cardActions: id => cardActions.forCard(id),
             rerollSelection: selectingReroll,
             canConfirmReroll: () => !disposed && !moving && selectingReroll && selected.size >= s.pending.min &&
                 selected.size <= s.pending.max && [...selected].every(id => s.pending.options.some(option => option.id === id)),
@@ -482,6 +481,7 @@ export function mountGame(root, settings, presentation = null, onFinished = null
     }
     function dispose() {
         disposed = true;
+        inspection?.close();
         rerollControl.dispose();
         dayStart?.dispose();
         notices.dispose();

@@ -28,7 +28,7 @@ export function createLayoutPresentation(screen, resultGraphics) {
     const infoLabel = infoArea.fixedLayer.querySelector('.LayoutAreaName');
     infoLabel.hidden = true;
     const cards = createCardScene(screen, play); play.bindScene(cards);
-    let renderGame, stockChoice;
+    let renderGame, panelChoice;
     const flyer = createFlyerMotion(screen, palette, info);
     const timeline = createCardSceneTimeline(screen, cards, play, palette, flyer, info, () => renderGame());
     function counts() {
@@ -95,8 +95,8 @@ export function createLayoutPresentation(screen, resultGraphics) {
             gameActions.append(...status.querySelectorAll(':scope > .GameAnimationNotice'));
             const handSection = move('hand', '.hand'); handSection.querySelector('h2').remove(); hand.present(handSection);
             stock.present(move('stock', '.GameStockPane'), { ...state, stocks: cards.display.stocks, public: cards.display.public }, actions);
-            const choice = actions.stockSelection ? JSON.stringify(state.pending) : null;
-            if (choice && choice !== stockChoice) screen.openPanel(); stockChoice = choice;
+            const choice = actions.stockSelection || actions.handReturnSelection ? JSON.stringify(state.pending) : null;
+            if (choice && choice !== panelChoice) screen.openPanel(); panelChoice = choice;
             board.querySelector('.discard').remove();
             play.setSessionActions(gameActions);
             status.remove();

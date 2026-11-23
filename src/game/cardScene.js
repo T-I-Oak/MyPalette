@@ -1,6 +1,7 @@
 import { Card } from './Card.js';
 import { releasePaintingIcons } from '../cardIcons.js';
 import { CardSceneState } from './cardSceneState.js';
+import { cardSceneLayer } from './cardSceneLayer.js';
 import { cardSceneSnapshot, locateSceneCards, scatteredPlacement, sceneCardPose } from './cardSceneLayout.js';
 import { animateProgress } from './playAnimation.js';
 import { shippedCanvas } from './infoLayout.js';
@@ -37,6 +38,7 @@ export function createCardScene(screen, play) {
     }));
     let model, definitions, display, initialized = false, busy = false, inspector, afterDraw, activeShipment, controller = new AbortController();
     const locationCache = new WeakMap();
+    const movingCards = new Set();
     const cards = new Map(), placements = new Map(), content = new Map(), selected = new Map();
     function placement(id, area) {
         const key = `${area}:${id}`;
@@ -69,7 +71,7 @@ export function createCardScene(screen, play) {
             if (where.area === 'field' && record.area === 'field' || root.dataset.cardSceneMotion === 'achievement-canvas') record.pose = poseFor(id);
             refreshContent(id, where);
             entry.component.element.classList.toggle('state-achievable', entry.achievable && ['hand', 'field'].includes(record.area) && record.area === where.area);
-            const layer = model.motion ? 'moving' : ['stock', 'discard', 'deck'].includes(where.area) ? 'panel' : 'main';
+            const layer = cardSceneLayer(where.area, Boolean(model.motion && movingCards.has(id)));
             if (entry.wrapper.parentNode !== layers.get(layer)) layers.get(layer).append(entry.wrapper);
             if (entry.component.element.parentNode !== entry.wrapper) entry.wrapper.append(entry.component.element);
             entry.wrapper.dataset.sceneArea = where.area;
@@ -170,9 +172,17 @@ export function createCardScene(screen, play) {
                 activeShipment = { id, progress: 0 };
             }
             activeModel.begin(targets, owner);
+            movingCards.clear();
+            for (const { card, from, target } of activeModel.motion.entries) {
+                const to = target();
+                const useAreaLayer = options.useAreaLayer?.(card.id);
+                if (useAreaLayer) card.pose = { ...card.pose, z: to.z };
+                if (!useAreaLayer && !attached.includes(card.id) && (options.frame?.(card.id, 0, from) || previous.get(card.id).area !== next.get(card.id).area ||
+                    from.flip !== to.flip || from.matrix.some((value, index) => Math.abs(value - to.matrix[index]) > .001) || shipment?.id === card.id)) movingCards.add(card.id);
+            }
             try {
+                draw();
                 if (shipment) {
-                    draw();
                     play.releaseCanvas(shipment.id);
                 }
                 const complete = await animateProgress(duration, progress => {
@@ -196,7 +206,7 @@ export function createCardScene(screen, play) {
                 if (complete) { activeModel.interrupt(); play.finish(); for (const [id, where] of next) { activeModel.get(id).area = options.areaOnArrival?.(id) ?? where.area; activeModel.get(id).grade = where.grade; } }
             } finally {
                 if (shipment && activeShipment?.id === shipment.id) activeShipment = undefined;
-                activeModel.interrupt(); draw();
+                activeModel.interrupt(); movingCards.clear(); draw();
             }
         },
         cancel() { controller.abort(); controller = new AbortController(); model?.interrupt(); },

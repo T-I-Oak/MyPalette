@@ -1,5 +1,4 @@
 import { layoutHand, handButtonCenter, handMetrics } from './handLayout.js';
-import { cardMessages } from './cardMessages.js';
 import './hand.css';
 
 export function createHandPresentation(area, host) {
@@ -31,8 +30,6 @@ export function createHandPresentation(area, host) {
             actions = cards.map(card => card.querySelector('.GameCardActions'));
             for (const [index, card] of cards.entries()) {
                 actions[index].dataset.cardId = card.dataset.cardId;
-                const button=actions[index].querySelector('button');
-                button.textContent = button.dataset.handReturn ? cardMessages().returnToStock : cardMessages().startPainting;
                 host.append(card);
                 controls.append(actions[index]);
             }

@@ -32,7 +32,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  await page.waitForFunction(()=>!!window.searchScene?.faceSearch.active);
  assert(await page.evaluate(()=>window.searchScene.group.rolling));
  assert.deepEqual(await page.evaluate(()=>window.searchScene.faceSearch.result.hits.map(h=>h.count)),[2]);
- await page.getByRole('button',{name:'すべての画材を更新する',exact:true}).waitFor({timeout:60000});
+ await page.getByRole('button',{name:'すべてリロール（リロール権1個消費）',exact:true}).waitFor({timeout:60000});
  await page.evaluate(()=>{window.searchCheck.session.game.state.dice[0].used=true;});
  await page.locator('.HandFixedActions .Button').first().click();
  const baseline=await page.evaluate(()=>JSON.stringify(window.searchCheck.session.game.state));
@@ -45,7 +45,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
   assert.equal(await page.evaluate(()=>JSON.stringify(window.searchCheck.session.game.state)),baseline);
  }
  assert(await page.evaluate(()=>window.searchScene.visuals.get(window.searchScene.group.dice[0].id).searchBadge.hidden===false&&window.searchScene.group.dice[0].consumed));
- assert.equal(await page.locator('.GameCardDetail[open]').count(),0);
+ assert.equal(await page.locator('.GameCardDetail[data-open="true"]').count(),0);
  await goal({material:'airbrush',color:'purple'}).click();
  const notice=page.locator('.PaletteSearchNotice');await notice.waitFor();
  assert((await notice.innerText()).includes('を含む画材ダイスはありません'));assert.equal(await notice.locator('canvas').count(),1);

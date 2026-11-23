@@ -94,6 +94,7 @@ export class Card extends MoveObject {
             return paintingBlock(kind, content, text[kind]);
         }
         function select(index) {
+            root.dataset.selectedStep = String(index);
             releasePaintingIcons(panel);
             buttons.forEach((tab, i) => {
                 tab.setAttribute('aria-selected', String(i === index));

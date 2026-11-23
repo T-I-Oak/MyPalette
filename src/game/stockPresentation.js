@@ -1,3 +1,4 @@
+import { cardActionButton } from './cardActions.js';
 import { layoutStock } from './stockLayout.js';
 import './stock.css';
 
@@ -31,12 +32,11 @@ export function createStockPresentation(area, host) {
                 host.append(node);
                 let button, action;
                 const id = state.public[node.dataset.stockGrade];
-                if (actions.stockSelection && state.pending.options.some(option => option.id === id)) {
-                    button = document.createElement('button');button.type='button';button.tabIndex=-1;
-                    button.className='Button texture-raised state-attention';button.textContent='取得';
-                    button.dataset.gameAction='';button.dataset.stockAcquire=id;
+                const acquire = actions.cardActions(id).find(action => action.id === 'acquire' && action.visible);
+                if (acquire) {
+                    button = cardActionButton(acquire);
+                    button.classList.add('state-attention'); button.dataset.stockAcquire = id;
                     button.setAttribute('aria-label', `グレード${node.dataset.stockGrade}の公開カードを取得`);
-                    button.addEventListener('click',()=>actions.chooseStock(id));
                     action=document.createElement('div');action.className='StockAcquireSlot';
                     action.append(button);controls.append(action);
                 }

@@ -15,7 +15,7 @@ for (const card of settings.cards) for (const step of card.steps) {
     try {
         const page = await browser.newPage({ viewport: { width: 1200, height: 700 }, reducedMotion: 'reduce' });
         const errors = [];
-        page.on('pageerror', error => errors.push(error.message));
+        page.on('pageerror', error => { errors.push(error.message); console.error(error); });
         // Use production modules with a retained session handle, without adding test APIs to the game.
         await page.route(base, route => route.fulfill({ contentType: 'text/html', body: `
             <body class="theme-atelier texture-layout"><main class="LayoutScreen"><button id="panel-toggle" class="PanelToggle" type="button"></button></main>
@@ -62,7 +62,7 @@ for (const card of settings.cards) for (const step of card.steps) {
         const first = await hand.first().getAttribute('data-card-id');
         const before = await snapshot();
         await hand.first().click({ position: { x: 10, y: 40 } });
-        const detail = page.locator('.GameCardDetail[open]');
+        const detail = page.locator('.GameCardDetail[data-open="true"]');
         await detail.waitFor();
         await detail.getByRole('tab', { name: 'Step 1', exact: true }).click();
         assert.equal(await detail.locator('[aria-current="step"]').textContent(), 'Step 0');
@@ -70,6 +70,13 @@ for (const card of settings.cards) for (const step of card.steps) {
         await detail.getByRole('button', { name: '閉じる', exact: true }).click();
         await page.waitForFunction(id => document.querySelector(`[data-scene-area=hand] [data-card-id="${id}"] [aria-selected="true"]`)?.textContent === 'Step 1', first);
         assert.equal(await page.locator(`[data-scene-area=hand] [data-card-id="${first}"] [aria-selected="true"]`).textContent(), 'Step 1');
+        await page.locator(`[data-scene-area=hand] [data-card-id="${first}"]`).getByRole('tab', { name: 'Step 2', exact: true }).click();
+        await page.locator(`[data-scene-area=hand] [data-card-id="${first}"]`).click({ position: { x: 10, y: 40 } });
+        await detail.waitFor();
+        assert.equal(await detail.locator('[aria-selected="true"]').textContent(), 'Step 2');
+        assert.equal(await detail.locator('[aria-current="step"]').textContent(), 'Step 0');
+        await detail.getByRole('button', { name: '閉じる', exact: true }).click();
+        assert.equal(await snapshot(), before);
         await page.locator('.HandFixedActions button').first().click();
         assert.equal(await hand.count(), 6);
         await checkGlow('draw');
@@ -100,8 +107,10 @@ for (const card of settings.cards) for (const step of card.steps) {
         const icon=await page.locator(`.PaletteViewport .DiceResult[data-die-id="${target}"]`).boundingBox();
         await page.mouse.click(icon.x+icon.width/2,icon.y+icon.height/2);
         await page.getByRole('button', { name: '選択ダイスで達成', exact: true }).click();
+        await page.waitForFunction(()=>!document.querySelector('[data-game-end-day]').disabled);
         await checkGlow('consumption');
-        await page.getByRole('button',{name:'すべての画材を更新する',exact:true}).click();
+        await page.getByRole('button',{name:'すべてリロール（リロール権1個消費）',exact:true}).click();
+        if (await page.locator('.RerollConfirmation').count()) await page.getByRole('button',{name:'リロールする',exact:true}).click();
         await page.waitForFunction(()=>!window.handCheck.session.game.state.rollRequest,null,{timeout:60000});
         await checkGlow('reroll');
         await page.evaluate(() => {

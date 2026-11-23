@@ -99,7 +99,7 @@ export function createCardSceneTimeline(screen, cards, play, palette, flyer, inf
         if (signal.aborted) return;
         await move(target, 180, 'hand-return-lower', { pose: id => insertion(id, 0), areaOnArrival: transit });
         if (signal.aborted) return;
-        await move(target, 260, 'hand-return-insert');
+        await move(target, 260, 'hand-return-insert', { useAreaLayer: id => ids.includes(id) });
     }
     async function draws(events) {
         const drawn = events.filter(event => event.kind === 'draw').map(event => event.card);
