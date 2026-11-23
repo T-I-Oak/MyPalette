@@ -41,6 +41,9 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
         await page.locator(`[data-scene-id="${playId}"] [data-scene-card]`).click({position:{x:10,y:40}});
         const normalLabel = await page.locator(`.HandFixedActions [data-card-id="${playId}"] button`).textContent();
         assert.equal(normalLabel, '着手');
+        const font = node => { const style=getComputedStyle(node); return {family:style.fontFamily,size:style.fontSize,weight:style.fontWeight,style:style.fontStyle}; };
+        assert.deepEqual(await page.locator('.GameCardDetail').getByRole('button',{name:normalLabel,exact:true}).evaluate(font),
+            await page.locator(`.HandFixedActions [data-card-id="${playId}"] button`).evaluate(font));
         await page.locator('.GameCardDetail').getByRole('button',{name:normalLabel,exact:true}).click();
         await page.locator('[data-stock-acquire]').first().waitFor();
         assert.equal(await page.locator('#panel-toggle').getAttribute('aria-expanded'),'true');

@@ -122,3 +122,19 @@ checkCardDetail.cjsでEscape・Tab・Shift+Tab・Enter・Space・左右矢印に
 
 ### 実機確認用の配信
 オーナーの公開指示に基づき、実装中の0.35.0を開発ブランチへ保存・pushし、既存deploy.ymlを開発ブランチ指定で手動実行する。実機確認のための配信であり、実装終了・レビュー完了・masterへのマージを意味しない。共通ライブラリはmaster、HEADとリモートmasterが48bbb9d5bdd84b5b0c5cdccc7970284824154581で一致し、src/libに未コミット・未追跡変更がないことを確認した。
+
+### 実機確認版の配信結果
+
+- 配信元コミット: d0754ec52fdc412aa5deeee8607d83acd32c5750（開発ブランチ）。ローカルとリモートの一致を確認。
+- Deploy to GitHub Pages: https://github.com/T-I-Oak/MyPalette/actions/runs/45118002392 — テスト・ビルド・デプロイ成功。
+- pages build and deployment: https://github.com/T-I-Oak/MyPalette/actions/runs/45118055510 — 成功。配信用gh-pagesコミットは2f1ba4c7540811f6ddb6bceed2832c0c1fd150d4。
+- 公開URL: https://t-i-oak.github.io/MyPalette/ 。確認バージョン0.35.0。
+- 公開URLでWindows Edgeの1200×800と390×844を確認。タイトルの0.35.0、保存済み設定によるゲーム開始、実カード45枚、通常と詳細の「着手」、独自詳細UI、Step選択の保持、Escape・Tab・Enter・Spaceで操作されないこと、クリックでの閉鎖を検証。ページ例外・HTTPエラーなし。
+- この公開はオーナーの実機確認のための配信。iPad Safari自体の確認結果は未回答であり、自動ブラウザー検証で代替していない。実装・レビューの終了承認、masterへのマージは行っていない。
+
+### MP35-07 Safari実機でのボタン字体の不一致
+
+オーナーのSafari実機確認で、通常と拡大のボタンのフォントが異なる指摘を受領。共通.Buttonのfont:inheritにより、通常の固定倍率層はsystem-uiを継承するが、ゲームルート直下の詳細はブラウザー標準フォントを継承していた。checkCardInteraction.cjsへ通常・詳細のfontFamily/fontSize/fontWeight/fontStyleの一致を追加し、修正前にTimes New Roman対system-uiの不一致を再現した。
+
+共通.Button自身に24px/1.2 system-ui, sans-serifを指定し、配置先からの基本フォントの継承を廃止。詳細側への個別指定は加えない。共通スタイル仕様を更新し、検証後に既存の開発ブランチ配信を更新する。
+フォント修正後のcheckCardInteraction.cjsとcheckCardDetail.cjsは成功。npm.cmd testは226/226成功、npm.cmd run buildも成功。再配信前の共通masterは48bbb9d5bdd84b5b0c5cdccc7970284824154581でリモートと一致し、src/lib差分なし。
