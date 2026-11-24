@@ -114,3 +114,10 @@ Safariの実際のページ倍率変化は合成イベントやEdgeでの成功�
 - **MP37-03（PC、不要なキーボードフォーカス移動）**: タイトルでTabを数回、Shift+Tabを数回押す。「ゲーム開始」と下端の「GameWorks OAK」リンクに選択の枠が移らないことを確認する。マウスで開始し、着手せず各日の仕事を終えて終了画面を出す。表示直後に「タイトルへ戻る」へ自動で選択の枠が付かず、タイトルへ戻った直後に「ゲーム開始」へ自動で選択の枠が付かないことを確認する。
 
 上記をIDごとに確認済み・フィードバックあり・現時点で確認しない・却下のいずれかで判断してもらう。操作説明の不明点は検証成功とは記録しない。
+
+### v0.37.1のpreview更新
+
+- 公開ソースは`97b48c187c8320c1f9a300cdd05553d63f917525`。[公開ジョブ](https://github.com/T-I-Oak/MyPalette/actions/runs/45407415266)は成功し、共通ワークフローは`4521d7e22af4fc5caa3d31729c91bb6c29aceb58`。
+- gh-pagesは`9dcd16c7c80f989bec2fea3d50352eba7740b080`。[Pages反映](https://github.com/T-I-Oak/MyPalette/actions/runs/45407505226)も成功。反映待ちの間に行った初回の公開URL検証では旧v0.37.0表示のため失敗したが、Pages成功後の再実行で成功した。
+- 実配信の`checkBrowserInteraction.cjs https://t-i-oak.github.io/MyPalette/preview/`は成功。v0.37.1表示、ロゴのmanipulation指定とダブルタップ、通常の2連続click、内部タッチスクロール、ピンチイベントキャンセル、ダイスのnone維持、A/B、開発者画面の版と入力範囲を確認した。Safari実機のMP37-01はオーナーによる再検証待ち。
+- `checkPublicDeployment.cjs preserved`: 正式版のHTML・素材8件が引き続き同じハッシュであることを確認した。
