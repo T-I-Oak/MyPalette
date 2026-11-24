@@ -1,5 +1,7 @@
 import { initializeAppVersion } from './version.js';
 import { createTitleScreen } from './ui/createTitleScreen.js';
+import { preventBrowserZoom } from './ui/browserInteraction.js';
+import './ui/browserInteraction.css';
 import { titleMenuEntries } from './ui/title/menuEntries.js';
 import { createLayoutScreen } from './ui/screenLayout/createLayoutScreen.js';
 import { loadSettings } from './settingsStorage.js';
@@ -13,7 +15,9 @@ import './ui/textures.css';
 import './ui/states.css';
 import './ui/screenLayout/layout.css';
 
-const version = initializeAppVersion(__APP_VERSION__);
+const version = initializeAppVersion();
+const disposeBrowserZoom = preventBrowserZoom(document.body);
+if (import.meta.hot) import.meta.hot.dispose(disposeBrowserZoom);
 const root = document.querySelector('#layout-screen');
 export const layoutScreen = createLayoutScreen(root, document.querySelector('#panel-toggle'));
 const gameLayout = root.querySelector('.LayoutContent');
@@ -34,6 +38,7 @@ const resultHeading = document.createElement('h1');
 resultHeading.textContent = 'ゲーム終了';
 const returnButton = document.createElement('button');
 returnButton.type = 'button';
+returnButton.tabIndex = -1;
 returnButton.className = 'Button texture-raised';
 returnButton.textContent = 'タイトルへ戻る';
 result.append(resultHeading, returnButton);
@@ -71,11 +76,7 @@ async function start() {
         presentation.dispose();
         gameLayout.hidden = true;
         result.hidden = false;
-        returnButton.focus();
     });
 }
-returnButton.addEventListener('click', () => {
-    showTitle();
-    startButton.focus();
-});
+returnButton.addEventListener('click', showTitle);
 showTitle();

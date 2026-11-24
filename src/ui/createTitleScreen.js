@@ -26,6 +26,7 @@ export function createTitleScreen(version, { onSettings } = {}) {
     if (onSettings) {
         const settings = element('button', 'TitleSettings');
         settings.type = 'button';
+        settings.tabIndex = -1;
         settings.setAttribute('aria-label', '設定');
         const icon = element('span', null, '⚙');
         icon.setAttribute('aria-hidden', 'true');
@@ -50,6 +51,7 @@ export function createTitleScreen(version, { onSettings } = {}) {
     const copyright = element('p');
     const portal = element('a', null, APP_COPYRIGHT.portal);
     portal.href = APP_COPYRIGHT.portalUrl;
+    portal.tabIndex = -1;
     portal.target = '_blank';
     portal.rel = 'noopener noreferrer';
     copyright.append(`© ${APP_COPYRIGHT.holder} ${APP_COPYRIGHT.year} | `, portal);
@@ -91,6 +93,7 @@ export function createTitleScreen(version, { onSettings } = {}) {
         const buttons = items.map(({ label, artwork, onSelect }) => {
             const button = element('button', 'TitleMenuButton');
             button.type = 'button';
+            button.tabIndex = -1;
             const frame = element('span', 'TitleFrame');
             const picture = element('img');
             picture.src = artwork;

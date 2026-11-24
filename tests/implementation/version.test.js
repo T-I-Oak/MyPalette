@@ -6,6 +6,6 @@ import { getAppVersion } from '../../../GameWorksOAK/src/lib/utils/env.js';
 
 test('ゲーム設定のバージョンが共通ライブラリに接続される', async () => {
     const packageInfo = JSON.parse((await readFile(new URL('../../package.json', import.meta.url), 'utf8')).replace(/^\uFEFF/, ''));
-    assert.equal(initializeAppVersion(packageInfo.version), packageInfo.version);
+    assert.equal(initializeAppVersion(), packageInfo.version);
     assert.equal(getAppVersion(), packageInfo.version);
 });

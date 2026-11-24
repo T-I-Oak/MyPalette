@@ -1,0 +1,81 @@
+# ブラウザー操作抑止の実装報告
+
+## 実装内容
+
+- `package.json`・`package-lock.json`を0.37.0へ更新した。
+- オーナーの追加合意により、`src/version.js`が`package.json`を直接importして共通Env Utilityへ設定する方式に変更した。ゲーム本体・開発者入口の呼出しとバージョンテストを更新し、サーバー起動時の定数への依存を除去した。Vite設定は変更していない。
+- 通常入口のbodyに`GameBrowserSurface`を指定した。内部スクロール要素を含め`touch-action: pan-x pan-y`を適用し、ダイス固有の`none`は維持した。
+- `src/ui/browserInteraction.js`でbodyに非passiveのcaptureリスナーを登録し、複数タッチのstart/move、Safariのgesturestart/change、dblclickの既定動作を抑止した。単指のtouchとclickはキャンセルせず、タップ間隔の状態は持たない。解除関数を用意し、HMRで解除する。
+- タイトルのメニュー全項目・ポータルリンク・任意の設定ボタン、終了画面の戻るボタンをTab対象外とした。終了・タイトル復帰時の明示的なfocusを除去した。
+- ゲーム実装仕様と開発・検証手順を更新した。効果選択のフォーカス処理、標準dialog、開発者入口、共通部、要求仕様、バックログの既存項目は変更していない。
+
+## 検証環境
+
+- Windows、Node.js 25.6.1、Microsoft Edge 158.0.4370.33。
+- Playwright: `C:/Users/tioak/AppData/Local/Temp/mypalette-v027-playwright/node_modules/playwright`。`MYPALETTE_PLAYWRIGHT_MODULE`で指定し、依存追加なし。
+- 常用`http://127.0.0.1:3000/MyPalette/`を使用。停止・再起動・置換は行っていない。検証用の常駐サーバーは追加していない。既存の全テストに含まれるVite結合テストの一時サーバーはテストのfinallyで終了する。
+- 本番成果物は`MYPALETTE_VERIFY_DIST=1`で既存Originのリクエストを検証ブラウザー内だけで`dist/`へ置換して確認した。サーバーの公開内容や一般ブラウザーの表示には影響しない。
+
+## コマンドと結果
+
+| コマンド | 結果 |
+| --- | --- |
+| `node --test tests/implementation/ui/browserInteraction.test.js`（実装前） | モジュール未実装による失敗を確認。 |
+| 同コマンド（実装後） | 2件成功。複数タッチ、単指のタップ・移動、連続tap/click、ジェスチャー、解除・再登録。 |
+| `npm.cmd test` | 全246件成功、失敗0。 |
+| `npm.cmd run build` | バージョン取得変更後も成功、155モジュール。 |
+| `node scripts/checkTitleMenu.cjs <開発URL>` | 成功。1・2・3項目、画面サイズ変更、設定ボタンを含む操作とTab／Shift+Tab除外。 |
+| `node scripts/checkBrowserInteraction.cjs`（dist指定・通常開発URL） | 成功。合成zoomイベント、単指イベント非キャンセル、2連続タップのclick、ポータルリンクのタップ（外部応答はfixture）、内部タッチスクロール、ダイスCSS、回転・A/B、開発者入口への非適用。Safari実機未確認。 |
+| `node scripts/checkProductionStartup.cjs`（dist指定・通常開発URL） | 成功。v0.37.0表示、取得失敗・不正設定からの再試行、A/Bの翌日・終了・復帰・再開始、終了と復帰のフォーカス、開発者ツール。動きを減らす設定。 |
+| `node scripts/checkDiceSelection.cjs` | 成功。抑止有効fixtureでアイコン・実体タップ、選択・消費、ドラッグ・長押し、A/B変更。 |
+| `node scripts/checkCardInteraction.cjs`（通常・`MYPALETTE_STOCK_MOTION=1`） | 両方成功。抑止有効fixtureで詳細、フォーカス復元、着手、返却、ストック取得・交換・発注、パネル操作。 |
+| `node scripts/checkCardDetail.cjs` | 成功。抑止有効fixtureで通常・選択dialog内の詳細、低い画面、ステップ、終了処理、背景復元。 |
+| `git diff --check` | 成功。 |
+
+## 失敗時の調査と対応
+
+- 通常開発URLで新規ブラウザー入力検証と起動検証を実行したところ、タイトルの表示が0.31.0で設定の0.37.0と不一致のため失敗した。`/MyPalette/@vite/env`が`__APP_VERSION__: "0.31.0"`を配信していることを確認した。最新main.jsと入力制御のソース・HTMLは配信されている。キャッシュによる旧ソースの表示とは判断していない。
+- 当初オーナーへ再起動を依頼したが、必要と断定した案内を撤回した。オーナーが「バージョン取得の修正を含める」と合意したため、計画へ追加記録して直接importへ変更した。常用サーバーの再起動なしに通常URLでv0.37.0表示と入力・起動検証が成功した。
+- distでの最初の起動検証は旧ラベル「すべての画材を更新する」で待機してタイムアウトした。診断で現行ラベル「すべてリロール」と操作可能状態を確認し、既存起動スクリプトと新規入力スクリプトの待機条件を修正、再実行で成功した。ゲーム側の動作・ラベルは変更していない。
+- 演出ありのカード操作検証は廃止済み`data-stock-hand-motion`の出現待ちで失敗した。共通カード表示の`presentation.cards.busy`と`data-card-scene-motion`による完了待ちへ更新し、再実行で成功した。閉じたボードでは演出が省略されるため、旧演出要素の出現は必須にしない。
+- 作業途中で別件の「正式版・仮版の共通公開へ移行する」がバックログに追加された。本実装が作成した差分ではなく、内容を保持した。
+
+## オーナー検証
+
+Safariの実際のページ倍率変化は合成イベントやEdgeでの成功から確認済みとしない。通常開発URLで設定と同じv0.37.0表示を確認した。実機ではPCのLANアドレス等、オーナー側で利用可能な接続先を使い、タイトル下端のv0.37.0表示を確認する。
+
+| ID | 確認理由・操作手順・期待結果 | 判断・対応 |
+| --- | --- | --- |
+| MP37-01 | v0.37.0のiPad Safariで、タイトル・プレイ中・終了画面のピンチとダブルタップを縦・横で試す。倍率が変わらず、回転後も操作できる。 | オーナー判断待ち。 |
+| MP37-02 | 同版で開始、カード詳細、内部スクロール、ダイス選択・ドラッグ、パネル開閉、終了・復帰・再開始、ポータルをタップする。連続タップを含め既存操作を維持する。 | オーナー判断待ち。 |
+| MP37-03 | 同版のPCでタイトルのTab／Shift+Tab、終了・タイトル復帰後のフォーカスを確認する。対象ボタン・リンクへ不要なフォーカス移動がない。 | 自動検証成功。オーナー判断は未回答。 |
+
+未回答を保留扱いにせず、引継ぎ書は更新していない。
+
+## 追加合意: 正式版・仮版の共通公開
+
+- オーナーが、今回の修正をpreviewへ公開して実機検証するため、バックログの共通公開移行を計画へ追加することに合意した。本ブランチ・v0.37.0を維持する。
+- 共通部はmaster、HEADとremote masterは`4521d7e22af4fc5caa3d31729c91bb6c29aceb58`で一致。作業ツリーとsrc/libに変更なし。公開済み`publish.yml`と`deployment.js`を参照した。
+- `deploy.yml`を公開済み共通ワークフローへの呼出しへ変更した。master pushは正式版、開発ブランチのworkflow_dispatchはpreviewで、公開先の入力は設けない。
+- Vite baseを`DEPLOY_BASE_PATH || '/MyPalette/'`へ変更した。設定ファイル変更に伴うViteの自動反映以外に、常用サーバーの停止・再起動・置換操作は行っていない。
+- 標準JSONが未配置だったため、`public/data/project_info.json`と`update_history.json`を追加した。紹介・画像・ロゴ・プレイ先は既存ゲーム素材を使い、公開ルート相対パスとした。履歴はv0のため空配列。
+- 共通部の`project_list.json`にはMyPaletteが登録されていない。共通部は参照専用のため編集しない。実ポータルでのMyPalette表示・preview連携は共通部側の登録待ち。共通URL解決関数を用いた相対パス・外部リンクの確認は成功した。
+
+### 追加検証
+
+| コマンド・操作 | 結果 |
+| --- | --- |
+| `npm.cmd test` | 公開移行後も全246件成功。 |
+| `npm.cmd run build` | 正式版baseで成功、155モジュール。 |
+| `$env:DEPLOY_BASE_PATH='/MyPalette/preview/'; npm.cmd run build` | preview baseで成功、155モジュール。 |
+| `node ../GameWorksOAK/scripts/deployment.js verify`（workflow_dispatch、開発ブランチ、MyPalette、preview baseを環境変数に指定） | 成功。共通部は編集していない。 |
+| `checkBrowserInteraction.cjs http://127.0.0.1:3000/MyPalette/preview/`（dist指定） | 成功。v0.37.0とpreview下の素材・ゲーム・開発者画面。 |
+| `checkProductionStartup.cjs`（同URL、dist指定） | 成功。設定取得遅延の`route.continue()`が後段のdistルートを無視して開発サーバーへ送信する問題を確認し、`route.fallback()`へ修正して再実行した。A/B、再試行、終了・再開始、両入口のv0.37.0表示を確認。 |
+| 公開ルート相対パスの確認 | 紹介の画像・ロゴ・プレイ先がpreview配下、外部URLは維持、画像とロゴの実ファイルと空の履歴を確認。 |
+| `node scripts/checkPublicDeployment.cjs snapshot https://t-i-oak.github.io/MyPalette/` | 正式版のindexと参照素材、計8件のSHA-256を`tmp_public_baseline.json`へ記録。公開後の保持検証用。 |
+
+### 公開の進捗と未確認範囲
+
+- EdgeはGitHub未ログインだったが、従来の自動処理があるとのオーナー指摘を受け、ログイン依頼は撤回した。確認用タブは閉じた。
+- GitHub CLIはPATHと確認した既存配置場所では見つからず、GH_TOKEN等の設定も確認できなかった。Git credential helperの認証情報をスクリプトで取得してGitHub APIに利用する処理は、自動承認レビューが資格情報取得・再利用の具体的許可不足を理由に拒否した。実行・迂回・資格情報の表示はしていない。該当一時スクリプトは削除した。
+- preview公開の認証経路を調整中。Actions実行・preview公開URL・正式版の保持はまだ確認済みとしない。正式版の更新後にpreviewが保持される逆方向の確認も、レビューのmasterマージ承認前には実施しない。

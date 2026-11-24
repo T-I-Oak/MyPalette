@@ -4,7 +4,7 @@ import { mountEditor } from './editor.js';
 import { loadSettings, loadSettingsFile } from './settingsStorage.js';
 import { readEvaluation } from './effectEvaluation.js';
 
-document.querySelector('#app-version').textContent = initializeAppVersion(__APP_VERSION__);
+document.querySelector('#app-version').textContent = initializeAppVersion();
 const root = document.querySelector('#editor');
 root.textContent = 'ゲーム設定を読み込んでいます…';
 async function start() {

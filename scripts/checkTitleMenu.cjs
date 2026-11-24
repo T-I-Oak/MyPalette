@@ -71,6 +71,12 @@ async function checkLayout(page, count, [width, height]) {
         await page.waitForFunction(() => typeof window.showItems === 'function');
         for (const count of [1, 2, 3, 1]) {
             await page.evaluate(count => window.showItems(count), count);
+            assert.ok(await page.locator('.TitleScreen button, .TitleScreen a').evaluateAll(nodes =>
+                nodes.every(node => node.tabIndex === -1)));
+            for (const key of ['Tab', 'Shift+Tab']) {
+                await page.keyboard.press(key);
+                assert.equal(await page.evaluate(() => document.activeElement.closest('.TitleScreen') !== null), false);
+            }
             const initial = await checkLayout(page, count, sizes[0]);
             for (const size of sizes.slice(1)) await checkLayout(page, count, size);
             assert.deepEqual(await checkLayout(page, count, sizes[0]), initial);

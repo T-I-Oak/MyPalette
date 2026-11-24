@@ -8,8 +8,11 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  const page=await browser.newPage({viewport:{width:1200,height:800},hasTouch:true,reducedMotion:'reduce'}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.route(base,route=>route.fulfill({contentType:'text/html',body:`
- <body class="theme-atelier texture-layout"><main class="LayoutScreen"><button tabindex="-1" id="panel-toggle" class="PanelToggle"></button></main>
+ <body class="theme-atelier texture-layout GameBrowserSurface"><main class="LayoutScreen"><button tabindex="-1" id="panel-toggle" class="PanelToggle"></button></main>
  <script type="module">
+ import {preventBrowserZoom} from './src/ui/browserInteraction.js';
+ import './src/ui/browserInteraction.css';
+ preventBrowserZoom(document.body);
  import {createLayoutScreen} from './src/ui/screenLayout/createLayoutScreen.js';
  import {createLayoutPresentation} from './src/game/layoutPresentation.js';
  import {mountGame} from './src/game/view.js';

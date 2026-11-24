@@ -10,7 +10,7 @@ export default defineConfig({
     plugins: [cardSettingsPlugin(fileURLToPath(new URL('./public/data/cards.json', import.meta.url))),
         settingsFilePlugin(fileURLToPath(new URL('./dev-data/effect-evaluation.json', import.meta.url)),
             {name:'effect-evaluation', route:'/api/effect-evaluation', read:readEvaluation, serialize:serializeEvaluation, allowRead:true})],
-    base: '/MyPalette/',
+    base: process.env.DEPLOY_BASE_PATH || '/MyPalette/',
     define: { __APP_VERSION__: JSON.stringify(packageInfo.version) },
     server: {
         host: '127.0.0.1',

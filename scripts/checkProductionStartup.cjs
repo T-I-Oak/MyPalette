@@ -1,6 +1,7 @@
 const {chromium}=require(process.env.MYPALETTE_PLAYWRIGHT_MODULE||'playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const {version}=require('../package.json');
+const {installBuiltAssetRoutes}=require('./builtAssetRoutes.cjs');
 const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
 const startTitle=page=>page.getByRole('button',{name:'ゲーム開始',exact:true});
 const startDay=page=>page.getByRole('button',{name:'今日の仕事を始める',exact:true});
@@ -11,7 +12,7 @@ const titleGeometry=page=>page.locator('.TitleMenuButton').evaluate(async button
   .map(node=>node.getBoundingClientRect().toJSON());
 });
 const waitForRoll=page=>page.waitForFunction(()=>{
- const button=[...document.querySelectorAll('.PaletteFixedActions button')].find(node=>node.textContent==='すべての画材を更新する');
+ const button=[...document.querySelectorAll('.PaletteFixedActions button')].find(node=>node.textContent==='すべてリロール');
  return button&&!button.disabled;
 },null,{timeout:60000});
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
@@ -20,6 +21,7 @@ const waitForRoll=page=>page.waitForFunction(()=>{
   const viewport=i===1?{width:390,height:844}:{width:1200,height:900};
   const context=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'reduce'});
   const page=await context.newPage(),errors=[];
+  await installBuiltAssetRoutes(page,base);
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});
   await page.goto(base);
   await page.getByRole('heading',{name:'My Palette',exact:true}).waitFor();
@@ -34,7 +36,7 @@ const waitForRoll=page=>page.waitForFunction(()=>{
     await waiting;
     if(i===0)await route.fulfill({body:'{}'});
     else if(i===3){const settings=JSON.parse(fs.readFileSync('public/data/cards.json','utf8'));settings.cards[0].steps[0].goals=[];await route.fulfill({body:JSON.stringify(settings)});}
-    else await route.continue();
+    else await route.fallback();
    },{times:1});
    try {
     await startTitle(page).click();
@@ -83,7 +85,14 @@ const waitForRoll=page=>page.waitForFunction(()=>{
     if(await result.isVisible())break;
    }
    assert.ok(await result.isVisible());
+   assert.equal(await page.getByRole('button',{name:'タイトルへ戻る',exact:true}).getAttribute('tabindex'),'-1');
+   assert.equal(await page.evaluate(()=>document.activeElement.textContent==='タイトルへ戻る'),false);
+   for(const key of ['Tab','Shift+Tab']){
+    await page.keyboard.press(key);
+    assert.equal(await page.evaluate(()=>document.activeElement.closest('.GameStartup')!==null),false);
+   }
    await page.getByRole('button',{name:'タイトルへ戻る',exact:true}).click();
+   assert.equal(await page.evaluate(()=>document.activeElement.classList.contains('TitleMenuButton')),false);
    await startTitle(page).click();await waitForRoll(page);
    assert.match(await page.locator('.InfoDay').textContent(),/Day 1/);
    assert.equal(await startDay(page).count(),0);
@@ -92,8 +101,10 @@ const waitForRoll=page=>page.waitForFunction(()=>{
  }
  fs.writeFileSync('tmp_production_startup_runs.json',JSON.stringify(runs,null,2));
  const page=await browser.newPage({viewport:{width:1200,height:900}}),errors=[];
+ await installBuiltAssetRoutes(page,base);
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});
  await page.goto(base+'dev.html#dice');await page.getByRole('button',{name:'カード設定を開く',exact:true}).waitFor();
+ assert.equal(await page.locator('#app-version').textContent(),version);
  assert.equal(await page.locator('.DiceLab').count(),0);assert.equal(await page.getByRole('button',{name:'ダイス動作確認を開く',exact:true}).count(),0);
  assert.equal(await page.getByRole('button',{name:'ゲーム開始',exact:true}).count(),0);
  assert.equal(await page.locator('.GameMenu button').count(),2);
@@ -101,7 +112,7 @@ const waitForRoll=page=>page.waitForFunction(()=>{
  assert.equal(await page.locator('.EaselLab').count(),0);assert.equal(await page.getByRole('button',{name:'イーゼル確認を開く',exact:true}).count(),0);
  await page.goto('about:blank');await page.goto(base+'dev.html#icons');await page.locator('#editor canvas').first().waitFor();
  assert.deepEqual(errors,[]);
- const report={conditions:{browser:browser.version(),deviceScaleFactor:1,cache:'fresh browser context per run',network:'localhost preview, no throttling',reducedMotion:true},runs};
+ const report={conditions:{browser:browser.version(),deviceScaleFactor:1,cache:'fresh browser context per run',network:process.env.MYPALETTE_VERIFY_DIST==='1'?'dist assets routed in browser over existing localhost origin, no throttling':'localhost, no throttling',reducedMotion:true},runs};
  fs.writeFileSync('tmp_production_startup.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
  console.log('PASS: stable title while loading, settings retry, day progression and restart in layouts A/B, developer tools');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

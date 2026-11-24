@@ -9,8 +9,11 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
         const page = await browser.newPage({ viewport: { width: 390, height: 360 } });
         const errors = []; page.on('pageerror', error => { errors.push(error.message); console.error(error); });
         await page.route(base, route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: `
-            <main id="root"><section id="background"></section><section id="preserved" inert></section></main>
+            <body class="GameBrowserSurface"><main id="root"><section id="background"></section><section id="preserved" inert></section></main>
             <script type="module">
+            import {preventBrowserZoom} from './src/ui/browserInteraction.js';
+            import './src/ui/browserInteraction.css';
+            preventBrowserZoom(document.body);
             import {Card} from './src/game/Card.js';import {showCardDetail} from './src/game/cardDetail.js';
             import {cardActionButton} from './src/game/cardActions.js';
             import './src/game/view.css';import './src/ui/theme.css';import './src/ui/layout.css';import './src/ui/states.css';import './src/ui/textures.css';

@@ -13,8 +13,11 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
         page.on('pageerror', error => { errors.push(error.message); console.error(error); });
         page.on('console', message => { if(message.type()==='error' && /^\w*Error:/.test(message.text())) errors.push(message.text()); });
         await page.route(base, route => route.fulfill({ contentType: 'text/html', body: `
-            <body class="theme-atelier texture-layout"><main class="LayoutScreen"><button id="panel-toggle" class="PanelToggle"></button></main>
+            <body class="theme-atelier texture-layout GameBrowserSurface"><main class="LayoutScreen"><button id="panel-toggle" class="PanelToggle"></button></main>
             <script type="module">
+            import {preventBrowserZoom} from './src/ui/browserInteraction.js';
+            import './src/ui/browserInteraction.css';
+            preventBrowserZoom(document.body);
             import {createLayoutScreen} from './src/ui/screenLayout/createLayoutScreen.js';
             import {createLayoutPresentation} from './src/game/layoutPresentation.js';
             import {mountGame} from './src/game/view.js';
@@ -106,16 +109,16 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
         await page.locator(`[data-scene-id="${returnId}"] [data-scene-card]`).click({position:{x:10,y:40}});
         await page.locator('.GameCardDetail').getByRole('button',{name:'返却',exact:true}).click();
         if(process.env.MYPALETTE_STOCK_MOTION) {
-            await page.locator('[data-stock-hand-motion]').first().waitFor();
+            await page.waitForFunction(()=>!window.stockCheck.presentation.cards.busy && !document.querySelector('[data-card-scene-motion]'));
             await page.screenshot({path:'tmp_stock_hand_return.png'});
         }
         await page.locator('[data-stock-acquire]').first().waitFor();
         const handSize=await page.evaluate(()=>window.stockCheck.mounted.session.game.state.hand.length);
         await acquireDetail();
-        if(process.env.MYPALETTE_STOCK_MOTION) await page.locator('[data-stock-hand-motion]').first().waitFor();
+        if(process.env.MYPALETTE_STOCK_MOTION) await page.waitForFunction(()=>!window.stockCheck.presentation.cards.busy && !document.querySelector('[data-card-scene-motion]'));
         assert.equal(await page.evaluate(()=>window.stockCheck.mounted.session.game.state.hand.length),handSize+1);
         assert.equal(await page.evaluate(()=>window.stockCheck.mounted.session.game.state.pending),null);
-        await page.waitForFunction(()=>!document.querySelector('[data-stock-motion-card],[data-stock-hand-motion]'));
+        await page.waitForFunction(()=>!window.stockCheck.presentation.cards.busy && !document.querySelector('[data-card-scene-motion]'));
         await page.evaluate(()=>{
             const s=window.stockCheck.mounted.session.game.state;
             s.dice.forEach(d=>d.used=true);s.flyers=s.orderCost;
@@ -125,7 +128,7 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
         await page.locator('[data-stock-acquire]').first().waitFor();
         const replacement=await page.evaluate(()=>window.stockCheck.mounted.session.game.state.stocks.A[1].id);
         await acquireDetail();
-        await page.waitForFunction(()=>!document.querySelector('[data-stock-motion-card],[data-stock-hand-motion]'));
+        await page.waitForFunction(()=>!window.stockCheck.presentation.cards.busy && !document.querySelector('[data-card-scene-motion]'));
         const end=await page.evaluate(()=>window.stockCheck.mounted.session.game.state);
         assert.deepEqual(end.public,{A:null,B:null,C:null});
         assert.equal(end.stocks.A.at(-1).id,replacement);
