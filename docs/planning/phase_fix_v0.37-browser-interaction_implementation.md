@@ -42,7 +42,7 @@
 
 ## オーナー検証
 
-Safariの実際のページ倍率変化は合成イベントやEdgeでの成功から確認済みとしない。通常開発URLで設定と同じv0.37.0表示を確認した。実機ではPCのLANアドレス等、オーナー側で利用可能な接続先を使い、タイトル下端のv0.37.0表示を確認する。
+Safariの実際のページ倍率変化は合成イベントやEdgeでの成功から確認済みとしない。実機確認先は`https://t-i-oak.github.io/MyPalette/preview/`、確認版はタイトル下端のv0.37.0。終了画面へは着手せず「今日の仕事を終える」を繰り返して進む。公開先・版を揃えてMP37-01〜03の判断を依頼する。
 
 | ID | 確認理由・操作手順・期待結果 | 判断・対応 |
 | --- | --- | --- |
@@ -78,4 +78,19 @@ Safariの実際のページ倍率変化は合成イベントやEdgeでの成功�
 
 - EdgeはGitHub未ログインだったが、従来の自動処理があるとのオーナー指摘を受け、ログイン依頼は撤回した。確認用タブは閉じた。
 - GitHub CLIはPATHと確認した既存配置場所では見つからず、GH_TOKEN等の設定も確認できなかった。Git credential helperの認証情報をスクリプトで取得してGitHub APIに利用する処理は、自動承認レビューが資格情報取得・再利用の具体的許可不足を理由に拒否した。実行・迂回・資格情報の表示はしていない。該当一時スクリプトは削除した。
-- preview公開の認証経路を調整中。Actions実行・preview公開URL・正式版の保持はまだ確認済みとしない。正式版の更新後にpreviewが保持される逆方向の確認も、レビューのmasterマージ承認前には実施しない。
+- その後、オーナーが「既存のGitHub認証情報を表示・保存せずAPIへ渡し、今回のpreview公開を実行する」ことを明示承認した。承認後のAPI実行は成功し、資格情報は表示・保存していない。一時APIスクリプトとdispatch用ファイルは実行後に削除した。
+
+### preview公開結果
+
+- 公開ソース: `118948ca57a9f135ee95abed289f02feeb21adfc`。開発ブランチへの途中コミット・pushで、フェーズ終了コミットではない。masterは`4c41d6824139464175b054d86c9dd59629338036`のまま。
+- [Deploy to GitHub Pages #58](https://github.com/T-I-Oak/MyPalette/actions/runs/45403497906): 成功。workflow_dispatch、ブランチ`fix/v0.37-browser-interaction`。
+- 共通ワークフローと共通checkoutはいずれも`4521d7e22af4fc5caa3d31729c91bb6c29aceb58`。ジョブログで確認した。`DEPLOY_BASE_PATH=/MyPalette/preview/`、`target-folder: preview`。
+- gh-pagesの公開コミット: `349a086bf80f057b4e7cd8913a7670f617712767`。[Pages build and deployment](https://github.com/T-I-Oak/MyPalette/actions/runs/45403585547)も成功。
+- 公開URL: [https://t-i-oak.github.io/MyPalette/preview/](https://t-i-oak.github.io/MyPalette/preview/)。最初の取得はPages反映中の503で失敗したが、Pagesジョブ成功後の再実行では正常取得できた。
+- `node scripts/checkPublicDeployment.cjs metadata https://t-i-oak.github.io/MyPalette/preview/`: 成功。紹介JSON、画像、ロゴ、プレイ先、空の履歴、カード45枚を取得できた。
+- `node scripts/checkPublicDeployment.cjs preserved https://t-i-oak.github.io/MyPalette/`: 成功。事前記録した正式版のindexと参照素材8件すべてのSHA-256が一致。
+- 公開ポータルの`data/project_list.json`でもMyPalette未登録を確認した。実ポータルでのMyPaletteのカード表示・preview連携は共通部の登録待ちで、完了扱いにしない。
+- `checkBrowserInteraction.cjs https://t-i-oak.github.io/MyPalette/preview/`（dist置換なし）: 成功。実配信のv0.37.0、タッチ・スクロール・ポータルタップ、A/B、開発者画面のバージョンを確認した。
+- 公開URLの入力検証と起動検証は、初回の並列実行でロール待ち60秒のタイムアウトが発生した。起動検証は単独の初回再実行でも再開始時にタイムアウトしたため、並列負荷だけが原因とは断定しない。診断用の単独ブラウザーではDay 1の操作可能状態、4枚の手札、リロールボタン有効化を確認し、JavaScript例外・ゲーム素材の通信失敗は検出されなかった。入力検証の単独再実行は成功した。
+- 起動検証へ失敗時のDOM状態とrun番号の出力を追加して再実行すると、実際の公開URLで全4runが成功した。A/Bの翌日・ゲーム終了・復帰・再開始、設定取得失敗・不正設定後の再試行、ゲームと開発者画面のv0.37.0表示、開発者ツールを確認した。タイムアウトの原因は未確定で、ゲームの実装は変更していない。スクリプトのnetwork表示がlocalhost固定だったため、今後は引数URLのoriginを出力するよう修正した（成功runの出力表示は修正前だが、実行引数は公開preview URL）。
+- 正式版を更新したときにpreviewが保持される逆方向の確認は、レビューのmasterマージ承認前には実施しない。Safari実機のMP37-01〜03のオーナー判断も引き続き待つ。

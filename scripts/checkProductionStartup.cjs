@@ -14,10 +14,21 @@ const titleGeometry=page=>page.locator('.TitleMenuButton').evaluate(async button
 const waitForRoll=page=>page.waitForFunction(()=>{
  const button=[...document.querySelectorAll('.PaletteFixedActions button')].find(node=>node.textContent==='すべてリロール');
  return button&&!button.disabled;
-},null,{timeout:60000});
+},null,{timeout:60000}).catch(async error=>{
+ console.error('roll wait state',await page.evaluate(()=>({
+  titleVisible:!document.querySelector('.TitleScreen')?.hidden,
+  notice:document.querySelector('.TitleNotice')?.textContent,
+  resultVisible:!document.querySelector('.GameStartup')?.hidden,
+  day:document.querySelector('.InfoDay')?.textContent,
+  buttons:[...document.querySelectorAll('.PaletteFixedActions button')].map(n=>({text:n.textContent,disabled:n.disabled})),
+  canvasCount:document.querySelectorAll('canvas').length
+ })));
+ throw error;
+});
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
  const runs=[];
  for(let i=0;i<4;i++){
+  console.log('startup check run',i);
   const viewport=i===1?{width:390,height:844}:{width:1200,height:900};
   const context=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'reduce'});
   const page=await context.newPage(),errors=[];
@@ -112,7 +123,7 @@ const waitForRoll=page=>page.waitForFunction(()=>{
  assert.equal(await page.locator('.EaselLab').count(),0);assert.equal(await page.getByRole('button',{name:'イーゼル確認を開く',exact:true}).count(),0);
  await page.goto('about:blank');await page.goto(base+'dev.html#icons');await page.locator('#editor canvas').first().waitFor();
  assert.deepEqual(errors,[]);
- const report={conditions:{browser:browser.version(),deviceScaleFactor:1,cache:'fresh browser context per run',network:process.env.MYPALETTE_VERIFY_DIST==='1'?'dist assets routed in browser over existing localhost origin, no throttling':'localhost, no throttling',reducedMotion:true},runs};
+ const report={conditions:{browser:browser.version(),deviceScaleFactor:1,cache:'fresh browser context per run',network:process.env.MYPALETTE_VERIFY_DIST==='1'?'dist assets routed in browser over existing localhost origin, no throttling':`${new URL(base).origin}, no throttling`,reducedMotion:true},runs};
  fs.writeFileSync('tmp_production_startup.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
  console.log('PASS: stable title while loading, settings retry, day progression and restart in layouts A/B, developer tools');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
