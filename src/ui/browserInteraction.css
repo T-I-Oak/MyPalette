@@ -1,2 +1,2 @@
-/* Include internal scroll containers and top-layer dialogs; keep dice's touch-action: none. */
-:where(.GameBrowserSurface, .GameBrowserSurface *) { touch-action: pan-x pan-y; }
+/* Safari uses manipulation to suppress double-tap zoom; pinch is canceled by the touch handlers. */
+:where(.GameBrowserSurface, .GameBrowserSurface *) { touch-action: manipulation; }

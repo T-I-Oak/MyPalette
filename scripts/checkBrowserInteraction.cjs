@@ -33,10 +33,21 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             assert.deepEqual(state.gestures, [true, true, true]);
             assert.deepEqual(state.pinch, [true, true]);
             assert.deepEqual(state.normal, [false, false, false, false]);
-            assert.equal(state.scrollPolicy, 'pan-x pan-y');
+            assert.equal(state.scrollPolicy, 'manipulation');
             assert.ok(state.dicePolicy.every(value => value === 'none'));
         };
         await check();
+        for (const selector of ['.TitleSign img']) {
+            const point = await page.locator(selector).first().evaluate(node => {
+                const rect = node.getBoundingClientRect();
+                return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2,
+                    policy: getComputedStyle(node).touchAction };
+            });
+            assert.equal(point.policy, 'manipulation');
+            await page.touchscreen.tap(point.x, point.y);
+            await page.touchscreen.tap(point.x, point.y);
+            assert.equal(await page.evaluate(() => visualViewport.scale), 1);
+        }
         // A real double tap must deliver both click actions, without zooming.
         await page.evaluate(() => {
             const button = document.createElement('button');
