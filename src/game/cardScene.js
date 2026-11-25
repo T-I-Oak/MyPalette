@@ -1,4 +1,5 @@
 import { Card } from './Card.js';
+import { onCardSurfaceClick } from './cardActions.js';
 import { releasePaintingIcons } from '../cardIcons.js';
 import { CardSceneState } from './cardSceneState.js';
 import { cardSceneLayer } from './cardSceneLayer.js';
@@ -100,7 +101,7 @@ export function createCardScene(screen, play) {
             if (where.area === 'stock') entry.component.element.dataset.stockCardId = id; else delete entry.component.element.dataset.stockCardId;
             const faces = entry.component.element.querySelector('.PaintingFaces');
             faces.style.setProperty('--painting-flip', `${record.pose.flip}deg`);
-            faces.inert = ['discard', 'shipped'].includes(where.area);
+            faces.inert = where.area === 'shipped';
             entry.component.render({ scale: Math.max(.01, Math.hypot(record.pose.matrix[0], record.pose.matrix[1])) });
             entry.wrapper.dataset.motion = record.owner ?? '';
             entry.wrapper.dataset.sceneCurrentArea = record.area;
@@ -125,11 +126,10 @@ export function createCardScene(screen, play) {
             for (const id of Object.keys(value)) {
                 const component = new Card(id), wrapper = document.createElement('div');
                 wrapper.className = 'CardSceneCard'; wrapper.dataset.sceneId = id;
-                component.element.onclick = event => {
+                onCardSurfaceClick(component.element, () => {
                     if (busy) return;
-                    const area = locateSceneCards(display).get(id).area;
-                    if (area === 'discard' || !event.target.closest('button, .CardIcon')) inspector(id, component.element);
-                };
+                    inspector(id, component.element);
+                });
                 wrapper.append(component.element); layers.get('main').append(wrapper); cards.set(id, { component, wrapper, achievable: false });
             }
             initialized = true;

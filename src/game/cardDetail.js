@@ -1,5 +1,5 @@
 import { releasePaintingIcons } from '../cardIcons.js';
-import { cardActionButton } from './cardActions.js';
+import { cardActionButton, onCardSurfaceClick } from './cardActions.js';
 
 export function showCardDetail({ root, label, createDetail, source, actions, onClose }) {
     const overlay = document.createElement('div'); overlay.className = 'GameCardDetail';
@@ -40,7 +40,7 @@ export function showCardDetail({ root, label, createDetail, source, actions, onC
     }
     overlay.addEventListener('pointerdown', event => event.preventDefault(), { signal });
     overlay.addEventListener('click', event => { event.stopPropagation(); }, { signal });
-    face.addEventListener('click', event => { if (!event.target.closest('button, .CardIcon')) close(); }, { signal });
+    onCardSurfaceClick(face, close, { signal });
     for (const type of ['keydown', 'keypress', 'keyup']) document.addEventListener(type, event => {
         event.preventDefault(); event.stopImmediatePropagation();
     }, { capture: true, signal });

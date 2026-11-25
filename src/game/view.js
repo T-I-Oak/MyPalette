@@ -7,7 +7,7 @@ import { displayLabel } from '../effectCatalog.js';
 import { copyPaintingIconDrawers, dieFaceIcon, releasePaintingIcons } from '../cardIcons.js';
 import { Card } from './Card.js';
 import { createGameCardActions } from './gameCardActions.js';
-import { cardActionButton } from './cardActions.js';
+import { cardActionButton, onCardSurfaceClick } from './cardActions.js';
 import { showCardDetail } from './cardDetail.js';
 import { createEffectNotices } from './effectNotices.js';
 import { cardLocations, changedCardAreas, createGameAreaTransitions } from './areaTransitions.js';
@@ -204,8 +204,8 @@ export function mountGame(root, settings, presentation = null, onFinished = null
         if (physical) node.append(actions); else node.append(face, actions);
         if (!detail && !physical) {
             face.setAttribute('aria-haspopup', 'dialog');
-            face.addEventListener('click', event => {
-                if (!moving && (area === 'discard' || !event.target.closest('button, .CardIcon'))) openCardDetail(card, area, face);
+            onCardSurfaceClick(face, () => {
+                if (!moving) openCardDetail(card, area, face);
             });
         }
         return node;
