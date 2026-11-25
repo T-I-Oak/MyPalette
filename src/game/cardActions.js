@@ -1,3 +1,9 @@
+export function onCardSurfaceClick(node, run, options) {
+    node.addEventListener('click', event => {
+        if (!event.target.closest('button, .CardIcon')) run();
+    }, options);
+}
+
 export function createCardActions(provide) {
     let running = false;
     return {

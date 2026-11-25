@@ -34,7 +34,7 @@ const url = new URL('dev_board_lock_review.html', base).href;
             if (width === 390) await page.locator('#panel-toggle').click();
             await page.waitForFunction(() => boardLock.screen.panelState.mode === 'A' || boardLock.screen.panelState.progress === 1);
             const id = await page.evaluate(() => boardLock.target.id);
-            await page.locator('[data-scene-card="' + id + '"]').click();
+            await page.locator('[data-scene-card="' + id + '"] .PaintingName').click();
             const detail = page.locator('.GameCardDetail');
             assert.equal(await page.locator('.LayoutContent').evaluate(n => n.inert), true);
             await detail.getByRole('tab', { name: 'Step 0', exact: true }).click();
@@ -42,7 +42,7 @@ const url = new URL('dev_board_lock_review.html', base).href;
             assert.equal(await detail.count(), 0, 'no reopened inspector');
             assert.equal(await page.locator('.LayoutContent').evaluate(n => n.inert), false);
             // Reopening keeps the selected step; closing an unchanged step also releases input.
-            await page.locator('[data-scene-card="' + id + '"]').click();
+            await page.locator('[data-scene-card="' + id + '"] .PaintingName').click();
             assert.equal(await detail.locator('[aria-selected="true"]').textContent(), 'Step 0');
             await detail.getByRole('button', { name: '閉じる', exact: true }).click();
             if (width === 390) {
