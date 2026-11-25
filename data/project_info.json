@@ -1,0 +1,19 @@
+{
+  "title": "My Palette",
+  "description": "絵画制作をテーマにしたダイスゲーム。画材を組み合わせて作品を完成させよう。",
+  "tags": ["ダイス", "絵画"],
+  "logo": {
+    "path": "assets/my-palette-logo.png",
+    "type": "standard"
+  },
+  "badge": {
+    "content": "開発中",
+    "type": "info"
+  },
+  "button": {
+    "content": "プレイする",
+    "url": "./",
+    "type": "published"
+  },
+  "image": "assets/paintings/A01-3.png"
+}
