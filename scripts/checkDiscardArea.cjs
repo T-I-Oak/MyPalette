@@ -32,8 +32,10 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  const topId=await page.evaluate(()=>check.mounted.session.game.state.discard.at(-1).id);
  const top=page.locator('[data-scene-card="'+topId+'"]');
  await top.click();await page.locator('.GameCardDetail[data-open="true"]').waitFor();
- await page.locator('.GameCardDetail [role="tab"]').first().click();
+ await page.locator('.GameCardDetail').getByRole('tab',{name:'Step 1',exact:true}).click();
  await page.getByRole('button',{name:'閉じる',exact:true}).click();
+ assert.equal(await page.locator('.GameCardDetail').count(),0,'closing a changed discard tab must not reopen detail');
+ assert.equal(await page.locator('.LayoutContent').evaluate(n=>n.inert),false,'detail releases board input');
  assert.equal(await page.evaluate(()=>JSON.stringify(check.mounted.session.game.state)),state);
  for(const viewport of [{width:390,height:844},{width:1200,height:800}]){
  await page.setViewportSize(viewport);

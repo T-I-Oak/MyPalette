@@ -85,7 +85,11 @@ export class Card extends MoveObject {
             tab.type = 'button';
             tab.setAttribute('role', 'tab');
             if (index === currentStep) tab.setAttribute('aria-current', 'step');
-            tab.addEventListener('click', () => select(index));
+            tab.addEventListener('click', event => {
+                // Restoring an inspected step must not activate the card's inspector.
+                event.stopPropagation();
+                select(index);
+            });
             tabs.append(tab);
             return tab;
         });
