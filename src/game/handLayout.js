@@ -25,3 +25,13 @@ export function layoutHand(width, height, count) {
 export function handButtonCenter(slot, areaScale, fixedScale, leftOffset) {
     return leftOffset + (slot.x + cardWidth / 2) * areaScale / fixedScale;
 }
+
+export function handActionPosition(matrix, frame, bottomOffset) {
+    const slot = layoutHand(frame.logicalWidth, frame.logicalHeight, 1)[0];
+    const centerY = frame.drawRect.y + (slot.y + cardHeight / 2) * frame.scale;
+    return {
+        x: (matrix[12] + matrix[0] * cardWidth / 2 + matrix[4] * cardHeight / 2) / frame.fixedScale,
+        y: (matrix[13] + matrix[1] * cardWidth / 2 + matrix[5] * cardHeight / 2
+            + frame.rect.y + frame.rect.height - bottomOffset * frame.fixedScale - centerY) / frame.fixedScale,
+    };
+}

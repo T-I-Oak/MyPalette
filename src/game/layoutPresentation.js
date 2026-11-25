@@ -20,7 +20,6 @@ export function createLayoutPresentation(screen, resultGraphics) {
         area.setSlot(object.id, { x: 0, y: 0, width: area.logicalWidth, height: area.logicalHeight }); area.place(object, object.id);
         hosts.set(id, { host, object });
     }
-    const hand = createHandPresentation(screen.areas.get('hand'), hosts.get('hand').host);
     const stock = createStockPresentation(screen.areas.get('stock'), hosts.get('stock').host);
     const palette = createPalettePresentation(screen.areas.get('palette'), hosts.get('palette').host, () => screen.render(), resultGraphics);
     const play = createPlayPresentation(screen.areas.get('play'), hosts.get('play').host, () => screen.render());
@@ -29,6 +28,7 @@ export function createLayoutPresentation(screen, resultGraphics) {
     const infoLabel = infoArea.fixedLayer.querySelector('.LayoutAreaName');
     infoLabel.hidden = true;
     const cards = createCardScene(screen, play); play.bindScene(cards);
+    const hand = createHandPresentation(screen.areas.get('hand'), hosts.get('hand').host, cards);
     let renderGame;
     const boardAcquisition = createBoardAcquisition(screen);
     let boardSelection;
@@ -54,7 +54,7 @@ export function createLayoutPresentation(screen, resultGraphics) {
             if (label) label.textContent = `グレード${grade} ${cards.counts.stocks[grade]}枚`;
         }
     }
-    cards.onDraw(counts);
+    cards.onDraw(() => { counts(); hand.follow(); });
     const unsubscribe = screen.subscribe(() => {
         for (const [id, { object }] of hosts) {
             const area = screen.areas.get(id); area.setSlot(object.id, { x: 0, y: 0, width: area.logicalWidth, height: area.logicalHeight });
@@ -76,7 +76,7 @@ export function createLayoutPresentation(screen, resultGraphics) {
         cardComponent: cards.component,
         setAchievable: cards.achievable,
         clear,
-        reset() { boardSelection = undefined; boardAcquisition.reset(); timeline.cancel(); cards.reset(); play.reset(); palette.reset(); info.reset(); },
+        reset() { hand.clear(); boardSelection = undefined; boardAcquisition.reset(); timeline.cancel(); cards.reset(); play.reset(); palette.reset(); info.reset(); },
         searchFaces: palette.searchFaces,
         beginAction(action) { timeline.begin(action); },
         hand: () => cards.display.hand,
