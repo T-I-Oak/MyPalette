@@ -1,4 +1,4 @@
-export const EFFECT_NOTICE_MS = 3000;
+const EFFECT_NOTICE_MS = 3000;
 
 export function createEffectNoticeQueue({ show, hide, idle, schedule = setTimeout, cancel = clearTimeout }) {
     const pending = [];

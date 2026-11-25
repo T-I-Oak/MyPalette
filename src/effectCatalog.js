@@ -5,7 +5,7 @@ export const COLOR_PAIR_COLORS = {
     red_green: ['red', 'green'], orange_blue: ['orange', 'blue'], yellow_purple: ['yellow', 'purple'],
 };
 export const COLOR_PAIRS = Object.keys(COLOR_PAIR_COLORS);
-export const LABELS = {
+const LABELS = {
     and: 'AND', or: 'OR',
     brush: '絵筆', pastel: 'パステル', airbrush: 'エアブラシ',
     orange: '橙', yellow: '黄', green: '緑', blue: '青', purple: '紫', red: '赤',

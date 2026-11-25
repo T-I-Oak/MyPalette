@@ -1,5 +1,5 @@
-export const CANVAS_BOTTOM = .7375;
-export const CANVAS_BACK = .2525;
+const CANVAS_BOTTOM = .7375;
+const CANVAS_BACK = .2525;
 
 export function canvasPlacement(imageWidth, imageHeight) {
     const width = 1.3;

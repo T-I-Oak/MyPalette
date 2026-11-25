@@ -19,7 +19,7 @@ const version = initializeAppVersion();
 const disposeBrowserZoom = preventBrowserZoom(document.body);
 if (import.meta.hot) import.meta.hot.dispose(disposeBrowserZoom);
 const root = document.querySelector('#layout-screen');
-export const layoutScreen = createLayoutScreen(root, document.querySelector('#panel-toggle'));
+const layoutScreen = createLayoutScreen(root, document.querySelector('#panel-toggle'));
 const gameLayout = root.querySelector('.LayoutContent');
 const { screen: title, notice, setMenuItems } = createTitleScreen(version);
 const menuActions = { start };

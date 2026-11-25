@@ -31,15 +31,15 @@ export function materialSymbol(ctx, material, color, lifetime = 'permanent') {
     if (color) text(ctx, LETTERS[color], 50, letterY, 48,
         lifetime === 'temporary' ? ink : '#fff', true);
 }
-export function hexagon(ctx) {
+function hexagon(ctx) {
     ctx.beginPath(); ctx.moveTo(50, 8); ctx.lineTo(85, 28); ctx.lineTo(85, 69);
     ctx.lineTo(50, 90); ctx.lineTo(15, 69); ctx.lineTo(15, 28); ctx.closePath();
 }
-export function diceY(ctx) {
+function diceY(ctx) {
     ctx.beginPath(); ctx.moveTo(15, 28); ctx.lineTo(50, 49); ctx.lineTo(85, 28);
     ctx.moveTo(50, 49); ctx.lineTo(50, 90); ctx.stroke();
 }
-export function cloudBrackets(ctx) {
+function cloudBrackets(ctx) {
     ctx.beginPath(); ctx.moveTo(9, 25); ctx.bezierCurveTo(-5, 24, -5, 43, 3, 49);
     ctx.bezierCurveTo(-6, 57, -3, 76, 9, 75);
     ctx.moveTo(91, 25); ctx.bezierCurveTo(105, 24, 105, 43, 97, 49);
@@ -66,7 +66,7 @@ export function rerollTicket(ctx) {
     ctx.stroke(); ctx.restore();
     reroll(ctx);
 }
-export function drawCardDrawIcon(ctx, count) {
+function drawCardDrawIcon(ctx, count) {
     if (!Number.isSafeInteger(count) || count < 1) throw new Error('Draw count must be a positive safe integer');
     const drawPart = (context,node) => {
         if(node.kind==='hand'){context.save();context.translate(19,-1);drawHandSymbol(context);context.restore();}
@@ -124,9 +124,9 @@ export function drawHandSymbol(ctx) {
 }
 
 // A single portrait card, anchored at the center of its lower edge.
-export const CARD_WIDTH = 22;
-export const CARD_HEIGHT = 42;
-export function drawCardSymbol(ctx) {
+const CARD_WIDTH = 22;
+const CARD_HEIGHT = 42;
+function drawCardSymbol(ctx) {
     ctx.fillRect(-CARD_WIDTH / 2, -CARD_HEIGHT, CARD_WIDTH, CARD_HEIGHT);
     ctx.strokeRect(-CARD_WIDTH / 2, -CARD_HEIGHT, CARD_WIDTH, CARD_HEIGHT);
 }
@@ -144,7 +144,7 @@ export function drawStockSymbol(ctx) {
 }
 
 // A die face uses the same acquisition parts, fitted together into its square.
-export function drawAcquisitionSymbol(ctx, effect) {
+function drawAcquisitionSymbol(ctx, effect) {
     const drawPart = (context,node) => {
         if(node.kind==='die') drawDieSymbol(context,node);
         else if(node.kind==='ticket') rerollTicket(context);

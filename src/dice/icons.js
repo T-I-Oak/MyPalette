@@ -1,5 +1,5 @@
 import { materialSymbol, specialSymbol } from '../icons/symbols.js';
-export { INKS, LETTERS, materialSymbol, specialSymbol, drawCardDrawIcon } from '../icons/symbols.js';
+export { INKS } from '../icons/symbols.js';
 
 function renderFaceCanvas(face, lifetime, size, background) {
     const canvas = document.createElement('canvas'); canvas.width = size; canvas.height = size;
