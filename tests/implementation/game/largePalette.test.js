@@ -6,6 +6,11 @@ import {DiceGroup} from '../../../src/dice/DiceGroup.js';
 import {syncPaletteSnapshot} from '../../../src/game/paletteSnapshot.js';
 const settings=JSON.parse(readFileSync(new URL('../../../public/data/cards.json',import.meta.url)));
 
+// cannon-es の world.step は1サブステップの実処理時間が上限を超えると残りを打ち切るため、
+// 負荷状況で物理の進行量が変わり、シードを固定しても結果が決定的にならない。
+// このテストでは performance.now を固定し、打ち切りを発生させない。
+performance.now = () => 0;
+
 for(const count of [13,20,30])test(`${count}個の獲得・物理確定・全体リロール・破棄で後続処理を再開できる`,async()=>{
  let seed=729;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/2**32;};
  const game=new Game(settings,random,{manualRolls:true}),s=game.state,group=new DiceGroup({random});
