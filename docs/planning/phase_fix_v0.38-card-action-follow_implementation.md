@@ -55,3 +55,23 @@ MP38-02について「着手時にボタンは追従せずに消えていい」�
 - `node scripts/checkCardInteraction.cjs`: 成功。着手・返却・取得・交換・発注・詳細UIを回帰確認。
 
 MP38-02の表示方針は合意済み。v0.38.1での修正結果の見た目は再確認待ち。MP38-01・03は引き続き判断待ち。
+
+## 実機確認用の仮版公開（2026-11-25、v0.38.1）
+
+オーナーから、動きを減らす設定を実機確認するため公開する指示を受領し、実装途中の開発ブランチから公開した。引継ぎ書は変更していない。
+
+- 対象コミット: `ae9134f54344fd9bd27fcfd8e1e17e11e9eef0b6`。同名開発ブランチへのpushとremote SHAの一致を確認。
+- 共通部はmaster、HEADとremote masterが `4521d7e22af4fc5caa3d31729c91bb6c29aceb58` で一致。src/libに未コミット・未追跡変更なし。push直前にも確認した。
+- Deploy to GitHub Pages #63: https://github.com/T-I-Oak/MyPalette/actions/runs/45579266739 成功。開発ブランチをworkflow_dispatchで選択。
+- 共通ワークフロー・共通checkoutはいずれも `4521d7e22af4fc5caa3d31729c91bb6c29aceb58`。ActionsのSet up jobと共通checkoutログで確認。
+- 配置先: gh-pagesのpreview/。転送ログで対象フォルダーを確認。
+- gh-pagesコミット: `aff437b580a8aeaea5f7ee9a2420bbeac96c3fdb`。
+- pages build and deployment #61: https://github.com/T-I-Oak/MyPalette/actions/runs/45579350039 成功。
+- 公開URL: https://t-i-oak.github.io/MyPalette/preview/ 。タイトルでv0.38.1を確認。
+- `node scripts/checkPublicDeployment.cjs snapshot https://t-i-oak.github.io/MyPalette/ tmp_public_baseline_mp38.json`: 公開前の正式版8ファイルを記録。
+- `node scripts/checkPublicDeployment.cjs preserved https://t-i-oak.github.io/MyPalette/ tmp_public_baseline_mp38.json`: 公開後も正式版8ファイルが同一であることを確認。
+- `node scripts/checkPublicDeployment.cjs metadata https://t-i-oak.github.io/MyPalette/preview/`: 紹介JSON、画像、ロゴ、プレイ先、空の更新履歴、45枚の標準カードJSONの取得成功。
+- 配信同期中に一度公開起動検証を実行したところ旧版0.37.1を検出したため、同期成功後に再実行した。旧版表示を公開成功とは扱っていない。
+- `node scripts/checkProductionStartup.cjs https://t-i-oak.github.io/MyPalette/preview/`: 成功。Edge 158、動きを減らす有効、A/Bの4実行でタイトル・開発者画面の0.38.1、初日・翌日・終了・再開始・設定エラー再試行を確認。
+
+動きを減らす設定の実機検証はオーナー判断待ち。自動検証の設定再現を実機検証の代わりとはしない。
