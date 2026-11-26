@@ -18,7 +18,7 @@ export function scatteredPlacement(area, random = Math.random) {
     return area === 'field' || area === 'shipped' ? { x: 0, y: 0, angle: 0 }
         : { x: (random() * 2 - 1) * range.x, y: (random() * 2 - 1) * range.y, angle: (random() * 2 - 1) * range.angle };
 }
-export function placementMatrix(value) {
+function placementMatrix(value) {
     return new DOMMatrix().translate(m.cardWidth / 2, m.cardHeight / 2).translate(value.x, value.y)
         .rotate(value.angle).translate(-m.cardWidth / 2, -m.cardHeight / 2);
 }

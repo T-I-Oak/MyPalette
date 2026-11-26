@@ -23,7 +23,7 @@ function button(text, action, disabled = false) {
     const node = el('button', text, 'Button texture-raised'); node.type = 'button'; node.disabled = disabled;
     node.addEventListener('click', action); return node;
 }
-export const faceLabel = face => face.special ? `特殊面：${displayLabel(face.special)}` : `${displayLabel(face.color)}・${displayLabel(face.material)}`;
+const faceLabel = face => face.special ? `特殊面：${displayLabel(face.special)}` : `${displayLabel(face.color)}・${displayLabel(face.material)}`;
 const phaseLabel = { awaitingStart: '仕事の開始待ち', play: '制作中', start: 'ターン開始処理', end: 'ターン終了処理', betweenDays: '一日の仕事を終了', finished: 'ゲーム終了' };
 
 export function mountGame(root, settings, presentation = null, onFinished = null) {

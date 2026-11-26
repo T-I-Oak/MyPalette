@@ -2,7 +2,7 @@ import { COLORS, MATERIALS, EFFECTS, displayLabel } from './effectCatalog.js';
 import { INITIAL_CARDS } from './initialCards.js';
 import { sortDocumentGoals } from './goalOrdering.js';
 
-export const CARD_IDS = ['A', 'B', 'C'].flatMap(grade =>
+const CARD_IDS = ['A', 'B', 'C'].flatMap(grade =>
     Array.from({ length: 15 }, (_, i) => `${grade}${String(i + 1).padStart(2, '0')}`));
 
 export function createDocument() {
@@ -92,7 +92,7 @@ export function validateDocument(data) {
     return errors;
 }
 
-export class DocumentValidationError extends Error {
+class DocumentValidationError extends Error {
     constructor(issues) {
         super(issues.map(({ path, reason }) => `${path}: ${reason}`).join('\n'));
         this.issues = issues;

@@ -29,7 +29,6 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 game: fileURLToPath(new URL('./index.html', import.meta.url)),
-                dev: fileURLToPath(new URL('./dev.html', import.meta.url)),
             },
             output: {
                 manualChunks(id) {

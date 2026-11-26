@@ -13,7 +13,7 @@ export function createEvaluation() {
         [key, Object.fromEntries(evaluationRows.map(row => [row.key, 0]))])) };
 }
 
-export function evaluationIssues(settings) {
+function evaluationIssues(settings) {
     const issues = [];
     const object = (value, keys, path) => {
         if (!value || typeof value !== 'object' || Array.isArray(value)) { issues.push(`${path}はオブジェクトで指定してください。`); return false; }

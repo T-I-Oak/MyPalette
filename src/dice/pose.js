@@ -1,7 +1,7 @@
 import { Quaternion } from 'cannon-es';
 export const READY_HEIGHT = 4.5;
 export const RETURN_DURATION = .3;
-export const LIFT_DURATION = .5;
+const LIFT_DURATION = .5;
 export function advanceReadyPose(die, delta) {
     let speed = 1;
     if (die.readyMotion) {

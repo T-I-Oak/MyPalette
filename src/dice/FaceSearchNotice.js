@@ -2,7 +2,7 @@ import {onLanguageChange,getActiveLanguage} from '../../../GameWorksOAK/src/lib/
 import {searchNoticeParts} from './searchMessages.js';
 import {conditionCanvas} from './searchIcons.js';
 
-export const FACE_SEARCH_NOTICE_ID='dice-search-notice';
+const FACE_SEARCH_NOTICE_ID='dice-search-notice';
 
 export class FaceSearchNotice {
     constructor(search,{target=null,emptyOnly=false,palette=false}={}){
