@@ -2053,7 +2053,7 @@
           ],
           "playEffects": [
             {
-              "type": "discardDice",
+              "type": "useDie",
               "count": 1
             }
           ],
@@ -2387,7 +2387,7 @@
           ],
           "playEffects": [
             {
-              "type": "discardDice",
+              "type": "useDie",
               "count": 1
             }
           ],
@@ -2768,7 +2768,7 @@
           ],
           "playEffects": [
             {
-              "type": "discardDice",
+              "type": "useDie",
               "count": 1
             }
           ],
@@ -3159,7 +3159,7 @@
           "playEffects": [],
           "achievementEffects": [
             {
-              "type": "discardDice",
+              "type": "useDie",
               "count": 1
             }
           ]
@@ -3275,7 +3275,7 @@
           "playEffects": [],
           "achievementEffects": [
             {
-              "type": "discardDice",
+              "type": "useDie",
               "count": 1
             }
           ]
@@ -3383,7 +3383,7 @@
           "playEffects": [],
           "achievementEffects": [
             {
-              "type": "discardDice",
+              "type": "useDie",
               "count": 1
             }
           ]
