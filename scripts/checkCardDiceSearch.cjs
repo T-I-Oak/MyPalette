@@ -6,7 +6,7 @@ for(const c of settings.cards)for(const s of c.steps){s.playEffects=[];s.achieve
  {material:'brush',color:null},{material:null,color:'orange'},{material:'brush',color:'orange'},{material:'airbrush',color:'purple'}];}
 const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
- const page=await browser.newPage({viewport:{width:1200,height:900},reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const page=await browser.newPage({viewport:{width:1200,height:900},hasTouch:true,reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route(base,route=>route.fulfill({contentType:'text/html; charset=utf-8',body:`
  <body class="theme-atelier texture-layout"><main class="LayoutScreen"><button tabindex="-1" id="panel-toggle" class="PanelToggle"></button></main>
  <script type="module">
@@ -35,9 +35,12 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  await page.getByRole('button',{name:'すべてリロール（リロール権1個消費）',exact:true}).waitFor({timeout:60000});
  await page.evaluate(()=>{window.searchCheck.session.game.state.dice[0].used=true;});
  await page.locator('.HandFixedActions .Button').first().click();
+ await page.mouse.move(1190,890);
  const baseline=await page.evaluate(()=>JSON.stringify(window.searchCheck.session.game.state));
  for(const [condition,counts] of [[{material:'brush'},[3]],[{color:'orange'},[3,6]],[{material:'brush',color:'orange'},[2]]]){
-  await goal(condition).click();
+  await goal(condition).tap();
+  assert.equal(await goal(condition).getAttribute('aria-expanded'),'true');
+  assert.equal(await page.locator('.PaintingIconDetails.is-pinned').count(),1);
   await page.waitForFunction(()=>window.searchScene.faceSearch.opacity>.9);
   assert.deepEqual(await page.evaluate(()=>window.searchScene.faceSearch.result.hits.map(h=>h.count)),counts);
   assert.equal(await page.locator('.PaletteViewport .DiceSearchBadge:not([hidden])').count(),counts.length);
@@ -46,7 +49,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  }
  assert(await page.evaluate(()=>window.searchScene.visuals.get(window.searchScene.group.dice[0].id).searchBadge.hidden===false&&window.searchScene.group.dice[0].consumed));
  assert.equal(await page.locator('.GameCardDetail[data-open="true"]').count(),0);
- await goal({material:'airbrush',color:'purple'}).click();
+ await goal({material:'airbrush',color:'purple'}).tap();
  const notice=page.locator('.PaletteSearchNotice');await notice.waitFor();
  assert((await notice.innerText()).includes('を含む画材ダイスはありません'));assert.equal(await notice.locator('canvas').count(),1);
  const centered=await notice.evaluate(n=>{
@@ -54,5 +57,17 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
   return Math.abs(a.x+a.width/2-p.x-p.width/2)<1&&Math.abs(a.y+a.height/2-p.y-p.height/2)<1;
  });assert(centered);await page.screenshot({path:'tmp_palette_search_none.png'});
  await page.waitForTimeout(3200);assert(await notice.isHidden());
+ for(const width of [1200,390]){
+  await page.setViewportSize({width,height:900});
+  if(width===390)await page.locator('#panel-toggle').click();
+  await page.mouse.move(5,5);
+  const heading=page.locator('[data-scene-area="hand"] .goal .PaintingBlockLabel').first();
+  await heading.tap();
+  assert.equal(await page.locator('.PaintingIconDetails').innerText(),'カードの目標。');
+  const rect=await page.locator('.PaintingIconDetails').boundingBox();assert(rect.x>=0&&rect.x+rect.width<=width);
+  assert.equal(await page.locator('.GameCardDetail[data-open="true"]').count(),0);
+  assert.equal(await page.evaluate(()=>JSON.stringify(window.searchCheck.session.game.state)),baseline);
+  await heading.tap();assert.equal(await page.locator('.PaintingIconDetails').count(),0);
+ }
  assert.deepEqual(errors,[]);console.log('PASS: goal material/color/pair search, rolling and consumed dice, face counts, centered empty notice, expiry, read-only');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

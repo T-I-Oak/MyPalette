@@ -1,10 +1,12 @@
 import { expandLanguageResource } from '../../../GameWorksOAK/src/lib/core/i18n.js';
+import { describeNormalFace, iconDescriptionResources } from './iconDescriptions.js';
 import { displayLabel } from '../effectCatalog.js';
 import { effectDescriptionParts, effectDescriptionResources } from './effectDescriptions.js';
 
 const translated = (ja, en) => ({ 'lang-store': { ja, en } });
 const resources = {
     descriptions: effectDescriptionResources,
+    iconDescriptions: iconDescriptionResources,
     effectNoticeTitle: translated('獲得効果', 'Gained effects'),
     startPainting: translated('着手', 'Start'),
     returnToStock: translated('返却', 'Return'),
@@ -32,7 +34,7 @@ export function cardMessages() {
     const describe = effect => parts(effect).map(part => typeof part === 'string' ? part : describe(part.effect)).join('');
     return {
         ...text,
-        describeGoal: goal => [goal.material, goal.color].filter(Boolean).map(label).join(' · '),
+        describeGoal: goal => describeNormalFace(goal, text.iconDescriptions, label),
         effectParts: parts,
         describeEffect: describe,
     };

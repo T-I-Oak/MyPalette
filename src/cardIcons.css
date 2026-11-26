@@ -28,3 +28,8 @@
 .EffectBody .PaintingIconFrame { --painting-icon-size: 28px; height: 28px; }
 .EffectBody .PaintingIconFrame canvas { width: 100%; height: 100%; }
 .EffectBodyText > .CardIcon { vertical-align: middle; cursor: pointer; margin-inline: 4px; }
+.PaintingBlockLabel[role="button"] { cursor: pointer; }
+.PaintingIconDetails { box-sizing: border-box; max-height: calc(100dvh - 16px); overflow-y: auto; }
+.PaintingIconDetails.is-pinned { pointer-events: auto; }
+.PaintingIconDetails .PaintingBlockLabel { flex: 0 0 28px; border: 0; background: none; }
+.PaintingIconDetails .PaintingBlockLabel svg { width: 28px; height: 28px; }

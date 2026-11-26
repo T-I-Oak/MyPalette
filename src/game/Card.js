@@ -41,12 +41,14 @@ export class Card extends MoveObject {
     }
 
     setBack() {
+        releasePaintingIcons(this.element);
         this.element.classList.add('PaintingCardBackOnly');
         this.element.setAttribute('aria-hidden', 'true');
         this.element.replaceChildren(makeBack());
     }
 
     setFace(definition, currentStep, selectedStep, onSelect) {
+        releasePaintingIcons(this.element);
         const text = cardMessages();
         const root = this.element;
         root.dataset.cardId = this.id;
@@ -95,7 +97,7 @@ export class Card extends MoveObject {
         });
 
         function block(kind, content) {
-            return paintingBlock(kind, content, text[kind]);
+            return paintingBlock(kind, content, text[kind], true);
         }
         function select(index) {
             root.dataset.selectedStep = String(index);
