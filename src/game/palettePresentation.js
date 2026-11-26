@@ -3,7 +3,6 @@ import { DiceScene } from '../dice/DiceScene.js';
 import { loadResultGraphics } from '../dice/resultGraphics.js';
 import { syncPaletteSnapshot } from './paletteSnapshot.js';
 import { rerollTicketCanvas } from '../icons/render.js';
-import {paletteScaleForCount} from '../dice/field.js';
 import {paletteSizeForScale} from '../dice/paletteLayout.js';
 import '../dice/layout.css';
 import '../dice/states.css';
@@ -106,7 +105,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
         try {
             graphics = resultGraphics ?? await loadResultGraphics();
             if (disposed || token !== generation) { graphics.dispose(); return; }
-            pendingGroup = new DiceGroup();
+            pendingGroup = new DiceGroup({ onFieldResize: () => { resizePalette(); update(); } });
             const next = new DiceScene(viewport, pendingGroup, graphics, updateActions, {
                 transparent: true,
                 bottomAligned: true,
@@ -131,6 +130,13 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             notice.append(retry);
             viewport.replaceChildren(notice);
         }
+    }
+    function resizePalette(notify = true) {
+        const size = paletteSizeForScale(group?.fieldScale ?? 1);
+        const resized = area.standardWidth !== size.width || area.standardHeight !== size.height;
+        area.standardWidth = size.width; area.standardHeight = size.height;
+        if (resized && notify) relayout?.();
+        return resized;
     }
     function update() {
         if (!viewport.isConnected) return;
@@ -211,9 +217,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             actions = callbacks;
             const showingDayEnd = state.phase === 'betweenDays' || state.dayEndRequest?.kind === 'cleanup';
             snapshot = structuredClone(showingDayEnd ? state.dayEndDice ?? [] : state.dice);
-            const size=paletteSizeForScale(paletteScaleForCount(snapshot.length));
-            const resized=area.standardWidth!==size.width||area.standardHeight!==size.height;
-            area.standardWidth=size.width;area.standardHeight=size.height;
+            const resized=resizePalette(false);
             viewport.setAttribute('aria-label', `パレット：${snapshot.map(die =>
                 `${die.lifetime === 'permanent' ? '永続' : '一時'}ダイス、${die.used ? '消費済み' : '未使用'}、${die.current === null ? 'ロール待ち' : `面${die.current + 1}`}`).join('。')}`);
             if (viewport.parentNode !== host) host.append(viewport);

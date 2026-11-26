@@ -7,7 +7,6 @@ export const FIELD_VIEW_COSINE=FIELD_CAMERA_POSITION[1]/Math.hypot(FIELD_CAMERA_
 export const FIELD_DEPTH=FIELD_WIDTH/3/FIELD_VIEW_COSINE;
 export const FIELD_POLYGON=Object.freeze([[.26,.14],[.48,.045],[.73,.07],[.91,.20],[.975,.40],[.965,.67],[.84,.87],[.64,.95],[.37,.91],[.245,.80],[.245,.50]].reverse().map(([u,v])=>Object.freeze([(.5-u)*FIELD_WIDTH,(v-.5)*FIELD_DEPTH])));
 const edges=Object.freeze(FIELD_POLYGON.map(([x,z],i)=>{const [bx,bz]=FIELD_POLYGON[(i+1)%FIELD_POLYGON.length],dx=bx-x,dz=bz-z,length=Math.hypot(dx,dz);return Object.freeze({x,z,bx,bz,length,nx:-dz/length,nz:dx/length});}));
-export function paletteScaleForCount(count){return Math.max(1,Math.sqrt(count/12));}
 export function fieldEdges(scale=1){return scale===1?edges:edges.map(edge=>({...edge,x:edge.x*scale,z:edge.z*scale,bx:edge.bx*scale,bz:edge.bz*scale,length:edge.length*scale}));}
 export function fieldCenterVertices(margin=FIELD_MARGIN,scale=1){
  margin/=scale;

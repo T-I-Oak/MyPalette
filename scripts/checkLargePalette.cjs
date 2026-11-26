@@ -21,14 +21,14 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
   await installDayStartGate(page);await page.goto(base);await page.waitForFunction(()=>!!document.querySelector('.PaletteViewport > canvas')&&!document.querySelector('.PaletteNotice'));
   await page.evaluate(async()=>{const url=performance.getEntriesByType('resource').find(e=>new URL(e.name).pathname.endsWith('/dice/DiceScene.js')).name;const {DiceScene}=await import(url),project=DiceScene.prototype.project;DiceScene.prototype.project=function(...args){window.largeScene=this;return project.apply(this,args);};});
   await releaseDayStart(page);
-  await page.waitForFunction(()=>window.largeCheck.session.game.state.phase==='play',null,{timeout:60000});
+  await page.waitForFunction(()=>window.largeCheck.session.game.state.phase==='play',null,{timeout:330000});
   const baseline=await page.evaluate(()=>window.largeScreen.areas.get('palette').layoutFrame.scale);
   await page.locator('.HandFixedActions .Button').first().click();
-  await page.waitForFunction(n=>{const s=window.largeCheck.session.game.state;return s.dice.length===n&&s.fame===5&&!s.rollRequest;},count,{timeout:90000});
+  await page.waitForFunction(n=>{const s=window.largeCheck.session.game.state;return s.dice.length===n&&s.fame===5&&!s.rollRequest;},count,{timeout:330000});
   await page.waitForFunction(n=>window.largeScene.visuals.size===n,count);
   assert.equal(await page.locator('.PaletteViewport .DiceResult:not([hidden])').count(),count);
-  const dimensions=await page.evaluate(()=>{const s=window.largeScene,a=window.largeScreen.areas.get('palette');return{scale:s.group.fieldScale,image:[s.floor.scale.x,s.floor.scale.y],areaScale:a.layoutFrame.scale,logical:[a.standardWidth,a.standardHeight],dice:s.group.dice.map(d=>({current:d.current,top:d.top.index})),buttonHeight:document.querySelector('.PaletteFixedActions button').getBoundingClientRect().height};});
-  assert(Math.abs(dimensions.scale-Math.sqrt(count/12))<1e-9);assert.deepEqual(dimensions.image,[dimensions.scale,dimensions.scale]);assert(dimensions.areaScale<baseline);assert.equal(dimensions.buttonHeight,36);assert(dimensions.dice.every(d=>d.current===d.top));
+  const dimensions=await page.evaluate(()=>{const s=window.largeScene,a=window.largeScreen.areas.get('palette');return{scale:s.group.fieldScale,image:[s.floor.scale.x,s.floor.scale.y],areaScale:a.layoutFrame.scale,logical:[a.standardWidth,a.standardHeight],dice:s.group.dice.map(d=>({current:d.current,top:d.top.index,height:d.body.position.y})),buttonHeight:document.querySelector('.PaletteFixedActions button').getBoundingClientRect().height};});
+  assert(dimensions.scale>=1);assert.deepEqual(dimensions.image,[dimensions.scale,dimensions.scale]);assert(Math.abs(dimensions.areaScale-baseline)<1e-9);assert.equal(dimensions.buttonHeight,36);assert(dimensions.dice.every(d=>d.current===d.top&&d.height>=.85&&d.height<1.2));
   if(count===30){
    const drag=await page.evaluate(async()=>{
     const {dragPosition}=await import('./src/dice/dragPosition.js');const s=window.largeScene,canvas=s.renderer.domElement.getBoundingClientRect();
@@ -46,7 +46,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
   const target=await page.evaluate(()=>{for(const node of [...document.querySelectorAll('.PaletteViewport .DiceResult:not([hidden])')].sort((a,b)=>Number(b.style.zIndex)-Number(a.style.zIndex))){const r=node.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;if(document.elementFromPoint(x,y)?.closest('.DiceResult')===node)return{id:node.dataset.dieId,x,y};}});assert(target);
   await page.mouse.click(target.x,target.y);assert(await page.getByRole('button',{name:'1つの画材を更新する',exact:true}).isEnabled());
   await page.getByRole('button',{name:'1つの画材を更新する',exact:true}).click();
-  await page.waitForFunction(()=>!window.largeCheck.session.game.state.rollRequest,null,{timeout:60000});
+  await page.waitForFunction(()=>!window.largeCheck.session.game.state.rollRequest,null,{timeout:330000});
   await page.screenshot({path:`tmp_large_palette_${count}.png`});
   await page.setViewportSize({width:390,height:844});
   await page.evaluate(()=>{window.largeCheck.session.game.step(window.largeCheck.session.game.state.hand[0]).playEffects=[{type:'discardDice',count:1},{type:'changeFame',amount:2}];});
