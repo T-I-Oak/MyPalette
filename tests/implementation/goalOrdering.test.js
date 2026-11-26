@@ -34,7 +34,7 @@ test('保存時に全カード・全ステップを並べ替え、元の編集�
     const data = createDocument();
     for (const card of data.cards) for (const step of card.steps) {
         step.goals=[{material:null,color:'red'},{material:'brush',color:null}];
-        step.playEffects=[{type:'drawCards',count:2},{type:'discardDice',count:1}];
+        step.playEffects=[{type:'drawCards',count:2},{type:'useDie',count:1}];
     }
     const before=structuredClone(data);
     const saved=readDocument(serializeDocument(data));
@@ -42,7 +42,7 @@ test('保存時に全カード・全ステップを並べ替え、元の編集�
     assert.deepEqual(data,before);
     for (const card of saved.cards) for (const step of card.steps) {
         assert.equal(step.goals[0].material,'brush');
-        assert.deepEqual(step.playEffects,[{type:'drawCards',count:2},{type:'discardDice',count:1}]);
+        assert.deepEqual(step.playEffects,[{type:'drawCards',count:2},{type:'useDie',count:1}]);
     }
 });
 

@@ -49,10 +49,10 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
   await page.waitForFunction(()=>!window.largeCheck.session.game.state.rollRequest,null,{timeout:330000});
   await page.screenshot({path:`tmp_large_palette_${count}.png`});
   await page.setViewportSize({width:390,height:844});
-  await page.evaluate(()=>{window.largeCheck.session.game.step(window.largeCheck.session.game.state.hand[0]).playEffects=[{type:'discardDice',count:1},{type:'changeFame',amount:2}];});
+  await page.evaluate(()=>{window.largeCheck.session.game.step(window.largeCheck.session.game.state.hand[0]).playEffects=[{type:'useDie',count:1},{type:'changeFame',amount:2}];});
   await page.locator('.HandFixedActions .Button').first().click();const dialog=page.locator('.GameChoice[open]');await dialog.waitFor();await dialog.locator('input').first().check();await dialog.getByRole('button',{name:'選択を確定'}).click();
-  await page.waitForFunction(n=>window.largeScene.group.dice.length===n,count-1);
+  await page.waitForFunction(n=>window.largeScene.group.dice.length===n,count);
   assert.equal(await page.evaluate(()=>window.largeCheck.session.game.state.fame),7);assert.deepEqual(errors,[]);
-  console.log(`PASS: ${count} dice acquire/roll/resume, scaled palette, fixed buttons, selection/reroll, narrow discard`);await page.close();
+  console.log(`PASS: ${count} dice acquire/roll/resume, scaled palette, fixed buttons, selection/reroll, narrow use dice`);await page.close();
  }
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

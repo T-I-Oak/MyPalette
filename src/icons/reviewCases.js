@@ -6,7 +6,7 @@ function add(id,label,effect){ICON_REVIEW_CASES.push({id,label,effect});}
 for(const color of COLORS)add(`color-${color}`,`面の色変更：${displayLabel(color)}`,{type:'changeColor',color});
 for(const material of MATERIALS)add(`material-${material}`,`面の画材変更：${displayLabel(material)}`,{type:'changeMaterial',material});
 for(const face of SPECIAL_FACES)add(`special-${face}`,`特殊面への変更：${displayLabel(face)}`,{type:'changeSpecialFace',face});
-for(const count of [1,2,10])add(`discard-${count}`,`ダイス破棄 ×${count}`,{type:'discardDice',count});
+for(const count of [1,2,10])add(`use-${count}`,`ダイスの使用済み化 ×${count}`,{type:'useDie',count});
 add('reroll','即時リロール',{type:'reroll'});
 add('refresh','使用済みダイスの再利用',{type:'refreshDice'});
 for(const count of [1,2,10]){

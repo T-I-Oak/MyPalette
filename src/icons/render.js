@@ -67,6 +67,11 @@ function drawNode(ctx,node){
             ctx.quadraticCurveTo(88,19,86,31);ctx.quadraticCurveTo(84,19,74,16);
             ctx.quadraticCurveTo(84,13,86,1);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();break;
         case 'die':drawDieSymbol(ctx,node);break;
+        case 'check':
+            ctx.strokeStyle=node.color;ctx.lineWidth=3;
+            ctx.beginPath();ctx.arc(50,50,32,0,Math.PI*2);ctx.stroke();
+            ctx.lineWidth=6;
+            ctx.beginPath();ctx.moveTo(34,50);ctx.lineTo(46,62);ctx.lineTo(66,37);ctx.stroke();break;
         case 'ticket':rerollTicket(ctx);break;
         case 'reroll':ctx.save();ctx.translate(-23,-45);ctx.scale(1.85,1.85);reroll(ctx);ctx.restore();break;
         case 'fame':drawFameIcon(ctx,node.amount);break;
@@ -79,9 +84,6 @@ function drawNode(ctx,node){
         case 'arrowQuantity':drawQuantity(ctx,node);break;
         case 'quantity':drawGlyphText(ctx,node.value,50,50,29,OUTLINE,'#fff');break;
         case 'card':ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(23,13,54,74,4);ctx.fill();ctx.stroke();drawGlyphText(ctx,String(node.step),50,50,39,OUTLINE,'#fff');break;
-        case 'trash':
-            ctx.fillStyle='#edf0ed';ctx.beginPath();ctx.moveTo(26,31);ctx.lineTo(31,83);ctx.lineTo(69,83);ctx.lineTo(74,31);ctx.closePath();ctx.fill();ctx.stroke();
-            ctx.beginPath();ctx.moveTo(20,25);ctx.lineTo(80,25);ctx.moveTo(39,25);ctx.lineTo(39,15);ctx.lineTo(61,15);ctx.lineTo(61,25);ctx.moveTo(43,40);ctx.lineTo(44,72);ctx.moveTo(57,40);ctx.lineTo(56,72);ctx.stroke();break;
         case 'lightning':ctx.fillStyle='#dbb61e';ctx.beginPath();ctx.moveTo(57,9);ctx.lineTo(24,54);ctx.lineTo(48,54);ctx.lineTo(35,91);ctx.lineTo(77,40);ctx.lineTo(52,40);ctx.closePath();ctx.fill();ctx.stroke();break;
         default:throw new Error(`Unknown icon node: ${node.kind}`);
     }

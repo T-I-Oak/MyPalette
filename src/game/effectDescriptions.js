@@ -10,7 +10,7 @@ const templates = {
     changeColor: ['未使用ダイスを選択し、現在の面の色を{color}に変更する。', 'Select an unused die and change its current face color to {color}.'],
     changeMaterial: ['未使用ダイスを選択し、現在の面の画材を{material}に変更する。', 'Select an unused die and change its current face material to {material}.'],
     changeSpecialFace: ['未使用ダイスを選択し、現在の面を{face}に変更する。', 'Select an unused die and change its current face to {face}.'],
-    discardDice: ['未使用ダイスを選択して破棄する。', 'Select unused dice and discard them.'],
+    useDie: ['未使用ダイスを選択して使用済みにする。', 'Select unused dice and mark them as used.'],
     increaseFame: ['名声値を増やす。', 'Increase fame.'],
     decreaseFame: ['名声値を減らす。', 'Decrease fame.'],
     drawCards: ['デッキからカードを引いて手札に加える。', 'Draw cards from the deck into your hand.'],

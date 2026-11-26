@@ -117,7 +117,7 @@ for (const card of settings.cards) for (const step of card.steps) {
             const game = window.handCheck.session.game;
             const card = game.state.hand[0];
             game.step(card).playEffects = [{ type: 'changeColor', color: 'red' },
-                { type: 'discardDice', count: 1 }, { type: 'refreshDice' },
+                { type: 'useDie', count: 1 }, { type: 'refreshDice' },
                 { type: 'gainColorDice', colors: 'yellow_purple', count: 1, lifetime: 'temporary' }];
         });
         await page.locator('.HandFixedActions button').first().click();
@@ -132,13 +132,13 @@ for (const card of settings.cards) for (const step of card.steps) {
         await choice.locator('input').first().check();
         await choice.getByRole('button', { name: '選択を確定' }).click();
         await page.waitForFunction(()=>!window.handCheck.session.game.state.rollRequest,null,{timeout:60000});
-        await checkGlow('discard, refresh, acquisition');
-        assert.equal(await page.evaluate(() => window.handCheck.session.game.state.dice.length), 3);
+        await checkGlow('use dice, refresh, acquisition');
+        assert.equal(await page.evaluate(() => window.handCheck.session.game.state.dice.length), 4);
         assert.equal(await page.evaluate(() => window.handCheck.session.game.state.dice.some(die => die.used)), false);
         await page.getByRole('button', { name: '今日の仕事を終える', exact: true }).click();
         assert.equal(await hand.count(), 0);
         assert.equal(await page.locator('.HandFixedActions button').count(), 0);
         assert.deepEqual(errors, []);
-        console.log('Hand: 0/4/6 cards, overlap taps, read-only inspection, current step, A/B/tablet/panel, draw, consumption, reroll, face rewrite, discard, refresh, acquisition, pending choices, day end passed');
+        console.log('Hand: 0/4/6 cards, overlap taps, read-only inspection, current step, A/B/tablet/panel, draw, consumption, reroll, face rewrite, use dice, refresh, acquisition, pending choices, day end passed');
     } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

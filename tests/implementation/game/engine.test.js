@@ -27,7 +27,7 @@ test('achievement consumes dice and ships with increased credit before reward se
     const game = make(), s = game.state, card = s.hand.pop();
     card.step = 2; s.field = [card];
     game.definitions[card.id].steps[2] = { goals: [{ color: 'red', material: null }], playEffects: [],
-        achievementEffects: [{ type: 'discardDice', count: 1 }] };
+        achievementEffects: [{ type: 'useDie', count: 1 }] };
     s.dice[0].faces[s.dice[0].current] = { color: 'red', material: 'brush' };
     game.achieve(card.id, [s.dice[0].id]);
     assert.equal(s.dice[0].used, true); assert.equal(card.step, 3);

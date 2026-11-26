@@ -70,12 +70,12 @@ export function* resolveEffects(game, effects) {
                 yield* stockCards(game, 1, 'hand');
             }
         } else {
-            const discard = effect.type === 'discardDice';
+            const useDice = effect.type === 'useDie';
             const options = s.dice.filter(die => !die.used).map(die => ({ id: die.id }));
-            const count = discard ? effect.count : 1;
+            const count = useDice ? effect.count : 1;
             const max = effect.type === 'reroll' ? options.length : count;
             const ids = yield* select(game, 'dice', game.effectLabel(effect), options, count, max, effect.type);
-            if (discard) s.dice = s.dice.filter(die => !ids.includes(die.id));
+            if (useDice) for (const die of s.dice.filter(die => ids.includes(die.id))) die.used = true;
             else if (effect.type === 'reroll') yield* game.rollDice(s.dice.filter(die => ids.includes(die.id)), 'effect');
             else for (const die of s.dice.filter(die => ids.includes(die.id))) {
                 const face = currentFace(die);

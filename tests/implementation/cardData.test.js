@@ -118,7 +118,7 @@ test('目標3形態・重複条件・効果の順番を保存して復元する'
         { color: 'red', material: null }, { color: null, material: 'brush' },
         { color: 'yellow', material: 'pastel' }, { color: 'yellow', material: 'pastel' },
     ];
-    card.steps[0].playEffects = [{ type: 'discardDice', count: 1 }, { type: 'drawCards', count: 2 }];
+    card.steps[0].playEffects = [{ type: 'useDie', count: 1 }, { type: 'drawCards', count: 2 }];
     card.steps[0].achievementEffects = [{ type: 'changeFame', amount: -1 }];
     const saved=readDocument(serializeDocument(data));
     assert.deepEqual(saved.cards[0].steps[0].goals,[{color:null,material:'brush'},{color:'yellow',material:'pastel'},{color:'yellow',material:'pastel'},{color:'red',material:null}]);

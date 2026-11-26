@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { Game } from '../../src/game/engine.js';
 import { currentFace } from '../../src/game/dice.js';
+import { SPECIAL_FACES } from '../../src/effectCatalog.js';
 const settings = JSON.parse(readFileSync(new URL('../../public/data/cards.json', import.meta.url), 'utf8'));
 const make = () => new Game(settings, () => .23);
 const effect = (game, item) => game.run(game.effects([item]));
@@ -70,20 +71,88 @@ test('6.4 face rewrites persist, retain other normal attribute and convert speci
     for (const item of [{ type: 'changeColor', color: 'red' }, { type: 'changeMaterial', material: 'brush' },
         { type: 'changeSpecialFace', face: 'fame1' }]) { effect(game, item); assert.equal(game.state.pending, null); }
 });
-test('6.5 discard excludes consumed dice, includes unused temporary dice and clamps count', () => {
+test('6.5 使用済み化は個数を維持し、永続・一時の所持情報と出目を変えない', () => {
     const game = make(), s = game.state;
     s.dice[0].used = true; s.dice[1].lifetime = 'temporary';
-    effect(game, { type: 'discardDice', count: 2 });
+    const before = structuredClone(s.dice);
+    effect(game, { type: 'useDie', count: 2 });
     assert.equal(s.pending.options.length, 2);
     assert.throws(() => game.choose(s.dice.slice(0, 2).map(d => d.id)));
-    const consumed = s.dice[0];
+    assert.throws(() => game.choose([s.dice[1].id]));
     game.choose(s.dice.slice(1).map(d => d.id));
-    assert.equal(s.dice.length, 1);
-    effect(game, { type: 'discardDice', count: 5 }); assert.equal(s.pending, null);
-    assert.deepEqual(s.dice, [consumed]);
-    consumed.used = false;
-    effect(game, { type: 'discardDice', count: 5 }); assert.equal(s.pending.min, 1);
+    assert.deepEqual(s.dice, before.map(die => ({ ...die, used: true })));
+    effect(game, { type: 'useDie', count: 5 }); assert.equal(s.pending, null);
+    s.dice[0].used = false;
+    effect(game, { type: 'useDie', count: 5 }); assert.equal(s.pending.min, 1);
     assert.equal(s.pending.max, 1);
-    game.choose([consumed.id]); assert.equal(s.dice.length, 0);
-    effect(game, { type: 'discardDice', count: 1 }); assert.equal(s.pending, null);
+    game.choose([s.dice[0].id]); assert.equal(s.dice.length, 3);
+    effect(game, { type: 'useDie', count: 1 }); assert.equal(s.pending, null);
+});
+
+test('6.5 特殊面は使用済み化で発動せず、即時適用・日末の対象から外れ、再利用で戻る', () => {
+    for (const refresh of [false, true]) {
+        const game = make(), s = game.state;
+        s.dice[0].faces[s.dice[0].current] = { special: 'fame1' };
+        s.dice[1].faces[s.dice[1].current] = { special: 'draw1' };
+        const before = structuredClone(s.dice);
+        const hand = s.hand.length;
+        effect(game, { type: 'useDie', count: 2 });
+        game.choose(s.dice.slice(0, 2).map(die => die.id));
+        assert.deepEqual(s.dice, before.map((die, i) => ({ ...die, used: i < 2 })));
+        assert.equal(s.fame, 0); assert.equal(s.hand.length, hand);
+        effect(game, { type: 'activateSpecialFaces' });
+        assert.equal(s.fame, 0); assert.equal(s.hand.length, hand);
+        if (refresh) effect(game, { type: 'refreshDice' });
+        effect(game, { type: 'activateSpecialFaces' });
+        assert.equal(s.fame, refresh ? 1 : 0);
+        assert.equal(s.hand.length, hand + (refresh ? 1 : 0));
+        game.endDay();
+        assert.equal(s.fame, refresh ? 2 : 0);
+        assert.deepEqual(s.reserved, refresh ? [{ type: 'drawCards', count: 1 }] : []);
+    }
+});
+
+test('6.5 連続する使用済み化は対象を更新し、対象なしでも後続へ進む', () => {
+    const game = make(), s = game.state;
+    game.run(game.effects([{ type: 'useDie', count: 2 }, { type: 'useDie', count: 2 },
+        { type: 'useDie', count: 1 }, { type: 'gainRerolls', count: 3 }]));
+    game.choose(s.dice.slice(0, 2).map(die => die.id));
+    assert.deepEqual(s.pending.options, [{ id: s.dice[2].id }]);
+    assert.equal(s.pending.min, 1); assert.equal(s.pending.max, 1);
+    game.choose([s.dice[2].id]);
+    assert.equal(game.task, null); assert.equal(s.rerolls, 4);
+});
+
+test('6.5 使用済み化した永続ダイスは翌日に戻り、一時ダイスは日末に回収する', () => {
+    const game = make(), s = game.state;
+    s.dice[1].lifetime = 'temporary';
+    const permanent = s.dice[0], temporary = s.dice[1];
+    const faces = structuredClone(permanent.faces);
+    effect(game, { type: 'useDie', count: 2 }); game.choose([permanent.id, temporary.id]);
+    effect(game, { type: 'refreshDice' });
+    assert.equal(permanent.used, false); assert.equal(temporary.used, false);
+    effect(game, { type: 'useDie', count: 2 }); game.choose([permanent.id, temporary.id]);
+    game.endDay();
+    assert.ok(s.dice.includes(permanent)); assert.ok(!s.dice.includes(temporary));
+    game.nextDay();
+    assert.ok(s.dice.includes(permanent)); assert.equal(permanent.used, false);
+    assert.deepEqual(permanent.faces, faces);
+});
+
+test('6.5 全10種類の特殊面は使用済みの間、発動・予約・再ロールを行わない', () => {
+    for (const face of SPECIAL_FACES) {
+        const game = make(), s = game.state, die = s.dice[0];
+        die.faces[die.current] = { special: face };
+        const before = structuredClone(die), hand = s.hand.length, rerolls = s.rerolls;
+        const random = game.random;
+        game.random = () => { throw new Error('使用済み化は抽選しない'); };
+        effect(game, { type: 'useDie', count: 1 }); game.choose([die.id]);
+        effect(game, { type: 'activateSpecialFaces' });
+        assert.deepEqual(die, { ...before, used: true });
+        assert.equal(s.dice.length, 3); assert.equal(s.hand.length, hand);
+        assert.equal(s.rerolls, rerolls); assert.equal(s.fame, 0);
+        game.random = random;
+        game.endDay();
+        assert.equal(s.fame, 0); assert.deepEqual(s.reserved, []);
+    }
 });

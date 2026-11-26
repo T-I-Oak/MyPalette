@@ -45,7 +45,7 @@ export const EFFECTS = [
     { type: 'changeSpecialFace', label: '特殊面への変更', fields: [
         { name: 'face', label: '特殊面', options: SPECIAL_FACES },
     ] },
-    { type: 'discardDice', label: 'ダイスの破棄', fields: [quantity] },
+    { type: 'useDie', label: 'ダイスの使用済み化', fields: [quantity] },
     { type: 'changeFame', label: '名声値変更', fields: [
         { name: 'amount', label: '増減値（0以外）', integer: true, nonzero: true },
     ] },
