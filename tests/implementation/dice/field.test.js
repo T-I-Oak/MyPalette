@@ -18,7 +18,7 @@ test('12個のロール中と位置指定後も穴・外縁へ出ない',async()
  const pending=group.roll();
  for(let i=0;i<3600&&group.rolling;i++){
   group.step(1/60);
-  for(const die of group.dice)assert(fieldContains(die.body.position,1.79));
+  for(const die of group.dice)assert(fieldContains(die.body.position,1.79,group.fieldScale));
  }
  const results=await pending;assert(results.every(result=>result.status==='settled'));group.dispose();
 });

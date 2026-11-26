@@ -1,13 +1,14 @@
 import { World, Body, Box, Vec3, Material, ContactMaterial } from 'cannon-es';
-import { FIELD_WIDTH, FIELD_DEPTH, fieldEdges, fieldSpawn, constrainToField, paletteScaleForCount, FIELD_MARGIN } from './field.js';
-import { READY_HEIGHT, advanceReadyPose } from './pose.js';
+import { FIELD_WIDTH, FIELD_DEPTH, fieldEdges, fieldSpawn, constrainToField, FIELD_MARGIN } from './field.js';
+import { advanceReadyPose } from './pose.js';
 import { Die } from './Die.js';
 import { validateFaceCondition } from './faceConditions.js';
 
 export class DiceGroup {
-    constructor({ random = Math.random } = {}) {
+    constructor({ random = Math.random, onFieldResize = () => {} } = {}) {
         this.random = random; this.items = new Map(); this.rolling = false; this.disposed = false;
         this.collisions = 0; this.clock = 0;
+        this.onFieldResize = onFieldResize;
         this.fieldScale = 1; this.fieldBodies = [];
         this.world = new World({ gravity: new Vec3(0, -18, 0), allowSleep: true });
         this.world.solver.iterations = 20;
@@ -35,9 +36,9 @@ export class DiceGroup {
             this.fieldBodies.push(body);
         }
     }
-    fitCount(count) {
+    expandField() {
         if(this.disposed)return;
-        const scale=paletteScaleForCount(count);
+        const scale=this.fieldScale*1.03;
         if(scale===this.fieldScale)return;
         const ratio=scale/this.fieldScale;this.fieldScale=scale;
         this.buildField();
@@ -45,6 +46,7 @@ export class DiceGroup {
             const position=this.constrainPosition({...die.body.position,x:die.body.position.x*ratio,z:die.body.position.z*ratio});
             die.body.position.set(position.x,position.y,position.z);die.body.aabbNeedsUpdate=true;
         }
+        this.onFieldResize(this.fieldScale);
     }
     assertLive() { if (this.disposed) throw new Error('disposed'); }
     get dice() { return [...this.items.values()]; }
@@ -58,7 +60,6 @@ export class DiceGroup {
         if (this.rolling) throw new Error('rolling');
         if (this.items.has(options.id)) throw new Error('Duplicate ID');
         let slot=0;const used=new Set(this.dice.map(die=>die.slot));while(used.has(slot))slot++;
-        this.fitCount(this.items.size+1);
         const position=options.position??fieldSpawn(slot,this.fieldScale);
         const die = new Die({ ...options, position: this.constrainPosition(position) });
         die.slot = slot; die.owner = this; die.body.material = this.material;
@@ -70,7 +71,6 @@ export class DiceGroup {
         const die = this.get(id);
         this.items.delete(id); this.world.removeBody(die.body);
         die.owner = null; die.dispose();
-        if(!this.rolling&&!this.disposed)this.fitCount(this.items.size);
     }
     constrainPosition(position) { return constrainToField(position,FIELD_MARGIN,this.fieldScale); }
     throwDie(die) {
@@ -97,7 +97,7 @@ export class DiceGroup {
         this.rolling = true;
         targets.forEach(die => { die.begin(); die.attempts = 0; this.throwDie(die); });
         try { return await Promise.all(targets.map(die => die.pending)); }
-        finally { this.rolling = false; this.fitCount(this.items.size); }
+        finally { this.rolling = false; }
     }
     step(delta) {
         if (this.disposed) return;
@@ -117,11 +117,12 @@ export class DiceGroup {
             die.elapsed += dt;
             const quiet = die.body.velocity.length() < .13 && die.body.angularVelocity.length() < .13;
             die.quiet = quiet ? die.quiet + dt : 0;
-            if (die.quiet > .5 && die.top.alignment > .99 && die.body.position.y < 5.3) {
+            if (die.quiet > .5 && die.top.alignment > .99 && die.body.position.y < 1.2) {
                 die.settle(die.top.index);
             } else if (die.quiet > .8 || die.elapsed > 12) {
-                if (++die.attempts > 8) { die.cancel('failed'); die.body.position.y = READY_HEIGHT; }
-                else this.throwDie(die);
+                die.attempts++;
+                this.expandField();
+                this.throwDie(die);
             }
         }
     }

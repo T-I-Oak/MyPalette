@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { paletteCameraBounds, paletteStandardSize, paletteMetrics, paletteDieTop } from '../../../src/dice/paletteLayout.js';
+import { paletteSizeForScale, paletteCameraBounds, paletteStandardSize, paletteMetrics, paletteDieTop } from '../../../src/dice/paletteLayout.js';
 import { FIELD_WIDTH, FIELD_DEPTH, FIELD_CAMERA_POSITION, fieldCenterVertices } from '../../../src/dice/field.js';
 import { READY_HEIGHT } from '../../../src/dice/pose.js';
 
@@ -40,6 +40,23 @@ test('準備時の回転頂点が収まり、必要量を超える投げ上げ�
   for(const x of [-1,1])for(const y of [-1,1])for(const z of [-1,1]){
    const projected=new THREE.Vector3(x,y,z).applyQuaternion(rotation).add(new THREE.Vector3(center.x,READY_HEIGHT,center.z)).project(camera);
    assert(Math.abs(projected.x)<=1&&Math.abs(projected.y)<=1,'準備中の頂点が描画範囲内');
+  }
+ }
+});
+
+
+test('拡大後もパレット画像の投影位置・余白・標準寸法を維持する',()=>{
+ for(const [width,height] of [[536,232],[736,432]]){
+  let baseline;
+  for(const scale of [1,1.1,1.21,2]){
+   assert.deepEqual(paletteSizeForScale(scale),{width:536,height:232});
+   const b=paletteCameraBounds(width,height,scale);
+   const camera=new THREE.OrthographicCamera(b.left,b.right,b.top,b.bottom,.1,100*scale);
+   camera.position.set(...FIELD_CAMERA_POSITION.map(v=>v*scale));camera.lookAt(0,0,0);camera.updateMatrixWorld();
+   const points=[[-FIELD_WIDTH/2,0,-FIELD_DEPTH/2],[FIELD_WIDTH/2,0,FIELD_DEPTH/2],[0,0,0]];
+   const projected=points.map(p=>new THREE.Vector3(...p.map(v=>v*scale)).project(camera));
+   if(!baseline)baseline=projected;
+   projected.forEach((p,i)=>{assert(Math.abs(p.x-baseline[i].x)<1e-9);assert(Math.abs(p.y-baseline[i].y)<1e-9);});
   }
  }
 });

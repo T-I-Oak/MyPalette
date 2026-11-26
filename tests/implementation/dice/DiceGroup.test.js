@@ -4,6 +4,39 @@ import { DiceGroup } from '../../../src/dice/DiceGroup.js';
 const faces = Array.from({ length: 6 }, () => ({ color: 'blue', material: 'pastel' }));
 const add = (group, id) => group.add({ id, faces });
 
+test('床上のダイスは確定し、水平に積み重なった上側だけ再投入して床上で確定する', async () => {
+    const group = new DiceGroup({ random: () => .37 });
+    const lower = add(group, 'lower'), upper = add(group, 'upper');
+    const pending = group.roll();
+    try {
+        for (const [die, height] of [[lower, 1], [upper, 3]]) {
+            die.body.position.set(0, height, 0);
+            die.body.quaternion.set(0, 0, 0, 1);
+            die.body.velocity.setZero(); die.body.angularVelocity.setZero();
+            die.body.force.setZero(); die.body.torque.setZero();
+            die.body.aabbNeedsUpdate = true;
+            die.body.sleep();
+        }
+        for (let i = 0; i < 33; i++) group.step(1 / 60);
+        assert.equal(lower.state, 'settled');
+        assert.equal(upper.state, 'rolling');
+        assert.equal(upper.result, null);
+        const lowerPosition = lower.body.position.clone();
+        const lowerQuaternion = lower.body.quaternion.clone();
+        const lowerResult = lower.result;
+        for (let i = 0; i < 30 && upper.attempts === 0; i++) group.step(1 / 60);
+        assert.equal(upper.attempts, 1);
+        assert.equal(upper.state, 'rolling');
+        assert.ok(upper.body.position.y >= 5);
+        for (let i = 0; i < 3600 && upper.state === 'rolling'; i++) group.step(1 / 60);
+        assert.ok((await pending).every(result => result.status === 'settled'));
+        assert.ok(upper.body.position.y < 2);
+        assert.deepEqual(lower.body.position, lowerPosition);
+        assert.deepEqual(lower.body.quaternion, lowerQuaternion);
+        assert.deepEqual(lower.result, lowerResult);
+    } finally { group.dispose(); await pending; }
+});
+
 test('群は全対象の停止を待ち、順序とIDを維持する', async () => {
     const group = new DiceGroup();
     const a = add(group, 'a'), b = add(group, 'b'), c = add(group, 'c');
@@ -63,6 +96,7 @@ test('12個の繰り返しロールと対象外の姿勢・結果保持', async 
     for (let round = 0; round < 4; round++) {
         const targets = round === 0 ? group.dice : group.dice.slice(0, 8);
         const excluded = group.dice.slice(8).map(die => ({ result: die.result, position: die.body.position.clone(), quaternion: die.body.quaternion.clone() }));
+        const initialScale = group.fieldScale;
         const pending = group.roll(targets.map(die => die.id));
         for (let i = 0; i < 3600 && targets.some(die => die.state === 'rolling'); i++) group.step(1 / 60);
         const results = await pending;
@@ -70,7 +104,10 @@ test('12個の繰り返しロールと対象外の姿勢・結果保持', async 
         for (const die of targets) assert.equal(die.current, die.top.index);
         if (round > 0) group.dice.slice(8).forEach((die, i) => {
             assert.deepEqual(die.result, excluded[i].result);
-            assert.deepEqual(die.body.position, excluded[i].position);
+            const ratio = group.fieldScale / initialScale;
+            assert.ok(Math.abs(die.body.position.x - excluded[i].position.x * ratio) < 1e-9);
+            assert.ok(Math.abs(die.body.position.z - excluded[i].position.z * ratio) < 1e-9);
+            assert.equal(die.body.position.y, excluded[i].position.y);
             assert.deepEqual(die.body.quaternion, excluded[i].quaternion);
         });
     }
@@ -117,4 +154,18 @@ test('初期の4列3行は固定配置で、注入した乱数を消費しない
         assert.ok(a.get('4').body.position.z > a.get('0').body.position.z);
         assert.ok(a.dice.every(d=>d.body.position.y===4.5));
     } finally { a.dispose(); b.dispose(); }
+});
+
+
+test('中心が1.45の水平な静止は確定せず再投入する',async()=>{
+ const group=new DiceGroup({random:()=>.37}),die=add(group,'raised');
+ const pending=group.roll();group.world.step=()=>{};
+ try{
+  die.body.position.set(0,1.45,0);die.body.quaternion.set(0,0,0,1);
+  die.body.velocity.setZero();die.body.angularVelocity.setZero();
+  for(let i=0;i<33;i++)group.step(1/60);
+  assert.equal(die.state,'rolling');assert.equal(die.result,null);
+  for(let i=0;i<30&&die.attempts===0;i++)group.step(1/60);
+  assert.equal(die.attempts,1);
+ }finally{group.dispose();await pending;}
 });
