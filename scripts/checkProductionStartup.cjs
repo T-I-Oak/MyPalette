@@ -112,16 +112,16 @@ const waitForRoll=page=>page.waitForFunction(()=>{
  }
  fs.writeFileSync('tmp_production_startup_runs.json',JSON.stringify(runs,null,2));
  const page=await browser.newPage({viewport:{width:1200,height:900}}),errors=[];
- await installBuiltAssetRoutes(page,base);
+ const devBase='http://127.0.0.1:3000/MyPalette/';
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});
- await page.goto(base+'dev.html#dice');await page.getByRole('button',{name:'カード設定を開く',exact:true}).waitFor();
+ await page.goto(devBase+'dev.html#dice');await page.getByRole('button',{name:'カード設定を開く',exact:true}).waitFor();
  assert.equal(await page.locator('#app-version').textContent(),version);
  assert.equal(await page.locator('.DiceLab').count(),0);assert.equal(await page.getByRole('button',{name:'ダイス動作確認を開く',exact:true}).count(),0);
  assert.equal(await page.getByRole('button',{name:'ゲーム開始',exact:true}).count(),0);
  assert.equal(await page.locator('.GameMenu button').count(),2);
- await page.goto('about:blank');await page.goto(base+'dev.html#easel');await page.getByRole('button',{name:'カード設定を開く',exact:true}).waitFor();
+ await page.goto('about:blank');await page.goto(devBase+'dev.html#easel');await page.getByRole('button',{name:'カード設定を開く',exact:true}).waitFor();
  assert.equal(await page.locator('.EaselLab').count(),0);assert.equal(await page.getByRole('button',{name:'イーゼル確認を開く',exact:true}).count(),0);
- await page.goto('about:blank');await page.goto(base+'dev.html#icons');await page.locator('#editor canvas').first().waitFor();
+ await page.goto('about:blank');await page.goto(devBase+'dev.html#icons');await page.locator('#editor canvas').first().waitFor();
  assert.deepEqual(errors,[]);
  const report={conditions:{browser:browser.version(),deviceScaleFactor:1,cache:'fresh browser context per run',network:process.env.MYPALETTE_VERIFY_DIST==='1'?'dist assets routed in browser over existing localhost origin, no throttling':`${new URL(base).origin}, no throttling`,reducedMotion:true},runs};
  fs.writeFileSync('tmp_production_startup.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
