@@ -140,7 +140,12 @@ export function mountEditor(root, savedDocument, savedRevision, savedEvaluation)
         const cell = (text, className) => { const td = el('td', undefined, className); const content = el('span', text, 'CellText'); content.title = text; td.append(content); return td; };
         for (const card of [...state.document.cards].sort((a, b) => a.id.localeCompare(b.id))) {
             const row = el('tr'); const id = el('td');
-            id.append(button(card.id, () => { state.selected = card.id; renderList(); renderDetail(); detail.scrollTop = 0; showView('editor'); }));
+            const link = el('a', card.id, 'OverviewCardLink'); link.href = '#settings';
+            link.addEventListener('click', event => {
+                event.preventDefault();
+                state.selected = card.id; renderList(); renderDetail(); detail.scrollTop = 0; showView('editor');
+            });
+            id.append(link);
             row.append(id, cell(card.name || '名称未設定', 'card-name'));
             for (const key of ['materials', 'colors']) row.append(cell(Object.keys(card.metadata[key]).filter(value => card.metadata[key][value]).map(displayLabel).join('・') || '—'));
             const difficulty = el('td'); difficulty.append(probability.difficultyOutput(card.steps, card.id[0])); row.append(difficulty);

@@ -79,7 +79,7 @@ legend { padding: 0 6px; }
 .EvaluationTable .CardIcon canvas { height: 24px; }
 .OverviewTable .CellText { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .Overview.state-wrap .CellText { white-space: normal; overflow-wrap: anywhere; }
-.OverviewTable .Button { min-height: 24px; padding: 2px 3px; }
+.OverviewCardLink { color: var(--ui-link); font: inherit; white-space: nowrap; text-decoration: underline; }
 .OverviewTable tbody tr:nth-child(even) { background: var(--ui-table-stripe); }
 .OverviewTable tbody tr:hover { background: var(--ui-table-hover); }
 .OverviewTable .step-start { border-left: 1px solid var(--ui-group-border); }

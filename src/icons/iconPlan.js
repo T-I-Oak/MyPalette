@@ -22,7 +22,7 @@ export function effectIconPlan(input) {
         case 'changeColor': nodes = [{ kind: 'pen' }, { kind: 'face', color: effect.color }]; break;
         case 'changeMaterial': nodes = [{ kind: 'pen' }, { kind: 'face', material: effect.material }]; break;
         case 'changeSpecialFace': nodes = [{ kind: 'pen' }, { kind: 'face', effect: { ...SPECIAL_FACE_EFFECTS[effect.face] } }]; break;
-        case 'discardDice': nodes = [{ kind: 'die' }, { kind: 'trash' }]; break;
+        case 'useDie': nodes = [{ kind: 'die', baseColor: '#b8bec4' }, { kind: 'check', color: '#8c9690' }]; break;
         case 'changeFame': nodes = [{ kind: 'fame', amount: effect.amount }]; break;
         case 'drawCards': nodes = [{ kind: 'hand', role: 'main' }, { kind: 'arrowQuantity', arrows: ['←'], value: `+${effect.count}` }]; break;
         case 'gainStockCards': nodes = [{ kind: 'arrowQuantity', arrows: ['←'], value: `×${effect.count}` }, { kind: 'stock', role: 'main' }]; break;
@@ -30,8 +30,8 @@ export function effectIconPlan(input) {
         case 'exchangeCards': nodes = [{ kind: 'hand', role: 'main' }, { kind: 'arrowQuantity', arrows: ['→', '←'], value: `×${effect.count}` }, { kind: 'stock', role: 'main' }]; break;
         case 'activateSpecialFaces': nodes = [{ kind: 'face', star: true }, { kind: 'lightning' }]; break;
     }
-    if (['changeColor','changeMaterial','changeSpecialFace','changeCardStep','discardDice','reroll','activateSpecialFaces'].includes(effect.type)) {
-        nodes = nodes.map(node => ({...node, role: ['pen','trash','lightning'].includes(node.kind) ? 'sub' : 'main'}));
+    if (['changeColor','changeMaterial','changeSpecialFace','changeCardStep','useDie','reroll','activateSpecialFaces'].includes(effect.type)) {
+        nodes = nodes.map(node => ({...node, role: ['pen','check','lightning'].includes(node.kind) ? 'sub' : 'main'}));
     }
     const acquisition = ['gainNormalDice','gainColorDice','gainMaterialDice','gainRerolls'].includes(effect.type);
     if ((effect.count > 1 || acquisition) && !['drawCards', 'exchangeCards', 'gainStockCards'].includes(effect.type)) nodes.push({ kind: 'quantity', value: `×${effect.count}` });

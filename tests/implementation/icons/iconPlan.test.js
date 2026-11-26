@@ -47,7 +47,7 @@ test('矢印付き数量は1も表示し、単独数量を右端に追加しな�
   assert.equal(plan.nodes.some(node=>node.kind==='quantity'),false);
  }
  for(const count of [1,2]){
-  const nodes=effectIconPlan({type:'discardDice',count}).nodes;
+  const nodes=effectIconPlan({type:'useDie',count}).nodes;
   assert.equal(nodes.some(n=>n.kind==='quantity'),count!==1);
   if(count!==1)assert.equal(nodes.at(-1).value,'×2');
  }
@@ -65,7 +65,7 @@ test('ダイスとリロール権の取得は×1を含む数量を右端に表�
   {type:'gainMaterialDice',lifetime:'temporary',material:'brush',count},
   {type:'gainRerolls',count},
  ])assert.deepEqual(effectIconPlan(effect).nodes.at(-1),{kind:'quantity',value:`×${count}`});
- assert.equal(effectIconPlan({type:'discardDice',count:1}).nodes.some(n=>n.kind==='quantity'),false);
+ assert.equal(effectIconPlan({type:'useDie',count:1}).nodes.some(n=>n.kind==='quantity'),false);
 });
 
 test('面内の取得×1は省略し、直接のカード効果とドロー＋1は維持する',()=>{
@@ -81,4 +81,15 @@ test('面内の取得×1は省略し、直接のカード効果とドロー＋1�
 test('再利用効果はゲームと同じ定義で描画する',()=>{
  assert.equal(effectIconPlan({type:'refreshDice'}).nodes[0].kind,'refreshedDie');
  assert.equal(EFFECTS.filter(effect=>effect.type==='refreshDice').length,1);
+});
+
+test('使用済み化はグレーのダイスを使い、ゴミ箱なしで従来の個数を表示する',()=>{
+ for(const count of [1,2,10]){
+  const plan=effectIconPlan({type:'useDie',count});
+  assert.deepEqual(plan.nodes[0],{kind:'die',baseColor:'#b8bec4',role:'main'});
+  assert.deepEqual(plan.nodes[1],{kind:'check',color:'#8c9690',role:'sub'});
+  assert.equal(plan.nodes.some(node=>node.kind==='trash'),false);
+  assert.deepEqual(plan.nodes.slice(2),count===1?[]:[{kind:'quantity',value:`×${count}`}]);
+ }
+ assert.deepEqual(EFFECTS.find(effect=>effect.type==='useDie').fields.map(field=>field.name),['count']);
 });

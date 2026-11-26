@@ -101,7 +101,7 @@ test('approved Japanese wording covers every lifetime, pair, material, color and
 test('no-target effects still notify their original group and finish without an extra choice', () => {
     const game = new Game(settings, () => .23), s = game.state;
     s.dice.forEach(die => { die.used = true; });
-    const effects = [{ type: 'reroll' }, { type: 'discardDice', count: 8 }];
+    const effects = [{ type: 'reroll' }, { type: 'useDie', count: 8 }];
     game.run(game.effects(effects, 'reward'));
     assert.equal(game.task, null); assert.equal(s.pending, null); assert.equal(s.dice.length, 3);
     assert.equal(s.effectNotices.length, 1); assert.deepEqual(s.effectNotices[0].effects, effects);

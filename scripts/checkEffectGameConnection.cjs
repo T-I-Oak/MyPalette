@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
 for (const card of settings.cards) for (const step of card.steps) { step.playEffects = []; step.achievementEffects = []; }
-const base = process.argv[2] || 'http://127.0.0.1:3010/MyPalette/';
+const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
 
 (async () => {
     const browser = await chromium.launch({ channel: 'msedge', headless: true });
@@ -25,7 +25,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3010/MyPalette/';
             }).observe(document.body,{childList:true,subtree:true});
             </script>` }));
         await page.goto(base);
-        const play = () => page.locator('.hand').getByRole('button', { name: '場にプレイ', exact: true }).first();
+        const play = () => page.locator('.hand').getByRole('button', { name: '着手', exact: true }).first();
         const notice = page.locator('.EffectNotice');
         await play().waitFor();
         assert.equal(await notice.count(), 0, 'ordinary daily draw and tickets are not notified');
@@ -39,7 +39,8 @@ const base = process.argv[2] || 'http://127.0.0.1:3010/MyPalette/';
         await play().click();
         await notice.waitFor();
         assert.equal(await notice.locator('.EffectBodyRow').count(), 2);
-        assert.equal(await play().isEnabled(), true, 'notification alone does not lock game actions');
+        assert.equal(await play().isEnabled(), false, 'active notifications lock card actions');
+        await notice.waitFor({ state: 'detached' });
         await prepare([{ type: 'reroll' }]);
         await play().click();
         await page.waitForFunction(() => document.querySelector('.EffectNotice')?.dataset.noticeId === '2');
@@ -72,14 +73,14 @@ const base = process.argv[2] || 'http://127.0.0.1:3010/MyPalette/';
         await page.evaluate(() => {
             const g = window.check.session.game;
             g.state.dice.forEach((die, index) => { die.used = index !== 0; });
-            g.step(g.state.hand[0]).playEffects = [{ type: 'discardDice', count: 5 }];
+            g.step(g.state.hand[0]).playEffects = [{ type: 'useDie', count: 5 }];
         });
         await play().click(); await notice.waitFor();
         await page.locator('.GameChoice[open]').waitFor();
         assert.equal(await page.locator('.GameChoice input').count(), 1);
         await page.locator('.GameChoice input').check();
         await page.getByRole('button', { name: '選択を確定', exact: true }).click();
-        assert.equal(await page.evaluate(() => window.check.session.game.state.dice.length), 2);
+        assert.equal(await page.evaluate(() => window.check.session.game.state.dice.length), 3);
         await prepare([{ type: 'reroll' }]);
         await play().click(); await notice.waitFor();
         assert.equal(await page.locator('.GameChoice[open]').count(), 0);
@@ -93,6 +94,6 @@ const base = process.argv[2] || 'http://127.0.0.1:3010/MyPalette/';
         await page.waitForTimeout(1100);
         assert.equal(await page.locator('.EffectNoticeLayer').count(), 0);
         assert.deepEqual(errors, []);
-        console.log('PASS: real game play, multiple effects, bursts, nonblocking notices, choice resume, nested specials, reservation-only notices and disposal');
+        console.log('PASS: real game play, multiple effects, blocking notices, choice resume, nested specials, reservation-only notices and disposal');
     } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
