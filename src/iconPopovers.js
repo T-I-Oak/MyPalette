@@ -6,6 +6,11 @@ export function createIconPopovers({ createPopup, releasePopup }) {
             releasePopup(entry.popup); entry.popup.remove();
         }
     }
+    function position({ anchor, popup }) {
+        const rect = anchor.getBoundingClientRect();
+        popup.style.left = `${Math.max(8, Math.min(rect.left, innerWidth - popup.offsetWidth - 8))}px`;
+        popup.style.top = `${Math.max(8, rect.bottom + popup.offsetHeight + 12 < innerHeight ? rect.bottom + 6 : rect.top - popup.offsetHeight - 6)}px`;
+    }
     function show(anchor, value, pinned) {
         const parentIndex = entries.findLastIndex(entry => entry.popup.contains(anchor));
         const index = parentIndex + 1;
@@ -21,11 +26,10 @@ export function createIconPopovers({ createPopup, releasePopup }) {
         (entries[parentIndex]?.popup || anchor.closest('dialog') || anchor.ownerDocument.body).append(popup);
         entries.push({ anchor, popup, pinned });
         anchor.setAttribute('aria-expanded', 'true');
-        const rect = anchor.getBoundingClientRect();
-        popup.style.left = `${Math.max(8, Math.min(rect.left, innerWidth - popup.offsetWidth - 8))}px`;
-        popup.style.top = `${Math.max(8, rect.bottom + popup.offsetHeight + 12 < innerHeight ? rect.bottom + 6 : rect.top - popup.offsetHeight - 6)}px`;
+        position(entries.at(-1));
     }
     return {
+        refresh() { entries.forEach(position); },
         bind(anchor, value) {
             anchor.setAttribute('role', 'button'); anchor.tabIndex = -1;
             anchor.setAttribute('aria-expanded', 'false');

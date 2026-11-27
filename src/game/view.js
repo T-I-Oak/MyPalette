@@ -73,7 +73,7 @@ export function mountGame(root, settings, presentation = null, onFinished = null
     function searchGoal(event) {
         const icon = event.target.closest?.('[data-goal-condition]');
         if (!icon || !presentation) return;
-        event.stopPropagation(); event.preventDefault();
+        event.preventDefault();
         presentation.searchFaces(JSON.parse(icon.dataset.goalCondition));
     }
     if (presentation) root.addEventListener('click', searchGoal, true);

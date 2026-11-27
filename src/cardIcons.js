@@ -5,6 +5,7 @@ import { describeEffect, describeGoals } from './cardSummary.js';
 import './cardIcons.css';
 import { EFFECTS } from './effectCatalog.js';
 import { cardMessages } from './game/cardMessages.js';
+import { paintingBlockIcon } from './game/paintingBlockIcon.js';
 import { createIconPopovers } from './iconPopovers.js';
 
 const el = (text, className) => {
@@ -14,18 +15,19 @@ const el = (text, className) => {
 };
 let tooltip;
 let active;
-const effectPopovers = createIconPopovers({
-    createPopup(effect) {
+const iconPopovers = createIconPopovers({
+    createPopup(value) {
         const tip = document.createElement('div');
-        tip.className = 'IconTooltip EffectDetails texture-paper';
-        tip.setAttribute('role', 'tooltip'); tip.append(effectBody([effect]));
+        tip.className = `IconTooltip ${value.kind ? 'PaintingIconDetails' : 'EffectDetails'} texture-paper`;
+        tip.setAttribute('role', 'tooltip');
+        tip.append(value.kind ? descriptionBody(value) : effectBody([value]));
         return tip;
     },
     releasePopup: releasePaintingIcons,
 });
 function effectGraphic(effect, interactive = true) {
     const node = icon(effect, cardMessages().describeEffect(effect), effectIconCanvas, null, effectIconPlan(effect), false);
-    if (interactive) effectPopovers.bind(node, effect);
+    if (interactive) iconPopovers.bind(node, effect);
     return node;
 }
 export function effectBody(effects) {
@@ -39,12 +41,27 @@ export function effectBody(effects) {
     }
     return body;
 }
+function descriptionBody(value) {
+    const text = cardMessages();
+    const description = value.kind === 'face' ? text.describeGoal(value.face) : text.iconDescriptions[value.kind];
+    const graphic = value.kind === 'face'
+        ? icon(value.face, description, goalIconCanvas, null, goalIconPlan(value.face), false)
+        : paintingBlockIcon(value.kind, description);
+    const body = el(undefined, 'EffectBody');
+    const row = el(undefined, 'EffectBodyRow');
+    row.append(graphic, el(description, 'EffectBodyText')); body.append(row);
+    return body;
+}
+export function bindPaintingHeading(anchor, kind) {
+    iconPopovers.bind(anchor, { kind });
+}
 const paintingDrawers = new WeakMap();
 const paintingObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(entries => {
     for (const { target, contentRect } of entries) {
         const viewport = target.closest('.GameCardDetailViewport, .GameCardAreaContent, .GameChoice .GameGrid');
         const scale = viewport ? Number(getComputedStyle(viewport).zoom) || 1 : 1;
         paintingDrawers.get(target)?.(target, contentRect.height, scale);
+        iconPopovers.refresh();
     }
 });
 function icon(value, description, render, edit, plan, withTooltip = true) {
@@ -98,13 +115,14 @@ function icon(value, description, render, edit, plan, withTooltip = true) {
     node.addEventListener('keydown', event => { if (event.key === 'Escape') hide(); });
     return node;
 }
-window.addEventListener('scroll', () => { if (tooltip) tooltip.hidden = true; effectPopovers.clearHover(); }, true);
+window.addEventListener('scroll', () => { if (tooltip) tooltip.hidden = true; iconPopovers.clearHover(); iconPopovers.refresh(); }, true);
+window.addEventListener('resize', () => iconPopovers.refresh());
 document.addEventListener('pointerdown', event => {
-    effectPopovers.outside(event.target);
+    iconPopovers.outside(event.target);
     if (active && !active.contains(event.target)) { tooltip.hidden = true; active = undefined; }
 });
 export function releasePaintingIcons(root) {
-    effectPopovers.release(root);
+    iconPopovers.release(root);
     for (const frame of root.querySelectorAll('.PaintingIconFrame')) {
         if (active?.contains(frame)) { tooltip.hidden = true; active = undefined; }
         paintingObserver?.unobserve(frame);
@@ -127,9 +145,9 @@ export function paintingIcons(values, kind, describe) {
         if (kind === 'goal') {
             const condition = Object.fromEntries(Object.entries({ material: value.material, color: value.color })
                 .filter(([, entry]) => entry !== null));
-            const goal = icon(condition, describe(value), goalIconCanvas, null, goalIconPlan(condition));
+            const goal = icon(condition, describe(value), goalIconCanvas, null, goalIconPlan(condition), false);
             goal.dataset.goalCondition = JSON.stringify(condition);
-            goal.setAttribute('role', 'button'); goal.tabIndex = -1;
+            iconPopovers.bind(goal, { kind: 'face', face: condition });
             row.append(goal);
         } else {
             row.append(effectGraphic(value));
