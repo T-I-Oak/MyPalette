@@ -2,7 +2,7 @@
 
 ## 合意と検証対象
 
-- 実装版: 0.45.0。親コミット: f2aa7e5f7d823f9f7468ef79e2c1f8fbc3d6c76e。
+- 初回検証版: 0.45.0。親コミット: f2aa7e5f7d823f9f7468ef79e2c1f8fbc3d6c76e。
 - 2026-11-27のオーナー指示により、要求基準を同コミットへ変更した。要求02/03 §3.2はD01、要求02第5章はD03の全文案の承認後に更新した。ゲーム機能は変更していない。
 - 対応表: 本報告の「検証対応の索引と実行条件」。要求02〜05の103節・338条件行を割り当てた。
 - package.json/package-lock.jsonを更新した。
@@ -18,10 +18,9 @@
 - 不足分として、実カード/出荷済みの詳細と状態不変、達成可能表示の7状態、複合アイコン、制作4段階、候補18面、即時リロール1/2/0個、日末のチラシ/信用を検証した。保存済み設定は変更していない。
 - 既存チェックの旧版固定、base外の素材パス、古い要素選択、固定倍率を考慮していない余白比較を修正した。既存assertを弱めて製品の不一致を成功にする変更はしていない。空ストックのfixtureはHTMLのUTF-8を明示した。
 - 実装仕様には実在する配置・回転の揺らぎの数値だけを追記した。検証対応表・結果・証跡は仕様フォルダーから撤去し、本実装報告とフェーズ補助資料へ置いた。
-- `node scripts/checkAcceptanceCoverage.cjs docs/planning/phase_docs_v0.45-acceptance-verification_evidence/conditions.json` は割当確認に成功。承認後の条件を含めた未完了は0件。--require-completeによる完了条件のチェックも成功した。
+- `node docs/planning/phase_docs_v0.45-acceptance-verification_evidence/checkCoverage.cjs docs/planning/phase_docs_v0.45-acceptance-verification_evidence/conditions.json` は割当確認に成功。承認後の条件を含めた未完了は0件。--require-completeによる完了条件のチェックも成功した。
 - `npm.cmd test`: 267件成功、失敗0。`npm.cmd run build`: 148モジュールで成功。`git diff --check`: 成功。実装報告/補助文書7ファイルのローカル参照切れ0。
 - 検証対象の親コミット・共通部コミット・入力/ソースのSHA-256は[検証対象記録](phase_docs_v0.45-acceptance-verification_evidence/evidence/source-hashes.json)。最終確認で常用127.0.0.1:3000の待受を確認した。手動の追加サーバーは残していない。
-- D01〜D09の判断を反映した終了草案を準備した。終了承認前のため、引継ぎ書と終了コミットは変更していない。
 
 ## オーナー判断事項
 
@@ -39,7 +38,7 @@ D01は現行の自動ロールを正とし、要求仕様では開始方式を�
 - 方針: オーナー回答「自動を正とします」。追加指摘「要求仕様は機能仕様ではない」「自動に限定しなければいけないとは思っていません」に従い、現行の自動ロールを許容しつつ、要求仕様では開始方式を限定しない文案を提示する。
 - 承認条件: オーナー指示により、requirementsを修正する前に「どんな文面をどう修正するのか」を提示して承認を受ける。自動を正とする判断を、修正文面の承認とは解釈しない。
 - 反映: 要求02/03 §3.2を、承認された変更後の節全文と一致する内容へ更新した。承認済み変更と基準コミットの差は対応表の承認済み要求変更へ記録した。
-- 再検証: 文面反映後のcheckPaletteArea.cjsは成功。承認文面と現ファイルの一致・現行要求7条件の割当もcheckAcceptanceCoverage.cjsで成功。
+- 再検証: 文面反映後のcheckPaletteArea.cjsは成功。承認文面と現ファイルの一致・現行要求7条件の割当もcheckCoverage.cjsで成功。
 - 判断: 変更前・変更後の節全文を提示した文案に対するオーナーのokを受領し、反映済み。D01は解消。要求文書の今後の修正も、具体的な文案の提示と承認を先に行う。
 
 ## D02: 消費とダイス除去の表示
@@ -86,9 +85,8 @@ D01は現行の自動ロールを正とし、要求仕様では開始方式を�
 - 初期条件/再現: checkAcceptanceVisuals.cjs。ページ内だけA01の着手効果を「特殊面を一時絵筆へ変更」、達成効果を「一時黄紫ダイス×10」にする。実CardとshowCardDetailで1200×900/390×844、DPR1、動きを減らす設定。
 - 期待: ペン・ひし形・雲状補助記号・六角形・画材記号を確認用表示で識別できる。
 - 観察: 実カード詳細の中心記号の小ささを懸念してオーナーに提示したが、提示表示は問題ないとの確認を得た。証跡は補助資料のevidence/complex-detail-1200.pngとcomplex-detail-390.png。
-- 既存対応先: CARD-01。要求の検証を、実装済みという理由だけで省略しない。新たなカード改善は今回の範囲外。
-- 必要判断/解消条件: 上記の個別構成が識別可能かをオーナー確認する。不可ならCARD-01にこの検証条件・期待結果を対応付ける判断を記録する。
-- 判断: 未回答。
+- 判断: 2026-11-27オーナー回答「問題ないですし、x10は使いません」。提示した幅390pxの実カード詳細の複合アイコン表示は問題なしと確認した。×10は使用しない検証用値であり、実使用を前提とする改善要求にはしない。
+- 範囲: D06は確認完了。今回の表示を理由としたCARD-01への追加対応は求めず、既存CARD-01全体の完了とはしない。要求文面・製品・保存データは変更しない。
 
 ### D07: 出荷済みサムネイルへの揺らぎの適用
 
@@ -153,7 +151,7 @@ D01は現行の自動ロールを正とし、要求仕様では開始方式を�
 $env:MYPALETTE_PLAYWRIGHT_MODULE='C:/Users/tioak/AppData/Local/Temp/mypalette-v027-playwright/node_modules/playwright'
 $env:MYPALETTE_ACCEPTANCE_EVIDENCE='docs/planning/phase_docs_v0.45-acceptance-verification_evidence/evidence'
 node scripts/checkAcceptanceVisuals.cjs http://127.0.0.1:3000/MyPalette/
-node scripts/checkAcceptanceCoverage.cjs docs/planning/phase_docs_v0.45-acceptance-verification_evidence/conditions.json
+node docs/planning/phase_docs_v0.45-acceptance-verification_evidence/checkCoverage.cjs docs/planning/phase_docs_v0.45-acceptance-verification_evidence/conditions.json
 npm.cmd test
 npm.cmd run build
 ```
@@ -163,3 +161,18 @@ npm.cmd run build
 ### 完了判定
 
 全節・全記述の割当、実装済みの全条件の成功と証跡、未実装の全条件の既存バックログ対応が必要。不一致・検証失敗・対応先未確定・未回答の判断事項が一つでも残ればQA-01は未完了。検証結果は実装報告にも記録し、バックログ削除はレビューでの承認手順に従う。
+
+## レビュー指摘への対応（0.45.1）
+
+- R01: 今回の対応表生成・検査ツールをフェーズ補助資料のcheckCoverage.cjsへ移した。入力JSON・基準スナップショットと同じ保存期間とし、マージ前に親のphase_フォルダーとともに削除する。再実行コマンドを更新し、永続スクリプトとしての汎用化は行わない。
+- R02: MP45-01の本文には対象要求・再現条件・実測・期待結果・完了条件・永続する再現スクリプトを残し、マージ前に削除される実装報告へのリンクを除いた。QA-01自身の成果物参照は同項目の削除判断時にレビューで確認する。
+- R03: D06の判断欄を既存のオーナー回答と対象範囲へ統一した。重複確認は依頼していない。終了承認前という作業状態の記述を削除し、フェーズ状態は引継ぎ書だけで管理する。
+- 再実装ではゲーム機能・要求仕様・保存済み設定は変更していない。初回0.45.0のブラウザー証跡はその確認版のまま保持する。
+
+### 0.45.1の検証結果
+
+- 対象確認: Node.jsのassertで、ツールが内容変更なしにフェーズ資料へ移動したこと、旧パスの不存在、MP45-01の再現スクリプト・実測の保持とphase_リンクの解消、D06の回答・範囲と未回答表記の解消、重複するフェーズ状態記述の削除、版0.45.1を確認し成功した。
+- 対応表: `node docs/planning/phase_docs_v0.45-acceptance-verification_evidence/checkCoverage.cjs docs/planning/phase_docs_v0.45-acceptance-verification_evidence/conditions.json --require-complete` は成功（103節・338行・承認後27条件、未完了0）。出力の0.45.0は保存した初回検証の確認版であり、今回の修正版0.45.1へ書き換えない。
+- 全テスト: `npm.cmd test` は267件成功、失敗0。
+- 本番ビルド: `npm.cmd run build` は成功。
+- 差分確認: `git diff --check` は成功。今回の差分は文書・版設定・補助ツールの移動のみであり、ブラウザー検証は再実行していない。常用サーバーの停止・再起動・追加起動は行っていない。
