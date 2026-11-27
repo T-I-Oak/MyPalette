@@ -1,4 +1,4 @@
-import { effectIconCanvas, goalIconCanvas } from './render.js';
+import { effectIconCanvas, goalIconCanvas, controlIconCanvas } from './render.js';
 import { ICON_REVIEW_CASES } from './reviewCases.js';
 import './layout.css';
 
@@ -8,7 +8,7 @@ export function mountIconLab(root,home){
  const back=element('button','Button texture-raised','入口へ戻る');back.addEventListener('click',home);
  const previous=element('button','Button texture-raised','前のアイコン');const next=element('button','Button texture-raised','次のアイコン');
  const choices=[];const byKey=new Map();
- const choiceKey=item=>{const effect=item.effect&&{...item.effect};if(effect){delete effect.count;delete effect.amount;}return JSON.stringify(effect??item.condition);};
+ const choiceKey=item=>{const effect=item.effect&&{...item.effect};if(effect){delete effect.count;delete effect.amount;}return JSON.stringify(effect??item.condition??{control:item.control});};
  for(const item of ICON_REVIEW_CASES){
   const key=choiceKey(item);if(byKey.has(key))continue;
   const parameter=item.effect&&('count' in item.effect?'count':'amount' in item.effect?'amount':null);
@@ -42,7 +42,7 @@ export function mountIconLab(root,home){
   for(const [texture,label] of [['texture-surface-warm','明るい暖色の背景'],['texture-surface-cool','明るい寒色の背景']]){
    const panel=element('section',`IconPreview Surface ${texture}`);panel.append(element('h3','',label));
    for(const size of [128,48,32]){
-    const figure=element('figure','IconSample');const icon=effect?effectIconCanvas(effect,size*2):goalIconCanvas(item.condition,size*2);
+    const figure=element('figure','IconSample');const icon=item.control?controlIconCanvas(item.control,size*2):effect?effectIconCanvas(effect,size*2):goalIconCanvas(item.condition,size*2);
     // CSS dimensions follow the requested preview size, not a second icon renderer.
     icon.style.height=`${size}px`;icon.style.width=`${icon.width/2}px`;icon.setAttribute('role','img');icon.setAttribute('aria-label',item.label+(item.parameter?` ${value}`:''));
     figure.append(icon,element('figcaption','',`高さ ${size}px`));panel.append(figure);

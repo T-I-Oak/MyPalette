@@ -2,8 +2,9 @@ import { DiceGroup } from '../dice/DiceGroup.js';
 import { DiceScene } from '../dice/DiceScene.js';
 import { loadResultGraphics } from '../dice/resultGraphics.js';
 import { syncPaletteSnapshot } from './paletteSnapshot.js';
-import { rerollTicketCanvas } from '../icons/render.js';
+import { rerollTicketCanvas, controlIconElement } from '../icons/render.js';
 import {paletteSizeForScale} from '../dice/paletteLayout.js';
+import { createDiceList } from './diceList.js';
 import '../dice/layout.css';
 import '../dice/states.css';
 import './palette.css';
@@ -28,6 +29,23 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
     viewport.setAttribute('role', 'img');
     let scene, group, disposed = false, generation = 0, started = false, snapshot = [];
     let request = null, actions;
+    const list = createDiceList(host.closest('.LayoutScreen'), toggleDie, visible => {
+        openList.setAttribute('aria-expanded',String(visible));
+        openList.setAttribute('aria-pressed',String(visible));
+        openList.classList.toggle('state-selected',visible);
+        openList.setAttribute('aria-label',visible ? 'ダイスリストを閉じる' : 'ダイスリストを開く');
+    });
+    const openList = document.createElement('button'); openList.type = 'button'; openList.tabIndex = -1;
+    openList.className = 'Button DiceListOpen texture-raised'; openList.setAttribute('aria-label','ダイスリストを開く');
+    openList.setAttribute('aria-expanded','false');
+    openList.setAttribute('aria-pressed','false');
+    openList.append(controlIconElement('list'));
+    const listLabel = document.createElement('span'); listLabel.textContent = 'ダイスリスト'; openList.append(listLabel);
+    openList.addEventListener('click',() => list.toggle()); area.fixedLayer.append(openList);
+    function toggleDie(id) {
+        const ids = actions.toggleDie(id); actions.selectedDice = ids;
+        scene?.setSelected(ids); list.select(ids); updateActions();
+    }
     let pendingSearch = null;
     let rollScheduled = false, failedRequest = null;
     const held = new Set();
@@ -111,10 +129,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
                 bottomAligned: true,
                 draggable: true,
                 searchNoticeOptions: { target: searchNotice, emptyOnly: true, palette: true },
-                onTap: id => {
-                    const ids = actions.toggleDie(id); actions.selectedDice = ids;
-                    next.setSelected(ids); updateActions();
-                },
+                onTap: toggleDie,
                 readSize: () => ({ width: area.logicalWidth, height: area.logicalHeight,
                     pixelRatio: Math.min(devicePixelRatio, 2) * area.layoutFrame.scale }),
             });
@@ -139,6 +154,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
         return resized;
     }
     function update() {
+        if (actions) list.update(snapshot, actions.selectedDice, area.layoutFrame.fixedScale);
         if (!viewport.isConnected) return;
         scene?.resize();
     }
@@ -174,6 +190,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             });
         },
         searchFaces(condition) {
+            list.search(condition);
             if (scene) return scene.showFaceSearch(condition);
             pendingSearch = {...condition};
         },
@@ -231,6 +248,7 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
         update,
         clear() { controls.replaceChildren(); },
         reset() {
+            list.reset();
             held.clear();
             creditMaterials.clear();
             pendingSearch = null; searchNotice.hidden = true; searchNotice.replaceChildren();
@@ -238,6 +256,6 @@ export function createPalettePresentation(area, host, relayout, resultGraphics) 
             generation++; scene?.dispose(); scene = null; group = null;
             snapshot = []; request = null; actions = null; viewport.replaceChildren(); controls.replaceChildren(); rerolls.hidden = true; started = false;
         },
-        dispose() { disposed = true; generation++; scene?.dispose(); viewport.remove(); controls.remove(); rerolls.remove(); searchNotice.remove(); name.hidden = false; },
+        dispose() { disposed = true; generation++; list.dispose(); openList.remove(); scene?.dispose(); viewport.remove(); controls.remove(); rerolls.remove(); searchNotice.remove(); name.hidden = false; },
     };
 }

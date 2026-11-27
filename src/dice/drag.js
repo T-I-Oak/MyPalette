@@ -15,7 +15,7 @@ export function pointerOnPlane(x, y, canvas, camera, height) {
         new THREE.Plane(new THREE.Vector3(0, 1, 0), -height), new THREE.Vector3()) ?? null;
 }
 
-export function createDiceDrag(scene, { onTap = () => {}, now = () => performance.now() } = {}) {
+export function createDiceDrag(scene, { onTap = () => {} } = {}) {
     const { container, group, camera, visuals } = scene, canvas = scene.renderer.domElement;
     let active = null;
     container.classList.add('DiceDraggable');
@@ -42,7 +42,7 @@ export function createDiceDrag(scene, { onTap = () => {}, now = () => performanc
         const point = pointerOnPlane(event.clientX, event.clientY, canvas, camera, die.body.position.y);
         if (!point) return;
         active = { id: die.id, pointerId: event.pointerId, height: die.body.position.y,
-            startX: event.clientX, startY: event.clientY, started: now(), moved: false,
+            startX: event.clientX, startY: event.clientY, moved: false,
             dx: die.body.position.x - point.x, dz: die.body.position.z - point.z };
         container.setPointerCapture(event.pointerId);
         container.classList.add('state-dragging'); event.preventDefault();
@@ -63,7 +63,7 @@ export function createDiceDrag(scene, { onTap = () => {}, now = () => performanc
         if (active?.pointerId !== event.pointerId) return;
         const tap = active;
         finish();
-        if (!group.rolling && group.items.has(tap.id) && !tap.moved && now()-tap.started < 550 &&
+        if (!scene.interactionLocked && !group.rolling && group.items.has(tap.id) && !tap.moved &&
             Math.hypot(event.clientX-tap.startX,event.clientY-tap.startY) < 6) onTap(tap.id);
     }
     function cancel(event) { if (active?.pointerId === event.pointerId) finish(); }

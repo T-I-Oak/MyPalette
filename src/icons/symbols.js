@@ -1,5 +1,15 @@
 import { SPECIAL_FACE_EFFECTS, COLOR_PAIR_COLORS } from '../effectCatalog.js';
 import { drawGlyphText } from './glyphs.js';
+
+export function drawListSymbol(ctx) {
+    ctx.save(); ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.roundRect(10,12,80,76,8); ctx.stroke();
+    for (const y of [31,50,69]) {
+        ctx.beginPath(); ctx.moveTo(27,y); ctx.lineTo(34,y);
+        ctx.moveTo(46,y); ctx.lineTo(73,y); ctx.stroke();
+    }
+    ctx.restore();
+}
 import { effectIconPlan, faceEffectIconPlan } from './iconPlan.js';
 import { measuredOutline } from './outlineBounds.js';
 import { compositionLayout } from './compositionLayout.js';

@@ -1,6 +1,6 @@
 import { drawGlyphText, measureGlyphText } from './glyphs.js';
 import { drawFameIcon } from './laurel.js';
-import { INKS, LETTERS, materialSymbol, drawDieSymbol, drawHandSymbol, drawStockSymbol, reroll, rerollTicket } from './symbols.js';
+import { INKS, LETTERS, materialSymbol, drawDieSymbol, drawHandSymbol, drawStockSymbol, drawListSymbol, reroll, rerollTicket } from './symbols.js';
 import { measuredOutline } from './outlineBounds.js';
 import { compositionLayout } from './compositionLayout.js';
 import { drawQuantity } from './quantity.js';
@@ -60,6 +60,8 @@ function measuredLayout(plan){return compositionLayout(plan.nodes,node=>measured
 function planWidth(plan){if(hasComposition(plan))return measuredLayout(plan).width;return plan.nodes.reduce((width,node)=>width+(node.gapBefore??0)+nodeWidth(node),0);}
 function drawNode(ctx,node){
     switch(node.kind){
+        case 'close':drawGlyphText(ctx,'×',50,50,70,OUTLINE);break;
+        case 'list':drawListSymbol(ctx);break;
         case 'refreshedDie':
             drawDieSymbol(ctx,{baseColor:'#b8bec4'});
             ctx.save();ctx.translate(6,0);ctx.fillStyle='#fff9c7';ctx.strokeStyle=OUTLINE;ctx.lineWidth=2.5;
@@ -114,4 +116,13 @@ function canvasFor(plan,height){
 export function effectIconCanvas(effect,height=192){return canvasFor(effectIconPlan(effect),height);}
 export function rerollTicketCanvas(height=192){return canvasFor({nodes:[{kind:'ticket'}]},height);}
 export function goalIconCanvas(condition,height=192){return canvasFor(goalIconPlan(condition),height);}
+export function controlIconCanvas(kind,height=192){
+    if(!['close','list'].includes(kind))throw new Error(`Unknown control icon: ${kind}`);
+    return canvasFor({nodes:[{kind,role:'main'}]},height);
+}
+export function controlIconElement(kind,height=96){
+    const element=document.createElement('span');element.className='ControlIcon texture-ink';element.setAttribute('aria-hidden','true');
+    element.style.setProperty('--control-icon-image',`url("${controlIconCanvas(kind,height).toDataURL()}")`);
+    return element;
+}
 export function iconAspect(plan){return (planWidth(plan)+12)/112;}

@@ -8,7 +8,7 @@ const assert=require('node:assert/strict');
   await page.getByRole('heading',{name:'面の色変更：橙',exact:true}).waitFor();
   const results=await page.evaluate(async()=>{
    const {ICON_REVIEW_CASES}=await import('/MyPalette/src/icons/reviewCases.js');
-   const {effectIconCanvas,goalIconCanvas}=await import('/MyPalette/src/icons/render.js');
+   const {effectIconCanvas,goalIconCanvas,controlIconCanvas}=await import('/MyPalette/src/icons/render.js');
    const {faceCanvas}=await import('/MyPalette/src/dice/icons.js');
    const {SPECIAL_FACE_EFFECTS}=await import('/MyPalette/src/effectCatalog.js');
    const {specialSymbol}=await import('/MyPalette/src/icons/symbols.js');
@@ -17,7 +17,7 @@ const assert=require('node:assert/strict');
    let rendered=0;const empty=[];const clipped=[];
    try{
     for(const item of ICON_REVIEW_CASES)for(const size of [32,128,256]){
-     const canvas=item.effect?effectIconCanvas(item.effect,size):goalIconCanvas(item.condition,size);
+     const canvas=item.control?controlIconCanvas(item.control,size):item.effect?effectIconCanvas(item.effect,size):goalIconCanvas(item.condition,size);
      const data=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
      if(!data.some((v,i)=>i%4===3&&v>0))empty.push(item.id);
      if(size===256){

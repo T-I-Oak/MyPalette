@@ -1,5 +1,9 @@
 .texture-label-inverse.state-consumed, .state-consumed .texture-label-inverse { background: var(--ui-inverse-inactive-surface); }
 .Button:disabled { cursor: default; }
+.ScrollBar.state-inactive { visibility: hidden; pointer-events: none; }
+.texture-frame.state-framed { border-color: var(--ui-control-border); }
+.texture-clear.state-selected, .texture-paper-muted.state-current { border-color: var(--ui-selected-border); }
+.Button.texture-raised.state-selected:not(:disabled) { color: var(--ui-primary); background: var(--ui-selected-surface); border-color: var(--ui-selected-border); box-shadow: inset 0 0 0 2px var(--ui-selected-border); }
 .texture-raised:disabled, .TitleMenuButton:disabled .texture-raised { color: var(--ui-disabled-text); background: var(--ui-disabled-surface); border-color: transparent; box-shadow: none; }
 .Button.state-attention { animation: ButtonAttentionPulse 1.6s ease-in-out infinite; }
 @keyframes ButtonAttentionPulse {

@@ -1,3 +1,8 @@
 .Surface { border-width: 1px; border-style: solid; border-radius: 8px; }
+.FramedSection { box-sizing: border-box; border: 1px solid; border-radius: 6px; padding: 6px; }
+.ScrollBar { position: relative; flex: 0 0 16px; width: 16px; margin-left: 6px; border-radius: 8px; touch-action: none; cursor: pointer; }
+.ScrollThumb { position: absolute; left: 2px; right: 2px; border-radius: 6px; box-sizing: border-box; border: 1px solid; }
+.ScrollThumb::after { content: ''; position: absolute; top: 50%; left: 3px; right: 3px; height: 6px; transform: translateY(-50%); border-block: 1px solid; }
+.ControlIcon { display: inline-block; flex-shrink: 0; width: var(--control-icon-size, 1em); height: var(--control-icon-size, 1em); mask-image: var(--control-icon-image); mask-size: contain; mask-position: center; mask-repeat: no-repeat; }
 .Button { appearance: none; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 28px; padding: 4px 12px; border-width: 1px; border-style: solid; border-radius: 999px; font: 24px/1.2 system-ui, sans-serif; text-align: center; vertical-align: middle; cursor: pointer; touch-action: manipulation; }
 .Button[hidden] { display: none; }

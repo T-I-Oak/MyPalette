@@ -1,7 +1,8 @@
 import {validateFaceCondition} from './faceConditions.js';
+export const FACE_SEARCH_DURATION = 3000;
 
 export class FaceSearch {
-    constructor(group,{now=()=>performance.now(),duration=3000}={}) {
+    constructor(group,{now=()=>performance.now(),duration=FACE_SEARCH_DURATION}={}) {
         this.group=group;this.now=now;this.duration=duration;this.condition=null;this.until=0;
     }
     search(condition) {
