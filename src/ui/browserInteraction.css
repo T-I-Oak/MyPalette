@@ -1,2 +1,5 @@
 /* Safari uses manipulation to suppress double-tap zoom; pinch is canceled by the touch handlers. */
-:where(.GameBrowserSurface, .GameBrowserSurface *) { touch-action: manipulation; }
+:where(.GameBrowserSurface, .GameBrowserSurface *) {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}

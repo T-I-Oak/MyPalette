@@ -1,6 +1,8 @@
 import { EFFECTS, COLORS, MATERIALS, COLOR_PAIRS, SPECIAL_FACES, displayLabel } from '../effectCatalog.js';
 
 export const ICON_REVIEW_CASES = [];
+ICON_REVIEW_CASES.push({id:'control-close',label:'閉じる',control:'close'});
+ICON_REVIEW_CASES.push({id:'control-list',label:'ダイスリスト',control:'list'});
 function add(id,label,effect){ICON_REVIEW_CASES.push({id,label,effect});}
 // New shapes first. Each item is displayed separately; no implicit approval.
 for(const color of COLORS)add(`color-${color}`,`面の色変更：${displayLabel(color)}`,{type:'changeColor',color});

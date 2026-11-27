@@ -1,0 +1,39 @@
+.DiceListOpen { --control-icon-size: 30px; position: absolute; right: 6px; top: 6px; pointer-events: auto; height: 44px; padding: 6px; font: 18px system-ui,sans-serif; }
+.DiceList {
+    position: fixed; z-index: 80; box-sizing: border-box;
+    transform: scale(var(--dice-list-scale)); transform-origin: top left;
+    display: flex; flex-direction: column; padding: 8px 8px 20px; gap: 8px; border: 2px solid; border-radius: 8px;
+    pointer-events: auto; font: 18px/1.4 system-ui,sans-serif;
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+.DiceList[hidden] { display: none; }
+.DiceListHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 8px; cursor: move; touch-action: none; flex-shrink: 0; }
+.DiceListHeading > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.DiceListClose { --control-icon-size: 18px; position: relative; flex: 0 0 32px; width: 32px; height: 32px; min-height: 32px; padding: 4px; }
+.DiceListClose::after { content: ''; position: absolute; inset: -4px; border-radius: inherit; }
+.DiceListScrollArea { display: flex; min-height: 0; flex: 1; }
+.DiceListResize { position: absolute; touch-action: none; display: flex; align-items: center; justify-content: center; }
+.DiceListResize.n { top: 0; left: 20px; right: 20px; height: 8px; cursor: ns-resize; }
+.DiceListResize.s { bottom: 0; left: 20px; right: 24px; height: 20px; cursor: ns-resize; }
+.DiceListResize.w { left: 0; top: 20px; bottom: 20px; width: 8px; cursor: ew-resize; }
+.DiceListResize.e { right: 0; top: 20px; bottom: 24px; width: 8px; cursor: ew-resize; }
+.DiceListResize.nw, .DiceListResize.ne, .DiceListResize.sw, .DiceListResize.se { width: 20px; height: 20px; }
+.DiceListResize.nw { top: 0; left: 0; cursor: nwse-resize; }
+.DiceListResize.ne { top: 0; right: 0; cursor: nesw-resize; }
+.DiceListResize.sw { bottom: 0; left: 0; cursor: nesw-resize; }
+.DiceListResize.se { right: 0; bottom: 0; width: 24px; height: 24px; cursor: nwse-resize; gap: 3px; }
+.DiceListResize > span { display: block; width: 2px; height: 16px; border-radius: 1px; transform: rotate(45deg); }
+.DiceListScroll { flex: 1; min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: none; }
+.DiceListScroll::-webkit-scrollbar { display: none; }
+.DiceListRow { display: flex; align-items: center; gap: 6px; padding: 8px 2px; }
+.DiceListRow + .DiceListRow { border-top-width: 1px; border-top-style: solid; }
+.DiceListVisual { flex: 0 0 66px; width: 66px; height: 66px; padding: 0; border: 3px solid; border-radius: 8px; font: inherit; }
+.DiceListVisual canvas { display: block; width: 100%; height: 100%; }
+.DiceListUnresolved { font-size: 14px; }
+.DiceListContents { flex: 1; min-width: 0; }
+.DiceListFaces { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 3px; }
+.DiceListFace { padding: 1px; min-width: 0; border: 2px solid; border-radius: 5px; position: relative; }
+.DiceListFace canvas { display: block; width: 100%; height: auto; }
+.DiceListFace.state-match { z-index: 1; }
+.DiceListFace.state-match::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+.DiceList button:focus { outline: none; }

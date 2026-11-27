@@ -3,7 +3,7 @@ import { effectIconPlan, goalIconPlan } from './icons/iconPlan.js';
 import { faceCanvas } from './dice/icons.js';
 import { describeEffect, describeGoals } from './cardSummary.js';
 import './cardIcons.css';
-import { EFFECTS } from './effectCatalog.js';
+import { EFFECTS, SPECIAL_FACE_EFFECTS } from './effectCatalog.js';
 import { cardMessages } from './game/cardMessages.js';
 import { paintingBlockIcon } from './game/paintingBlockIcon.js';
 import { createIconPopovers } from './iconPopovers.js';
@@ -54,6 +54,9 @@ function descriptionBody(value) {
 }
 export function bindPaintingHeading(anchor, kind) {
     iconPopovers.bind(anchor, { kind });
+}
+export function bindDieFaceDescription(anchor, face) {
+    iconPopovers.bind(anchor, face.special ? { ...SPECIAL_FACE_EFFECTS[face.special] } : { kind:'face', face });
 }
 const paintingDrawers = new WeakMap();
 const paintingObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(entries => {

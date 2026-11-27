@@ -39,22 +39,34 @@ test('空中待機と確定後はドラッグでき、全体ロール中は禁�
     const container = { style:{}, classList:{add(){},remove(){}},
         addEventListener:(name,fn) => listeners.set(name,fn), removeEventListener:name=>listeners.delete(name),
         setPointerCapture:id=>{capture=id;}, hasPointerCapture:id=>capture===id, releasePointerCapture:()=>{capture=null;} };
-    let clock = 0;
     const taps = [];
-    const drag = createDiceDrag({ container, group, renderer:{domElement:canvas}, camera:camera(), visuals:new Map() },
-        { onTap: id => taps.push(id), now: () => clock });
+    const scene = { container, group, renderer:{domElement:canvas}, camera:camera(), visuals:new Map() };
+    const drag = createDiceDrag(scene,
+        { onTap: id => taps.push(id) });
     const event = (x,y) => ({ clientX:x,clientY:y,pointerId:1,button:0,isPrimary:true,preventDefault(){},
         target:{closest:()=>({dataset:{dieId:'a'}})} });
     try {
         listeners.get('pointerdown')(event(380,190));
         listeners.get('pointerup')(event(382,191));
         assert.deepEqual(taps, ['a']);
-        listeners.get('pointerdown')(event(380,190)); clock += 600;
+        listeners.get('pointerdown')(event(380,190));
         listeners.get('pointerup')(event(380,190));
-        assert.deepEqual(taps, ['a']);
+        assert.deepEqual(taps, ['a', 'a']);
         listeners.get('pointerdown')(event(380,190));
         listeners.get('pointercancel')(event(380,190));
-        assert.deepEqual(taps, ['a']);
+        listeners.get('pointerup')(event(380,190));
+        listeners.get('pointerdown')(event(380,190));
+        listeners.get('lostpointercapture')(event(380,190));
+        listeners.get('pointerup')(event(380,190));
+        listeners.get('pointerdown')(event(380,190));
+        scene.interactionLocked = true;
+        listeners.get('pointerup')(event(380,190));
+        scene.interactionLocked = false;
+        listeners.get('pointerdown')(event(380,190));
+        listeners.get('pointermove')(event(386,190));
+        listeners.get('pointermove')(event(380,190));
+        listeners.get('pointerup')(event(380,190));
+        assert.deepEqual(taps, ['a', 'a']);
         const before = die.body.position.clone();
         listeners.get('pointerdown')(event(380,190));
         listeners.get('pointermove')(event(420,190));
@@ -62,7 +74,7 @@ test('空中待機と確定後はドラッグでき、全体ロール中は禁�
         assert.equal(die.body.position.y, before.y);
         assert.equal(die.state, 'ready');
         listeners.get('pointerup')(event(420,190));
-        assert.deepEqual(taps, ['a']);
+        assert.deepEqual(taps, ['a', 'a']);
         die.begin(); die.settle(2);
         const orientation = die.body.quaternion.clone();
         listeners.get('pointerdown')(event(380,190));

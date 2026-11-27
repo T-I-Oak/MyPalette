@@ -1,4 +1,23 @@
 .texture-paper { background: var(--ui-surface); border-color: var(--ui-border); }
+.texture-ink { background: currentColor; }
+.texture-clear { color: inherit; background: transparent; border-color: transparent; }
+.texture-frame { border-color: transparent; }
+.texture-divided > * + * { border-color: var(--ui-control-border); }
+.texture-paper-muted { background: var(--ui-section-surface); border-color: transparent; }
+.texture-grayscale { filter: grayscale(1); }
+.texture-glow.state-match { animation: HighlightGlow .7s ease-in-out infinite alternate; }
+.texture-glow.state-match::before { background: radial-gradient(ellipse, transparent 35%, var(--ui-highlight-surface)); }
+@keyframes HighlightGlow {
+    from { box-shadow: 0 0 5px 2px var(--ui-goal-border); }
+    to { box-shadow: 0 0 11px 4px var(--ui-goal-border); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .texture-glow.state-match { animation: none; box-shadow: 0 0 8px 3px var(--ui-goal-border); }
+}
+.texture-recessed { background: var(--ui-selected-surface); box-shadow: inset 0 0 0 1px var(--ui-floating-border), inset 0 2px 4px var(--ui-artwork-shadow); }
+.texture-painted { color: var(--ui-on-primary); background: linear-gradient(90deg,var(--ui-primary-hover),var(--ui-primary)); border-color: var(--ui-primary-hover); box-shadow: inset 1px 0 0 var(--ui-floating-border), 0 1px 2px var(--ui-artwork-shadow); }
+@media (hover: hover) { .texture-painted:hover { background: var(--ui-primary-hover); } }
+.texture-painted.state-dragging { background: var(--ui-primary-hover); }
 .texture-text-outline { -webkit-text-stroke: 2px var(--ui-text-outline); paint-order: stroke fill; }
 .texture-journal-page {
     color: var(--ui-text);
@@ -32,6 +51,7 @@
 .texture-callout path { fill: var(--ui-surface); stroke: var(--ui-callout-border); }
 .texture-callout { filter: drop-shadow(0 2px 2px var(--ui-callout-shadow)); }
 .texture-floating { background: var(--ui-floating-surface); border-color: var(--ui-floating-border); box-shadow: 0 3px 8px var(--ui-artwork-shadow); }
+.texture-tinted { color: var(--ui-text); background: var(--ui-tinted-surface); border-color: var(--ui-primary); box-shadow: 0 8px 24px var(--ui-easel-shadow); }
 .texture-surface-warm { background: var(--ui-surface-warm); border-color: var(--ui-border); }
 .texture-surface-cool { background: var(--ui-surface-cool); border-color: var(--ui-border); }
 
