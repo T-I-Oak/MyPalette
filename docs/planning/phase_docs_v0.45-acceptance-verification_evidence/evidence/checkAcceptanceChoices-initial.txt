@@ -1,0 +1,2 @@
+{"name":"checkAcceptanceChoices","start":"2026-11-27T11:49:46.650Z","status":0,"signal":null}
+PASS: candidates3x6/exactly one/chosen faces preserved; effect reroll1/2/0/no ticket cost/non-target faces preserved

@@ -1,0 +1,14 @@
+{"name":"checkDiscardArea","start":"2026-11-27T08:43:05.035Z","status":1,"signal":null}
+
+AssertionError [ERR_ASSERTION]: discard effect opens its explanation
+
+0 !== 1
+
+    at C:\Users\tioak\Documents\Games\Projects\GameWorksOAK\MyPalette\scripts\checkDiscardArea.cjs:55:9 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}

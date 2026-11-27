@@ -1,0 +1,5 @@
+Version: 0.45.0
+Command: node scripts/checkPaletteArea.cjs http://127.0.0.1:3000/MyPalette/
+Result: exit 0; PASS: palette in game, A/B, resize, panel, persistent canvas, no browser errors
+Command: node scripts/checkAcceptanceCoverage.cjs docs/planning/phase_docs_v0.45-acceptance-verification_evidence/conditions.json --write
+Result: baseline conditions338, approved conditions7, unassigned0, outstanding41

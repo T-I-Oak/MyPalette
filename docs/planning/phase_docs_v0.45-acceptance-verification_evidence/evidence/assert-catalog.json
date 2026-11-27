@@ -1,0 +1,4694 @@
+[
+  {
+    "file": "tests/implementation/icons/iconPlan.test.js",
+    "sha256": "c6da134d9b3057bd1e918090913eef426628c619cff43cbebc08e42f7146363d",
+    "assertions": [
+      {
+        "line": 10,
+        "test": "全効果の必須属性を検証し、数量や変更先を省略せず保持する",
+        "assert": "const plan=effectIconPlan(effect);assert.equal(plan.effect.type,effect.type);"
+      },
+      {
+        "line": 11,
+        "test": "全効果の必須属性を検証し、数量や変更先を省略せず保持する",
+        "assert": "for(const f of definition.fields)assert.equal(plan.effect[f.name],effect[f.name]);"
+      },
+      {
+        "line": 12,
+        "test": "全効果の必須属性を検証し、数量や変更先を省略せず保持する",
+        "assert": "for(const f of definition.fields){const missing={...effect};delete missing[f.name];assert.throws(()=>effectIconPlan(missing));}"
+      },
+      {
+        "line": 18,
+        "test": "全特殊面は共通効果の計画を使い、面変更の入れ子にも同じ効果を渡す",
+        "assert": "assert.deepEqual(nested.nodes[1].effect,effect);"
+      },
+      {
+        "line": 19,
+        "test": "全特殊面は共通効果の計画を使い、面変更の入れ子にも同じ効果を渡す",
+        "assert": "assert.deepEqual(effectIconPlan(effect).effect,effect);"
+      },
+      {
+        "line": 23,
+        "test": "取得では×1を表示し、数値の意味を区別する",
+        "assert": "assert.equal(effectIconPlan({type:'gainRerolls',count:1}).nodes.at(-1).value,'×1');"
+      },
+      {
+        "line": 24,
+        "test": "取得では×1を表示し、数値の意味を区別する",
+        "assert": "assert.equal(effectIconPlan({type:'gainRerolls',count:10}).nodes.at(-1).value,'×10');"
+      },
+      {
+        "line": 25,
+        "test": "取得では×1を表示し、数値の意味を区別する",
+        "assert": "assert.equal(effectIconPlan({type:'changeFame',amount:-7}).nodes[0].amount,-7);"
+      },
+      {
+        "line": 26,
+        "test": "取得では×1を表示し、数値の意味を区別する",
+        "assert": "assert.equal(effectIconPlan({type:'drawCards',count:1}).nodes[1].value,'+1');"
+      },
+      {
+        "line": 27,
+        "test": "取得では×1を表示し、数値の意味を区別する",
+        "assert": "for(const effect of [{type:'drawCards',count:0},{type:'changeFame',amount:0},{type:'gainNormalDice',count:1,lifetime:'other'},{type:'changeColor',color:'cyan'},{type:'changeCardStep',step:3},{type:'unknown'}])assert.throws(()=>effectIconPlan(effect));"
+      },
+      {
+        "line": 30,
+        "test": "目標は画材・色・画材＋色を受け付け、空条件や未知属性を拒否する",
+        "assert": "for(const goal of [{material:'brush'},{color:'orange'},{material:'airbrush',color:'purple'}])assert.deepEqual(goalIconPlan(goal).condition,goal);"
+      },
+      {
+        "line": 31,
+        "test": "目標は画材・色・画材＋色を受け付け、空条件や未知属性を拒否する",
+        "assert": "for(const goal of [{},{material:'pen'},{color:'cyan'},{material:'brush',extra:true}])assert.throws(()=>goalIconPlan(goal));"
+      },
+      {
+        "line": 37,
+        "test": "手札交換は左右の対象の間に、右矢印・左矢印・数量をまとめる",
+        "assert": "assert.equal(plan.nodes.length,3);"
+      },
+      {
+        "line": 38,
+        "test": "手札交換は左右の対象の間に、右矢印・左矢印・数量をまとめる",
+        "assert": "assert.deepEqual(plan.nodes[1],{kind:'arrowQuantity',arrows:['→','←'],value:`×${count}`});"
+      },
+      {
+        "line": 45,
+        "test": "矢印付き数量は1も表示し、単独数量を右端に追加しない",
+        "assert": "const quantity=plan.nodes.filter(node=>node.kind==='arrowQuantity');assert.equal(quantity.length,1);"
+      },
+      {
+        "line": 46,
+        "test": "矢印付き数量は1も表示し、単独数量を右端に追加しない",
+        "assert": "assert.equal(quantity[0].value,`${type==='drawCards'?'+':'×'}${count}`);"
+      },
+      {
+        "line": 47,
+        "test": "矢印付き数量は1も表示し、単独数量を右端に追加しない",
+        "assert": "assert.equal(plan.nodes.some(node=>node.kind==='quantity'),false);"
+      },
+      {
+        "line": 51,
+        "test": "矢印付き数量は1も表示し、単独数量を右端に追加しない",
+        "assert": "assert.equal(nodes.some(n=>n.kind==='quantity'),count!==1);"
+      },
+      {
+        "line": 52,
+        "test": "矢印付き数量は1も表示し、単独数量を右端に追加しない",
+        "assert": "if(count!==1)assert.equal(nodes.at(-1).value,'×2');"
+      },
+      {
+        "line": 58,
+        "test": "名声は数量を含む月桂冠として＋1も維持する",
+        "assert": "assert.deepEqual(plan.nodes,[{kind:'fame',amount:1}]);"
+      },
+      {
+        "line": 67,
+        "test": "ダイスとリロール権の取得は×1を含む数量を右端に表示する",
+        "assert": "])assert.deepEqual(effectIconPlan(effect).nodes.at(-1),{kind:'quantity',value:`×${count}`});"
+      },
+      {
+        "line": 68,
+        "test": "ダイスとリロール権の取得は×1を含む数量を右端に表示する",
+        "assert": "assert.equal(effectIconPlan({type:'useDie',count:1}).nodes.some(n=>n.kind==='quantity'),false);"
+      },
+      {
+        "line": 74,
+        "test": "面内の取得×1は省略し、直接のカード効果とドロー＋1は維持する",
+        "assert": "assert.equal(face.nodes.some(n=>n.kind==='quantity'&&n.value==='×1'),false);"
+      },
+      {
+        "line": 75,
+        "test": "面内の取得×1は省略し、直接のカード効果とドロー＋1は維持する",
+        "assert": "if(effect.type.startsWith('gain'))assert.equal(effectIconPlan(effect).nodes.at(-1).value,'×1');"
+      },
+      {
+        "line": 76,
+        "test": "面内の取得×1は省略し、直接のカード効果とドロー＋1は維持する",
+        "assert": "if(effect.type==='drawCards')assert.equal(face.nodes.at(-1).value,'+1');"
+      },
+      {
+        "line": 78,
+        "test": "面内の取得×1は省略し、直接のカード効果とドロー＋1は維持する",
+        "assert": "assert.equal(faceEffectIconPlan({type:'gainRerolls',count:2}).nodes.at(-1).value,'×2');"
+      },
+      {
+        "line": 82,
+        "test": "再利用効果はゲームと同じ定義で描画する",
+        "assert": "assert.equal(effectIconPlan({type:'refreshDice'}).nodes[0].kind,'refreshedDie');"
+      },
+      {
+        "line": 83,
+        "test": "再利用効果はゲームと同じ定義で描画する",
+        "assert": "assert.equal(EFFECTS.filter(effect=>effect.type==='refreshDice').length,1);"
+      },
+      {
+        "line": 89,
+        "test": "使用済み化はグレーのダイスを使い、ゴミ箱なしで従来の個数を表示する",
+        "assert": "assert.deepEqual(plan.nodes[0],{kind:'die',baseColor:'#b8bec4',role:'main'});"
+      },
+      {
+        "line": 90,
+        "test": "使用済み化はグレーのダイスを使い、ゴミ箱なしで従来の個数を表示する",
+        "assert": "assert.deepEqual(plan.nodes[1],{kind:'check',color:'#8c9690',role:'sub'});"
+      },
+      {
+        "line": 91,
+        "test": "使用済み化はグレーのダイスを使い、ゴミ箱なしで従来の個数を表示する",
+        "assert": "assert.equal(plan.nodes.some(node=>node.kind==='trash'),false);"
+      },
+      {
+        "line": 92,
+        "test": "使用済み化はグレーのダイスを使い、ゴミ箱なしで従来の個数を表示する",
+        "assert": "assert.deepEqual(plan.nodes.slice(2),count===1?[]:[{kind:'quantity',value:`×${count}`}]);"
+      },
+      {
+        "line": 94,
+        "test": "使用済み化はグレーのダイスを使い、ゴミ箱なしで従来の個数を表示する",
+        "assert": "assert.deepEqual(EFFECTS.find(effect=>effect.type==='useDie').fields.map(field=>field.name),['count']);"
+      }
+    ],
+    "controls": []
+  },
+  {
+    "file": "tests/implementation/icons/compositionLayout.test.js",
+    "sha256": "1074e85928800cdc35e48eba9f458e93b6e165805cc97b51269a1ffab6e0762b",
+    "assertions": [
+      {
+        "line": 9,
+        "test": "メイン・サブは共通の高さと輪郭間隔で配置する",
+        "assert": "assert.equal(nodes.filter(n=>n.role==='main').length,1);assert.equal(nodes.filter(n=>n.role==='sub').length,1);"
+      },
+      {
+        "line": 10,
+        "test": "メイン・サブは共通の高さと輪郭間隔で配置する",
+        "assert": "for(const slot of layout.slots){assert.ok(Math.abs(slot.height-ICON_SIZES[slot.node.role])<1e-9);}"
+      },
+      {
+        "line": 11,
+        "test": "メイン・サブは共通の高さと輪郭間隔で配置する",
+        "assert": "assert.ok(Math.abs(layout.slots[1].left-layout.slots[0].right-ICON_SIZES.gap)<1e-9);"
+      },
+      {
+        "line": 21,
+        "test": "手札交換とドローはメインと数量の全境界を8単位でつなぐ",
+        "assert": "assert.equal(layout.slots.length,effect.type==='drawCards'?2:3);"
+      },
+      {
+        "line": 24,
+        "test": "手札交換とドローはメインと数量の全境界を8単位でつなぐ",
+        "assert": "if(slot.node.role==='main')assert.ok(Math.abs(slot.height-80)<1e-9);"
+      },
+      {
+        "line": 25,
+        "test": "手札交換とドローはメインと数量の全境界を8単位でつなぐ",
+        "assert": "if(i)assert.ok(Math.abs(slot.left-layout.slots[i-1].right-8)<1e-9);"
+      }
+    ],
+    "controls": []
+  },
+  {
+    "file": "tests/implementation/game/engine.test.js",
+    "sha256": "2845971d574a3e371c15250be2c4cbde117c27f1e7cda15a2da3fb7bfaca6b09",
+    "assertions": [
+      {
+        "line": 9,
+        "test": "initial setup, cloned definitions and day start",
+        "assert": "assert.equal(s.day, 1); assert.equal(s.credit, 3); assert.equal(s.hand.length, 4);"
+      },
+      {
+        "line": 10,
+        "test": "initial setup, cloned definitions and day start",
+        "assert": "assert.equal(s.deck.length, 3); assert.equal(s.stocks.A.length, 8);"
+      },
+      {
+        "line": 11,
+        "test": "initial setup, cloned definitions and day start",
+        "assert": "assert.equal(s.dice.length, 3); assert.equal(s.rerolls, 1);"
+      },
+      {
+        "line": 13,
+        "test": "initial setup, cloned definitions and day start",
+        "assert": "assert.equal(settings.cards[0].step, undefined);"
+      },
+      {
+        "line": 18,
+        "test": "effect sequence pauses, blocks unrelated actions, validates choices and resumes",
+        "assert": "assert.equal(s.pending.kind, 'dice'); assert.equal(s.fame, 0);"
+      },
+      {
+        "line": 19,
+        "test": "effect sequence pauses, blocks unrelated actions, validates choices and resumes",
+        "assert": "assert.throws(() => game.play(s.hand[0].id));"
+      },
+      {
+        "line": 20,
+        "test": "effect sequence pauses, blocks unrelated actions, validates choices and resumes",
+        "assert": "assert.throws(() => game.endDay());"
+      },
+      {
+        "line": 21,
+        "test": "effect sequence pauses, blocks unrelated actions, validates choices and resumes",
+        "assert": "assert.throws(() => game.choose(['missing']));"
+      },
+      {
+        "line": 23,
+        "test": "effect sequence pauses, blocks unrelated actions, validates choices and resumes",
+        "assert": "assert.equal(s.dice[0].faces[s.dice[0].current].color, 'red');"
+      },
+      {
+        "line": 24,
+        "test": "effect sequence pauses, blocks unrelated actions, validates choices and resumes",
+        "assert": "assert.equal(s.fame, 7); assert.equal(s.pending, null);"
+      },
+      {
+        "line": 33,
+        "test": "achievement consumes dice and ships with increased credit before reward selection",
+        "assert": "assert.equal(s.dice[0].used, true); assert.equal(card.step, 3);"
+      },
+      {
+        "line": 34,
+        "test": "achievement consumes dice and ships with increased credit before reward selection",
+        "assert": "assert.equal(s.field.length, 0); assert.equal(s.shipped[0], card); assert.equal(s.credit, 4);"
+      },
+      {
+        "line": 35,
+        "test": "achievement consumes dice and ships with increased credit before reward selection",
+        "assert": "assert.throws(() => game.choose([s.dice[0].id]));"
+      },
+      {
+        "line": 37,
+        "test": "achievement consumes dice and ships with increased credit before reward selection",
+        "assert": "assert.equal(card.step, 3); assert.equal(s.shipped.length, 1); assert.equal(s.credit, 4);"
+      },
+      {
+        "line": 48,
+        "test": "achievement discards before rewards and can draw the achieved card on deck refill",
+        "assert": "assert.equal(card.step, 1); assert.equal(s.field.length, 0);"
+      },
+      {
+        "line": 49,
+        "test": "achievement discards before rewards and can draw the achieved card on deck refill",
+        "assert": "assert.equal(s.hand.at(-1), card); assert.equal(s.discard.length, 0);"
+      },
+      {
+        "line": 50,
+        "test": "achievement discards before rewards and can draw the achieved card on deck refill",
+        "assert": "assert.equal(s.fame, 0, 'rewards come from the achieved step, not the next step');"
+      },
+      {
+        "line": 51,
+        "test": "achievement discards before rewards and can draw the achieved card on deck refill",
+        "assert": "assert.deepEqual(s.effectNotices.at(-1).effects, [{ type: 'drawCards', count: 1 }]);"
+      },
+      {
+        "line": 54,
+        "test": "achievement discards before rewards and can draw the achieved card on deck refill",
+        "assert": "assert.ok(moved >= 0 && moved < reward);"
+      },
+      {
+        "line": 62,
+        "test": "turn end consumes specials then two flyer dice, reduces credit and removes temporary dice",
+        "assert": "assert.equal(s.phase, 'betweenDays'); assert.equal(s.credit, 2);"
+      },
+      {
+        "line": 63,
+        "test": "turn end consumes specials then two flyer dice, reduces credit and removes temporary dice",
+        "assert": "assert.equal(s.flyers, 1); assert.equal(s.progress, 0); assert.equal(s.dice.length, 3);"
+      },
+      {
+        "line": 64,
+        "test": "turn end consumes specials then two flyer dice, reduces credit and removes temporary dice",
+        "assert": "assert.equal(s.reserved.length, 0); assert.equal(s.rerolls, 0);"
+      },
+      {
+        "line": 65,
+        "test": "turn end consumes specials then two flyer dice, reduces credit and removes temporary dice",
+        "assert": "assert.equal(s.fame, 1);"
+      },
+      {
+        "line": 66,
+        "test": "turn end consumes specials then two flyer dice, reduces credit and removes temporary dice",
+        "assert": "assert.equal(s.dayEndDice.length, 4);"
+      },
+      {
+        "line": 67,
+        "test": "turn end consumes specials then two flyer dice, reduces credit and removes temporary dice",
+        "assert": "assert.equal(s.dayEndDice.at(-1).id, 'extra');"
+      },
+      {
+        "line": 68,
+        "test": "turn end consumes specials then two flyer dice, reduces credit and removes temporary dice",
+        "assert": "assert.equal(s.dayEndDice.at(-1).used, false);"
+      },
+      {
+        "line": 69,
+        "test": "turn end consumes specials then two flyer dice, reduces credit and removes temporary dice",
+        "assert": "assert.equal(s.dayEndDice[0].used, true);"
+      },
+      {
+        "line": 70,
+        "test": "turn end consumes specials then two flyer dice, reduces credit and removes temporary dice",
+        "assert": "game.nextDay(); assert.equal(s.fame, 1); assert.equal(s.day, 2);"
+      },
+      {
+        "line": 71,
+        "test": "turn end consumes specials then two flyer dice, reduces credit and removes temporary dice",
+        "assert": "assert.equal(s.dayEndDice, null);"
+      },
+      {
+        "line": 84,
+        "test": "play and achievement resolve fame first and preserve order across choices",
+        "assert": "assert.equal(s.fame, 2);"
+      },
+      {
+        "line": 85,
+        "test": "play and achievement resolve fame first and preserve order across choices",
+        "assert": "assert.equal(s.rerolls, 1);"
+      },
+      {
+        "line": 86,
+        "test": "play and achievement resolve fame first and preserve order across choices",
+        "assert": "assert.deepEqual(s.effectNotices.at(-1).effects, effects);"
+      },
+      {
+        "line": 88,
+        "test": "play and achievement resolve fame first and preserve order across choices",
+        "assert": "assert.equal(s.fame, 2);"
+      },
+      {
+        "line": 89,
+        "test": "play and achievement resolve fame first and preserve order across choices",
+        "assert": "assert.equal(s.rerolls, 2);"
+      },
+      {
+        "line": 91,
+        "test": "play and achievement resolve fame first and preserve order across choices",
+        "assert": "assert.equal(s.fame, 4);"
+      },
+      {
+        "line": 92,
+        "test": "play and achievement resolve fame first and preserve order across choices",
+        "assert": "assert.equal(s.rerolls, 2);"
+      },
+      {
+        "line": 93,
+        "test": "play and achievement resolve fame first and preserve order across choices",
+        "assert": "assert.deepEqual(s.effectNotices.at(-1).effects, effects);"
+      },
+      {
+        "line": 94,
+        "test": "play and achievement resolve fame first and preserve order across choices",
+        "assert": "assert.deepEqual(s.logs.slice(-3), [effects[1], effects[3], effects[0]]"
+      },
+      {
+        "line": 97,
+        "test": "play and achievement resolve fame first and preserve order across choices",
+        "assert": "assert.equal(s.fame, 4);"
+      },
+      {
+        "line": 98,
+        "test": "play and achievement resolve fame first and preserve order across choices",
+        "assert": "assert.equal(s.rerolls, 3);"
+      },
+      {
+        "line": 99,
+        "test": "play and achievement resolve fame first and preserve order across choices",
+        "assert": "assert.equal(s.pending, null);"
+      },
+      {
+        "line": 113,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.ok(s.dice.slice(-3).every(die => die.used));"
+      },
+      {
+        "line": 114,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.deepEqual(s.reserved, []);"
+      },
+      {
+        "line": 115,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.ok(s.dayEndRequest);"
+      },
+      {
+        "line": 117,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.equal(s.fame, 0);"
+      },
+      {
+        "line": 121,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.deepEqual(s.dayEndRequest, { kind: 'cleanup' });"
+      },
+      {
+        "line": 122,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.equal(s.phase, 'end');"
+      },
+      {
+        "line": 123,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.equal(s.fame, 0);"
+      },
+      {
+        "line": 124,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.ok(Object.values(s.public).every(id => id === null));"
+      },
+      {
+        "line": 127,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.equal(s.fame, 2);"
+      },
+      {
+        "line": 129,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.equal(s.phase, 'finished');"
+      },
+      {
+        "line": 130,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.match(s.logs.at(-1), /ゲーム終了：名声2/);"
+      },
+      {
+        "line": 133,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.equal(s.phase, 'awaitingStart');"
+      },
+      {
+        "line": 134,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.equal(s.fame, 2);"
+      },
+      {
+        "line": 136,
+        "test": "day end applies all unused fame faces only after day-end requests and before either outcome",
+        "assert": "assert.equal(s.fame, 2);"
+      },
+      {
+        "line": 145,
+        "test": "normal multi acquisition waits for all candidates before rolling and adding",
+        "assert": "game.choose(['0']); assert.equal(s.dice.length, 3);"
+      },
+      {
+        "line": 146,
+        "test": "normal multi acquisition waits for all candidates before rolling and adding",
+        "assert": "assert.equal(accepted.length, 1);"
+      },
+      {
+        "line": 147,
+        "test": "normal multi acquisition waits for all candidates before rolling and adding",
+        "assert": "game.choose(['2']); assert.equal(s.dice.length, 5);"
+      },
+      {
+        "line": 148,
+        "test": "normal multi acquisition waits for all candidates before rolling and adding",
+        "assert": "assert.deepEqual(accepted, s.dice.slice(3).map(die => die.id));"
+      },
+      {
+        "line": 149,
+        "test": "normal multi acquisition waits for all candidates before rolling and adding",
+        "assert": "assert.equal(s.dice.at(-1).used, false);"
+      },
+      {
+        "line": 156,
+        "test": "empty stock exchange returns then exposes same card, resetting step",
+        "assert": "game.choose([card.id]); assert.equal(s.public.A, card.id);"
+      },
+      {
+        "line": 157,
+        "test": "empty stock exchange returns then exposes same card, resetting step",
+        "assert": "game.choose([card.id]); assert.equal(s.hand.length, 1); assert.equal(card.step, 0);"
+      },
+      {
+        "line": 164,
+        "test": "flyer ordering consumes flyers with empty stocks when credit remains",
+        "assert": "assert.equal(s.flyers, 0); assert.equal(s.orderCost, 5); assert.equal(s.progress, 1);"
+      },
+      {
+        "line": 165,
+        "test": "flyer ordering consumes flyers with empty stocks when credit remains",
+        "assert": "assert.equal(s.credit, 2); assert.equal(s.phase, 'betweenDays'); assert.equal(s.pending, null);"
+      },
+      {
+        "line": 173,
+        "test": "flyers are consumed before credit reaches zero even with empty stocks",
+        "assert": "assert.equal(s.flyers, 0); assert.equal(s.orderCost, 5); assert.equal(s.progress, 1);"
+      },
+      {
+        "line": 174,
+        "test": "flyers are consumed before credit reaches zero even with empty stocks",
+        "assert": "assert.equal(s.credit, 0); assert.equal(s.phase, 'finished'); assert.equal(s.pending, null);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 5,
+        "source": "const settings = JSON.parse(readFileSync(new URL('../../../public/data/cards.json', import.meta.url), 'utf8'));"
+      },
+      {
+        "line": 6,
+        "source": "const make = () => new Game(settings, () => .4);"
+      },
+      {
+        "line": 13,
+        "source": "assert.equal(settings.cards[0].step, undefined);"
+      },
+      {
+        "line": 103,
+        "source": "for (const lastDay of [false, true]) {"
+      },
+      {
+        "line": 104,
+        "source": "const game = new Game(settings, () => .4, { manualDayStart: true, manualDayEnd: true }), s = game.state;"
+      },
+      {
+        "line": 142,
+        "source": "const game = new Game(settings, () => .4, { onCandidateAcquired: id => accepted.push(id) });"
+      }
+    ]
+  },
+  {
+    "file": "tests/implementation/game/session.test.js",
+    "sha256": "fb49ea2b86b0bd7c22caf2a100d309aae4de62ff0cc68a8b9d5f2c35277df8a8",
+    "assertions": [
+      {
+        "line": 12,
+        "test": "all subscribers observe the same game after actions; inspection is read only",
+        "assert": "assert.equal(session.game.state.hand.length, 4);"
+      },
+      {
+        "line": 13,
+        "test": "all subscribers observe the same game after actions; inspection is read only",
+        "assert": "assert.deepEqual(session.game.state, before);"
+      },
+      {
+        "line": 15,
+        "test": "all subscribers observe the same game after actions; inspection is read only",
+        "assert": "assert.equal(updates[0], session.game);"
+      },
+      {
+        "line": 16,
+        "test": "all subscribers observe the same game after actions; inspection is read only",
+        "assert": "assert.equal(session.game.state.rerolls, 0);"
+      },
+      {
+        "line": 23,
+        "test": "pending effects enforce engine constraints and restart isolates old state and tasks",
+        "assert": "assert.throws(() => session.dispatch(game => game.endDay()));"
+      },
+      {
+        "line": 25,
+        "test": "pending effects enforce engine constraints and restart isolates old state and tasks",
+        "assert": "assert.equal(old.state.pending, null);"
+      },
+      {
+        "line": 27,
+        "test": "pending effects enforce engine constraints and restart isolates old state and tasks",
+        "assert": "assert.notEqual(replay.game, old);"
+      },
+      {
+        "line": 28,
+        "test": "pending effects enforce engine constraints and restart isolates old state and tasks",
+        "assert": "assert.equal(replay.game.state.day, 1);"
+      },
+      {
+        "line": 30,
+        "test": "pending effects enforce engine constraints and restart isolates old state and tasks",
+        "assert": "assert.equal(replay.game.state.credit, 3);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 5,
+        "source": "const settings = JSON.parse(readFileSync(new URL('../../../public/data/cards.json', import.meta.url)));"
+      },
+      {
+        "line": 8,
+        "source": "const session = createGameSession(settings, { random: () => .4 });"
+      },
+      {
+        "line": 20,
+        "source": "const session = createGameSession(settings, { random: () => .4 });"
+      },
+      {
+        "line": 26,
+        "source": "const replay = createGameSession(settings, { random: () => .4 });"
+      }
+    ]
+  },
+  {
+    "file": "tests/implementation/game/goals.test.js",
+    "sha256": "2ab0cd6d3a8c02f2cdcd7c136abe4bcc14fcd1dfbb7cf5bfe83530a342c64f44",
+    "assertions": [
+      {
+        "line": 11,
+        "test": "AND uses distinct unused dice; OR alternatives and exact selections",
+        "assert": "assert.deepEqual(matchingDice(goals, dice), ['a', 'b']);"
+      },
+      {
+        "line": 12,
+        "test": "AND uses distinct unused dice; OR alternatives and exact selections",
+        "assert": "assert.equal(satisfiesSelection(goals, dice, ['c']), true);"
+      },
+      {
+        "line": 13,
+        "test": "AND uses distinct unused dice; OR alternatives and exact selections",
+        "assert": "assert.equal(satisfiesSelection(goals, dice, ['a', 'a']), false);"
+      },
+      {
+        "line": 14,
+        "test": "AND uses distinct unused dice; OR alternatives and exact selections",
+        "assert": "assert.equal(satisfiesSelection(goals, dice, ['a', 'b', 'c']), false);"
+      },
+      {
+        "line": 16,
+        "test": "AND uses distinct unused dice; OR alternatives and exact selections",
+        "assert": "assert.equal(matchingDice(goals, dice), null);"
+      },
+      {
+        "line": 17,
+        "test": "AND uses distinct unused dice; OR alternatives and exact selections",
+        "assert": "assert.equal(satisfiesSelection(goals, dice, ['a', 'b']), false);"
+      },
+      {
+        "line": 21,
+        "test": "initial dice cover all pairs, each with six colors and two of each material",
+        "assert": "assert.equal(new Set(faces.flat().map(f => `${f.color}/${f.material}`)).size, 18);"
+      },
+      {
+        "line": 23,
+        "test": "initial dice cover all pairs, each with six colors and two of each material",
+        "assert": "assert.equal(new Set(die.map(f => f.color)).size, 6);"
+      },
+      {
+        "line": 24,
+        "test": "initial dice cover all pairs, each with six colors and two of each material",
+        "assert": "for (const material of ['brush', 'pastel', 'airbrush']) assert.equal(die.filter(f => f.material === material).length, 2);"
+      },
+      {
+        "line": 27,
+        "test": "initial dice cover all pairs, each with six colors and two of each material",
+        "assert": "assert.deepEqual(candidates.map(f => f.length), [6, 6, 6]);"
+      },
+      {
+        "line": 28,
+        "test": "initial dice cover all pairs, each with six colors and two of each material",
+        "assert": "assert.equal(new Set(candidates.flat().map(f => `${f.color}/${f.material}`)).size, 18);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 22,
+        "source": "for (const die of faces) {"
+      },
+      {
+        "line": 24,
+        "source": "for (const material of ['brush', 'pastel', 'airbrush']) assert.equal(die.filter(f => f.material === material).length, 2);"
+      }
+    ]
+  },
+  {
+    "file": "tests/implementation/game/rollRequests.test.js",
+    "sha256": "f065f5f83580ddd9882b53d56cea498dc821b69ae44c28651431e6e61182c782",
+    "assertions": [
+      {
+        "line": 17,
+        "test": "権利リロールは対象だけを待機させ、権利を一度消費し確定まで進行しない",
+        "assert": "assert.equal(s.rerolls,0);assert.deepEqual(s.rollRequest.ids,[target.id]);"
+      },
+      {
+        "line": 18,
+        "test": "権利リロールは対象だけを待機させ、権利を一度消費し確定まで進行しない",
+        "assert": "assert.equal(target.current,null);assert.equal(other.current,2);"
+      },
+      {
+        "line": 19,
+        "test": "権利リロールは対象だけを待機させ、権利を一度消費し確定まで進行しない",
+        "assert": "assert.throws(()=>game.reroll());assert.throws(()=>game.endDay());"
+      },
+      {
+        "line": 21,
+        "test": "権利リロールは対象だけを待機させ、権利を一度消費し確定まで進行しない",
+        "assert": "assert.equal(s.rerolls,0);settle(game);assert.equal(s.rollRequest,null);"
+      },
+      {
+        "line": 23,
+        "test": "権利リロールは対象だけを待機させ、権利を一度消費し確定まで進行しない",
+        "assert": "game.reroll();assert.deepEqual(s.rollRequest.ids,s.dice.filter(d=>!d.used).map(d=>d.id));settle(game);"
+      },
+      {
+        "line": 25,
+        "test": "権利リロールは対象だけを待機させ、権利を一度消費し確定まで進行しない",
+        "assert": "assert.throws(()=>game.reroll());assert.equal(s.rerolls,1);"
+      },
+      {
+        "line": 31,
+        "test": "ダイス獲得は新規対象だけを待機させ、後続効果を確定後に再開する",
+        "assert": "assert.equal(s.rollRequest.reason,'acquire');assert.equal(s.rollRequest.ids.length,2);"
+      },
+      {
+        "line": 32,
+        "test": "ダイス獲得は新規対象だけを待機させ、後続効果を確定後に再開する",
+        "assert": "assert(s.rollRequest.ids.every(id=>!original.includes(id)));assert.equal(s.fame,0);"
+      },
+      {
+        "line": 33,
+        "test": "ダイス獲得は新規対象だけを待機させ、後続効果を確定後に再開する",
+        "assert": "assert.throws(()=>game.endDay());settle(game);assert.equal(s.fame,5);assert.equal(s.rollRequest,null);"
+      },
+      {
+        "line": 39,
+        "test": "効果リロールは対象選択後に待機し、権利を消費せず後続を停止する",
+        "assert": "assert.equal(s.pending.kind,'dice');assert.equal(s.rollRequest,null);"
+      },
+      {
+        "line": 40,
+        "test": "効果リロールは対象選択後に待機し、権利を消費せず後続を停止する",
+        "assert": "assert.equal(s.pending.effectType,'reroll');assert.throws(()=>game.choose([]));"
+      },
+      {
+        "line": 41,
+        "test": "効果リロールは対象選択後に待機し、権利を消費せず後続を停止する",
+        "assert": "assert.throws(()=>game.endDay());assert.throws(()=>game.reroll());"
+      },
+      {
+        "line": 43,
+        "test": "効果リロールは対象選択後に待機し、権利を消費せず後続を停止する",
+        "assert": "assert.deepEqual(s.rollRequest.ids,ids);assert.equal(s.pending,null);assert.equal(s.fame,0);assert.equal(s.rerolls,1);"
+      },
+      {
+        "line": 44,
+        "test": "効果リロールは対象選択後に待機し、権利を消費せず後続を停止する",
+        "assert": "settle(game);assert.equal(s.fame,3);assert.equal(s.rerolls,1);"
+      },
+      {
+        "line": 50,
+        "test": "獲得候補は先に選び、獲得ロール確定後に次の選択へ進む",
+        "assert": "assert.equal(s.pending.kind,'candidates');game.choose([s.pending.options[0].id]);"
+      },
+      {
+        "line": 51,
+        "test": "獲得候補は先に選び、獲得ロール確定後に次の選択へ進む",
+        "assert": "assert.equal(s.pending,null);assert.equal(s.rollRequest.ids.length,1);"
+      },
+      {
+        "line": 52,
+        "test": "獲得候補は先に選び、獲得ロール確定後に次の選択へ進む",
+        "assert": "settle(game);assert.equal(s.pending.kind,'dice');"
+      }
+    ],
+    "controls": [
+      {
+        "line": 5,
+        "source": "const settings=JSON.parse(readFileSync(new URL('../../../public/data/cards.json',import.meta.url)));"
+      },
+      {
+        "line": 11,
+        "source": "const make=()=>{const game=new Game(settings,()=>.4,{manualRolls:true});settle(game);return game;};"
+      }
+    ]
+  },
+  {
+    "file": "tests/implementation/dice/Die.test.js",
+    "sha256": "e89e02ef1cb63d6018d85e003af2f2e3ff9a688123fb6664685439144f88ba63",
+    "assertions": [
+      {
+        "line": 18,
+        "test": "描画ライブラリの6マテリアル順が上面判定用の法線と一致する",
+        "assert": "mean.forEach((value, axis) => assert.ok(Math.abs(value / length - FACE_NORMALS[materialIndex][axis]) < 1e-6));"
+      },
+      {
+        "line": 26,
+        "test": "各ローカル面を上に向けた姿勢と面インデックスが一致する",
+        "assert": "assert.equal(top.index, index);"
+      },
+      {
+        "line": 27,
+        "test": "各ローカル面を上に向けた姿勢と面インデックスが一致する",
+        "assert": "assert.ok(top.alignment > .999);"
+      },
+      {
+        "line": 33,
+        "test": "面はコピーして保持し、確定結果は面変更に追従する",
+        "assert": "assert.equal(die.faces[0].color, 'yellow');"
+      },
+      {
+        "line": 35,
+        "test": "面はコピーして保持し、確定結果は面変更に追従する",
+        "assert": "assert.equal(die.result, null);"
+      },
+      {
+        "line": 39,
+        "test": "面はコピーして保持し、確定結果は面変更に追従する",
+        "assert": "assert.deepEqual(die.result.face, { special: 'fame1' });"
+      },
+      {
+        "line": 40,
+        "test": "面はコピーして保持し、確定結果は面変更に追従する",
+        "assert": "return pending.then(result => assert.equal(result.index, 2));"
+      },
+      {
+        "line": 46,
+        "test": "ロール中の再操作は禁止し、破棄は待機中の結果を中止で解決する",
+        "assert": "assert.throws(() => die.begin(), /rolling/);"
+      },
+      {
+        "line": 47,
+        "test": "ロール中の再操作は禁止し、破棄は待機中の結果を中止で解決する",
+        "assert": "assert.throws(() => die.setFace(0, { special: 'draw1' }), /rolling/);"
+      },
+      {
+        "line": 49,
+        "test": "ロール中の再操作は禁止し、破棄は待機中の結果を中止で解決する",
+        "assert": "assert.deepEqual(await pending, { id: 'a', status: 'cancelled' });"
+      },
+      {
+        "line": 50,
+        "test": "ロール中の再操作は禁止し、破棄は待機中の結果を中止で解決する",
+        "assert": "assert.equal(die.state, 'disposed');"
+      },
+      {
+        "line": 51,
+        "test": "ロール中の再操作は禁止し、破棄は待機中の結果を中止で解決する",
+        "assert": "assert.throws(() => die.prepare(), /disposed/);"
+      },
+      {
+        "line": 54,
+        "test": "6面、色、画材、特殊面、所持期間を検証する",
+        "assert": "assert.throws(() => new Die({ id: 'a', faces: [] }));"
+      },
+      {
+        "line": 55,
+        "test": "6面、色、画材、特殊面、所持期間を検証する",
+        "assert": "assert.throws(() => new Die({ id: 'a', faces, lifetime: 'invalid' }));"
+      },
+      {
+        "line": 57,
+        "test": "6面、色、画材、特殊面、所持期間を検証する",
+        "assert": "assert.throws(() => die.setFace(6, { special: 'fame1' }));"
+      },
+      {
+        "line": 58,
+        "test": "6面、色、画材、特殊面、所持期間を検証する",
+        "assert": "assert.throws(() => die.setFace(0, { special: 'unknown' }));"
+      },
+      {
+        "line": 59,
+        "test": "6面、色、画材、特殊面、所持期間を検証する",
+        "assert": "assert.throws(() => die.setFace(0, { color: 'pink', material: 'brush' }));"
+      },
+      {
+        "line": 61,
+        "test": "6面、色、画材、特殊面、所持期間を検証する",
+        "assert": "assert.throws(() => die.begin(), /consumed/);"
+      },
+      {
+        "line": 65,
+        "test": "6面、色、画材、特殊面、所持期間を検証する",
+        "assert": "assert.equal(die.result, null);"
+      },
+      {
+        "line": 66,
+        "test": "6面、色、画材、特殊面、所持期間を検証する",
+        "assert": "assert.equal(die.state, 'ready');"
+      }
+    ],
+    "controls": []
+  },
+  {
+    "file": "scripts/checkScreenLayout.cjs",
+    "sha256": "957f5d90ed2605672c6c03fd3a864b991a83cc55a8fd1004130141d6958298bd",
+    "assertions": [
+      {
+        "line": 17,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(response.status(), 200, response.url());"
+      },
+      {
+        "line": 18,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(new URL(response.url()).pathname.startsWith(new URL(base).pathname), response.url());"
+      },
+      {
+        "line": 19,
+        "test": "スクリプト内のassert",
+        "assert": "assert.match(response.headers()['content-type'], /^image\\/webp\\b/);"
+      },
+      {
+        "line": 22,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutArea:visible').count(), 7);"
+      },
+      {
+        "line": 24,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await journal.locator('.InfoRow').first().textContent(), 'Day 1');"
+      },
+      {
+        "line": 25,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await journal.getByRole('img', { name: '名声 0' }).count(), 1);"
+      },
+      {
+        "line": 26,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await journal.evaluate(node => {"
+      },
+      {
+        "line": 32,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await journal.evaluate(node => {"
+      },
+      {
+        "line": 43,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await hand.locator('.LayoutAreaName').isVisible(), false);"
+      },
+      {
+        "line": 46,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(canvasBounds.y - fixedBounds.y) < 0.05);"
+      },
+      {
+        "line": 52,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(action.x + action.width / 2 - play.x - play.width / 2) < 0.05);"
+      },
+      {
+        "line": 53,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(action.y - play.y) < 0.05);"
+      },
+      {
+        "line": 61,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(bounds.x - stock.x) < 0.05);"
+      },
+      {
+        "line": 62,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(bounds.y - stock.y) < 0.05);"
+      },
+      {
+        "line": 63,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(bounds.width - stock.width) < 0.05);"
+      },
+      {
+        "line": 64,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(bounds.y + bounds.height - deck.y - deck.height) < 0.05);"
+      },
+      {
+        "line": 65,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutPanelFixedLayer .LayoutAreaName.texture-sticky-note:visible').count(), 3);"
+      },
+      {
+        "line": 66,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.StockArea [data-stock-grade] h3.texture-sticky-note:visible').count(), 3);"
+      },
+      {
+        "line": 69,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('#app-version').count(), 0);"
+      },
+      {
+        "line": 75,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(area.bufferWidth, Math.round(area.width * 2));"
+      },
+      {
+        "line": 76,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(area.bufferHeight, Math.round(area.height * 2));"
+      },
+      {
+        "line": 83,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutArea:visible').count(), 4);"
+      },
+      {
+        "line": 84,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await board.isVisible(), false);"
+      },
+      {
+        "line": 86,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual({ width: toggle.width, height: toggle.height, x: toggle.x, y: toggle.y }, { width: 32, height: 64, x: 358, y: 105.5 });"
+      },
+      {
+        "line": 92,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(middle.x > 390 * 0.15 && middle.x < 390);"
+      },
+      {
+        "line": 94,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(main(await inspect()), before);"
+      },
+      {
+        "line": 95,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutArea:visible').count(), 7);"
+      },
+      {
+        "line": 100,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(openToggle.x + openToggle.width - stockFrame.x) < 0.1);"
+      },
+      {
+        "line": 101,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(openToggle.y, stockFrame.y);"
+      },
+      {
+        "line": 102,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(stockFrame.y, before.find(area => area.id === 'play').y);"
+      },
+      {
+        "line": 103,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(stock.y - stockFrame.y - 36 * 390 / 540) < 0.02);"
+      },
+      {
+        "line": 107,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutArea:visible').count(), 4);"
+      },
+      {
+        "line": 108,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await board.isVisible(), false);"
+      },
+      {
+        "line": 119,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.documentElement.scrollHeight <= innerHeight));"
+      },
+      {
+        "line": 130,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('#app-version').textContent(), require('../package.json').version);"
+      },
+      {
+        "line": 131,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.getByRole('button', { name: 'ゲーム開始', exact: true }).count(),0);"
+      },
+      {
+        "line": 137,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors, []);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 7,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 700 }, deviceScaleFactor: 2 });"
+      },
+      {
+        "line": 16,
+        "source": "for (const response of await Promise.all(backgrounds)) {"
+      },
+      {
+        "line": 74,
+        "source": "for (const area of await inspect()) {"
+      },
+      {
+        "line": 79,
+        "source": "await page.setViewportSize({ width: 390, height: 844 });"
+      },
+      {
+        "line": 110,
+        "source": "for (const viewport of [{ width: 900, height: 360 }, { width: 1200, height: 180 }, { width: 768, height: 1024 }, { width: 1024, height: 768 }, { width: 600, height: 600 }]) {"
+      },
+      {
+        "line": 111,
+        "source": "await page.setViewportSize(viewport);"
+      },
+      {
+        "line": 112,
+        "source": "const expectedScale = Math.min(1, viewport.height / 540);"
+      },
+      {
+        "line": 113,
+        "source": "const expectedMode = viewport.width >= viewport.height ? 'A' : 'B';"
+      },
+      {
+        "line": 120,
+        "source": "if (viewport.height === 360) {"
+      },
+      {
+        "line": 132,
+        "source": "for (const [hash, selector] of [['settings', '.Overview'], ['icons', '.IconLab']]) {"
+      },
+      {
+        "line": 138,
+        "source": "console.log(JSON.stringify({ viewports: 7, deviceScaleFactors: [2, 1], panelAnimation: 'passed', developerScreens: 2, errors }));"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkDiceSelection.cjs",
+    "sha256": "db752144167a3aefcab820001ce5eaaaf574b5b206f0a208815c3e2e45552275",
+    "assertions": [
+      {
+        "line": 43,
+        "test": "スクリプト内のassert",
+        "assert": "await achieve.waitFor();assert(await achieve.isDisabled());"
+      },
+      {
+        "line": 47,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await selected(target.id),{selected:true,outline:true,label:true});assert(await achieve.isEnabled());"
+      },
+      {
+        "line": 57,
+        "test": "スクリプト内のassert",
+        "assert": "},target.id);assert(extra);"
+      },
+      {
+        "line": 58,
+        "test": "スクリプト内のassert",
+        "assert": "await page.mouse.click(extra.x,extra.y);assert(await achieve.isDisabled());"
+      },
+      {
+        "line": 59,
+        "test": "スクリプト内のassert",
+        "assert": "await page.mouse.click(extra.x,extra.y);assert(await achieve.isEnabled());"
+      },
+      {
+        "line": 60,
+        "test": "スクリプト内のassert",
+        "assert": "await page.mouse.click(target.x,target.y);await page.waitForTimeout(30);assert.equal((await selected(target.id)).selected,false);assert(await achieve.isDisabled());"
+      },
+      {
+        "line": 62,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal((await selected(target.id)).selected,true);assert.equal(await page.locator('dialog[open]').count(),0);"
+      },
+      {
+        "line": 63,
+        "test": "スクリプト内のassert",
+        "assert": "await page.mouse.click(target.x,target.y);assert.equal((await selected(target.id)).selected,false);"
+      },
+      {
+        "line": 65,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal((await selected(target.id)).selected,false);"
+      },
+      {
+        "line": 66,
+        "test": "スクリプト内のassert",
+        "assert": "target=await icon();await page.mouse.click(target.x,target.y);await page.waitForTimeout(30);assert(await achieve.isEnabled());"
+      },
+      {
+        "line": 68,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal((await selected(target.id)).selected,true);"
+      },
+      {
+        "line": 71,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(id=>window.selectionCheck.session.game.state.dice.find(d=>d.id===id).used,target.id),true);"
+      },
+      {
+        "line": 72,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal((await selected(target.id)).selected,false);"
+      },
+      {
+        "line": 88,
+        "test": "スクリプト内のassert",
+        "assert": "});assert(body);"
+      },
+      {
+        "line": 89,
+        "test": "スクリプト内のassert",
+        "assert": "await page.mouse.click(body.x,body.y);await page.waitForTimeout(30);assert.equal((await selected(body.id)).selected,true);"
+      },
+      {
+        "line": 90,
+        "test": "スクリプト内のassert",
+        "assert": "await page.touchscreen.tap(body.x,body.y);await page.waitForTimeout(30);assert.equal((await selected(body.id)).selected,false);"
+      },
+      {
+        "line": 91,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);console.log('PASS: icon/body tap toggle, outline, achievement consumption, drag suppression and duration-independent selection, resize');"
+      }
+    ],
+    "controls": [
+      {
+        "line": 4,
+        "source": "const settings=JSON.parse(fs.readFileSync('public/data/cards.json','utf8'));"
+      },
+      {
+        "line": 5,
+        "source": "for(const card of settings.cards)for(const step of card.steps){step.playEffects=[];step.achievementEffects=[];}"
+      },
+      {
+        "line": 8,
+        "source": "const page=await browser.newPage({viewport:{width:1200,height:800},hasTouch:true,reducedMotion:'reduce'}),errors=[];"
+      },
+      {
+        "line": 10,
+        "source": "await page.route(base,route=>route.fulfill({contentType:'text/html',body:`"
+      },
+      {
+        "line": 21,
+        "source": "window.selectionCheck=mountGame(root,${JSON.stringify(settings)},createLayoutPresentation(screen));"
+      },
+      {
+        "line": 67,
+        "source": "await page.setViewportSize({width:390,height:844});await page.waitForTimeout(150);"
+      },
+      {
+        "line": 74,
+        "source": "await page.setViewportSize({width:1200,height:800});await page.waitForTimeout(150);"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkDiceDrag.cjs",
+    "sha256": "00fb3db804fad19b60af6325f8afd1bd0ff6843aa903da8bbd9d5b33ec738e60",
+    "assertions": [
+      {
+        "line": 28,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.PaletteViewport.state-dragging').count(),1);"
+      },
+      {
+        "line": 30,
+        "test": "スクリプト内のassert",
+        "assert": "const moved=await position(id);assert(Math.hypot(moved.x-start.x,moved.z-start.z)>.1);"
+      },
+      {
+        "line": 31,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(moved.y,start.y);"
+      },
+      {
+        "line": 35,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await page.evaluate(async id=>{"
+      },
+      {
+        "line": 41,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.PaletteViewport.state-dragging').count(),0);await page.mouse.up();"
+      },
+      {
+        "line": 49,
+        "test": "スクリプト内のassert",
+        "assert": "});assert(Math.abs(bottomGap-8)<.01,`palette bottom gap: ${bottomGap}`);"
+      },
+      {
+        "line": 58,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.PaletteViewport.state-dragging').count(),1);"
+      },
+      {
+        "line": 60,
+        "test": "スクリプト内のassert",
+        "assert": "const after=await position(icon.id);assert(Math.hypot(after.x-before.x,after.z-before.z)>.05);"
+      },
+      {
+        "line": 61,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(id=>window.dragScene.group.get(id).current,icon.id),face);"
+      },
+      {
+        "line": 75,
+        "test": "スクリプト内のassert",
+        "assert": "assert(touch);"
+      },
+      {
+        "line": 80,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.PaletteViewport.state-dragging').count(),1);"
+      },
+      {
+        "line": 83,
+        "test": "スクリプト内のassert",
+        "assert": "const afterTouch=await position(touch.id);assert(Math.hypot(afterTouch.x-beforeTouch.x,afterTouch.z-beforeTouch.z)>.05);"
+      },
+      {
+        "line": 84,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);console.log('PASS: ready body drag, bounds, global roll lock, floating icon drag, A/B, face preserved, touch drag');"
+      }
+    ],
+    "controls": [
+      {
+        "line": 8,
+        "source": "const page=await browser.newPage({viewport:{width:1200,height:800}});"
+      },
+      {
+        "line": 45,
+        "source": "await page.setViewportSize({width,height});await page.waitForTimeout(200);"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkDiceList.cjs",
+    "sha256": "c7cac6e4028aec6b720996abf023f2940d897a42e9530009377609567e4b5e21",
+    "assertions": [
+      {
+        "line": 18,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('#version').textContent(),`v${version}`);"
+      },
+      {
+        "line": 22,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListOpen').getAttribute('aria-expanded'),'true');"
+      },
+      {
+        "line": 23,
+        "test": "スクリプト内のassert",
+        "assert": "await open(); assert(await panel.isHidden());"
+      },
+      {
+        "line": 24,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListOpen').getAttribute('aria-expanded'),'false');"
+      },
+      {
+        "line": 26,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListRow').count(),3);"
+      },
+      {
+        "line": 27,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListFace').count(),18);"
+      },
+      {
+        "line": 28,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListFace.state-current').count(),3);"
+      },
+      {
+        "line": 30,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListDescription').count(),0);"
+      },
+      {
+        "line": 35,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(() => JSON.stringify(review.session.game.state)),before);"
+      },
+      {
+        "line": 39,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await first.evaluate(node => node.classList.contains('state-selected')));"
+      },
+      {
+        "line": 40,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await page.evaluate(id => reviewScene.selected.has(id),id));"
+      },
+      {
+        "line": 49,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await first.evaluate(node => node.classList.contains('state-selected')),false);"
+      },
+      {
+        "line": 51,
+        "test": "スクリプト内のassert",
+        "assert": "const matches = await page.locator('.DiceListFace.state-match').count(); assert(matches>0);"
+      },
+      {
+        "line": 53,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListFace.state-match').count(),0);"
+      },
+      {
+        "line": 55,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListOpen').getAttribute('aria-expanded'),'false');"
+      },
+      {
+        "line": 57,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListFace.state-match').count(),0);"
+      },
+      {
+        "line": 64,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await panel.evaluate(node => node.inert));"
+      },
+      {
+        "line": 66,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await panel.evaluate(node => node.inert),false);"
+      },
+      {
+        "line": 72,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await panel.evaluate(node => node.closest('[inert]') !== null || node.inert));"
+      },
+      {
+        "line": 75,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListRow').count(),30);"
+      },
+      {
+        "line": 79,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.IconTooltip.is-pinned').count(),0);"
+      },
+      {
+        "line": 80,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListRow').count(),30);"
+      },
+      {
+        "line": 81,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListFace').count(),180);"
+      },
+      {
+        "line": 82,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListUnresolved').count(),1);"
+      },
+      {
+        "line": 83,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListFace.state-current').count(),29);"
+      },
+      {
+        "line": 84,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await page.locator('.DiceListRow').evaluateAll(nodes=>nodes.map(node=>"
+      },
+      {
+        "line": 87,
+        "test": "スクリプト内のassert",
+        "assert": "assert((await page.locator('.DiceListFace.state-match').count())>=30);"
+      },
+      {
+        "line": 91,
+        "test": "スクリプト内のassert",
+        "assert": "assert.match(await page.locator('.EffectDetails.is-pinned').textContent(),/名声/);"
+      },
+      {
+        "line": 92,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>JSON.stringify(review.session.game.state)),beforeSpecial);"
+      },
+      {
+        "line": 94,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListFace.state-match').count(),await page.evaluate(() => review.session.game.state.dice.reduce("
+      },
+      {
+        "line": 98,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await used.evaluate(node => node.classList.contains('state-selected')),false);"
+      },
+      {
+        "line": 102,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await reusedRow.evaluate(node=>node.classList.contains('state-consumed')),false);"
+      },
+      {
+        "line": 104,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await reusedRow.evaluate(node=>node.classList.contains('state-selected')));"
+      },
+      {
+        "line": 109,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await scroll.evaluate(node => node.scrollTop>0));"
+      },
+      {
+        "line": 116,
+        "test": "スクリプト内のassert",
+        "assert": "assert(r.x>=-1 && r.y>=-1 && r.x+r.width<=size.width+1 && r.y+r.height<=size.height+1);"
+      },
+      {
+        "line": 128,
+        "test": "スクリプト内のassert",
+        "assert": "const moved = await page.locator('.DiceListHeading').boundingBox(); assert(moved.y>header.y);"
+      },
+      {
+        "line": 134,
+        "test": "スクリプト内のassert",
+        "assert": "await page.waitForTimeout(150); assert(await scroll.evaluate(node=>node.scrollTop>0));"
+      },
+      {
+        "line": 137,
+        "test": "スクリプト内のassert",
+        "assert": "await page.locator('#empty').click(); assert.equal(await page.locator('.DiceListRow').count(),0);"
+      },
+      {
+        "line": 138,
+        "test": "スクリプト内のassert",
+        "assert": "assert.match(await scroll.textContent(),/所持ダイスはありません/);"
+      },
+      {
+        "line": 139,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await panel.locator('[title],button:not([tabindex=\"-1\"])').count(),0);"
+      },
+      {
+        "line": 141,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await panel.isHidden());"
+      },
+      {
+        "line": 143,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await panel.count(),0);"
+      },
+      {
+        "line": 144,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 10,
+        "source": "for (const reducedMotion of ['reduce','no-preference']) {"
+      },
+      {
+        "line": 11,
+        "source": "const page = await browser.newPage({viewport:{width:1200,height:900},hasTouch:true,reducedMotion});"
+      },
+      {
+        "line": 13,
+        "source": "await page.route(base,route => route.fulfill({contentType:'text/html',body:diceListReviewFixture()}));"
+      },
+      {
+        "line": 111,
+        "source": "for (const size of [{width:390,height:844},{width:844,height:390}]) {"
+      },
+      {
+        "line": 112,
+        "source": "await page.setViewportSize(size);"
+      },
+      {
+        "line": 113,
+        "source": "for (const scale of [.7,1.25]) {"
+      },
+      {
+        "line": 114,
+        "source": "await page.evaluate(scale => reviewScreen.setFixedScale(scale),scale);"
+      },
+      {
+        "line": 119,
+        "source": "await page.setViewportSize({width:390,height:844});"
+      },
+      {
+        "line": 120,
+        "source": "await page.evaluate(() => reviewScreen.setFixedScale(.7));"
+      },
+      {
+        "line": 135,
+        "source": "await page.screenshot({path:`tmp_dice_list_${reducedMotion}.png`});"
+      },
+      {
+        "line": 145,
+        "source": "await page.close(); console.log('PASS: dice list '+reducedMotion);"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkCardDetail.cjs",
+    "sha256": "c17c3502aa2e0533f7f1d5a69fb9b146449f7f0dde7613d7b2ce88c9f9a8f2bf",
+    "assertions": [
+      {
+        "line": 23,
+        "test": "スクリプト内のassert",
+        "assert": "const hiddenAction={id:'hidden',label:'取得',visible:false,enabled:false,run(){throw new Error('hidden action');}};"
+      },
+      {
+        "line": 25,
+        "test": "スクリプト内のassert",
+        "assert": "const disabledAction={id:'disabled',label:'無効操作',visible:true,enabled:false,run(){throw new Error('disabled action');}};"
+      },
+      {
+        "line": 35,
+        "test": "スクリプト内のassert",
+        "assert": "if(detail.isOpen)throw new Error('action before close');executed++;}}],onClose(){detailCloseCount++;}});"
+      },
+      {
+        "line": 40,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('#hidden-action').isVisible(), false);"
+      },
+      {
+        "line": 45,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.getByRole('button', { name: '取得', exact: true }).count(), 0);"
+      },
+      {
+        "line": 47,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await detail.locator('button').filter({ hasText: '取得' }).evaluate(readState), await page.locator('#hidden-action').evaluate(readState));"
+      },
+      {
+        "line": 48,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await detail.getByRole('button', { name: '無効操作', exact: true }).evaluate(readState), await page.locator('#disabled-action').evaluate(readState));"
+      },
+      {
+        "line": 49,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.locator('.PaintingTab[aria-selected=true]').textContent(), 'Step 2');"
+      },
+      {
+        "line": 50,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.evaluate(node => node.tagName), 'DIV');"
+      },
+      {
+        "line": 51,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.evaluate(node => node.parentElement.matches('dialog')), choice);"
+      },
+      {
+        "line": 54,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(() => !document.activeElement.closest('.GameCardDetail')), true);"
+      },
+      {
+        "line": 56,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(bounds.bottom <= 360 && bounds.left >= 0 && bounds.right <= 390);"
+      },
+      {
+        "line": 58,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.count(), 0);"
+      },
+      {
+        "line": 59,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('#preserved').evaluate(node => node.inert), true);"
+      },
+      {
+        "line": 60,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('#background').evaluate(node => node.inert), false);"
+      },
+      {
+        "line": 61,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.PaintingTab[aria-selected=true]').textContent(), 'Step 1');"
+      },
+      {
+        "line": 67,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameCardDetail').count(), 1, key + ' must not close the detail');"
+      },
+      {
+        "line": 68,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await page.evaluate(() => [detailCloseCount, executed]), [2, 2]);"
+      },
+      {
+        "line": 71,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameCardDetail').count(), 0);"
+      },
+      {
+        "line": 73,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await page.evaluate(() => [detailCloseCount, executed]), [4, 2]);"
+      },
+      {
+        "line": 74,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors, []);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 3,
+        "source": "const settings = require('../public/data/cards.json');"
+      },
+      {
+        "line": 9,
+        "source": "const page = await browser.newPage({ viewport: { width: 390, height: 360 } });"
+      },
+      {
+        "line": 11,
+        "source": "await page.route(base, route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: `"
+      },
+      {
+        "line": 20,
+        "source": "const definition=${JSON.stringify(settings.cards[0])};"
+      },
+      {
+        "line": 41,
+        "source": "for (const choice of [false, true]) {"
+      },
+      {
+        "line": 65,
+        "source": "for (const key of ['Escape', 'Tab', 'Shift+Tab', 'Enter', 'Space', 'ArrowRight', 'ArrowLeft']) {"
+      },
+      {
+        "line": 75,
+        "source": "console.log('card detail: root/choice dialog, short viewport, tabs, focus, keyboard blocking including Escape, close-before-action, inert restoration, idempotent disposal passed');"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkCardInteraction.cjs",
+    "sha256": "ee3b1db5229e857e08f0baed5cd4ef2352647fe4f2ebbe80b527fcbc4dc58cc4",
+    "assertions": [
+      {
+        "line": 46,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(normalLabel, '着手');"
+      },
+      {
+        "line": 48,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await page.locator('.GameCardDetail').getByRole('button',{name:normalLabel,exact:true}).evaluate(font),"
+      },
+      {
+        "line": 52,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('#panel-toggle').getAttribute('aria-expanded'),'true');"
+      },
+      {
+        "line": 53,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameChoice[open]').count(),0);"
+      },
+      {
+        "line": 54,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-stock-acquire]').count(),3);"
+      },
+      {
+        "line": 55,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-stock-acquire].state-attention').count(),3);"
+      },
+      {
+        "line": 70,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(geometry.dx)<.1&&Math.abs(geometry.dy)<.1,'attention scales around the button center');"
+      },
+      {
+        "line": 71,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(geometry.moving,geometry.normal,'normal and moving card backs have identical dimensions');"
+      },
+      {
+        "line": 77,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.evaluate(node=>node.tagName),'DIV');"
+      },
+      {
+        "line": 78,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutContent').evaluate(node=>node.inert),true);"
+      },
+      {
+        "line": 80,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>document.activeElement===document.body),true);"
+      },
+      {
+        "line": 82,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.count(),1);"
+      },
+      {
+        "line": 84,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.count(),0);"
+      },
+      {
+        "line": 85,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutContent').evaluate(node=>node.inert),false);"
+      },
+      {
+        "line": 88,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.count(),0);"
+      },
+      {
+        "line": 93,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(id=>window.stockCheck.mounted.session.game.state.discard.some(c=>c.id===id),id),true);"
+      },
+      {
+        "line": 96,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>window.stockCheck.mounted.session.game.state.pending),null);"
+      },
+      {
+        "line": 97,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-stock-acquire]').count(),0);"
+      },
+      {
+        "line": 106,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameChoice[open]').count(),0);"
+      },
+      {
+        "line": 107,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.locator('[data-hand-return]:enabled').first().evaluate(node=>node.classList.contains('state-attention')));"
+      },
+      {
+        "line": 119,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>window.stockCheck.mounted.session.game.state.hand.length),handSize+1);"
+      },
+      {
+        "line": 120,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>window.stockCheck.mounted.session.game.state.pending),null);"
+      },
+      {
+        "line": 133,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(end.public,{A:null,B:null,C:null});"
+      },
+      {
+        "line": 134,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(end.stocks.A.at(-1).id,replacement);"
+      },
+      {
+        "line": 135,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-stock-acquire]').count(),0);"
+      },
+      {
+        "line": 136,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 6,
+        "source": "const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));"
+      },
+      {
+        "line": 11,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 700 }, reducedMotion: process.env.MYPALETTE_STOCK_MOTION ? 'no-preference' : 'reduce' });"
+      },
+      {
+        "line": 15,
+        "source": "await page.route(base, route => route.fulfill({ contentType: 'text/html', body: `"
+      },
+      {
+        "line": 30,
+        "source": "const settings=${JSON.stringify(settings)};"
+      },
+      {
+        "line": 31,
+        "source": "const mounted=mountGame(root,settings,presentation);"
+      },
+      {
+        "line": 32,
+        "source": "window.stockCheck={screen,presentation,mounted,root,settings};"
+      },
+      {
+        "line": 42,
+        "source": "await page.setViewportSize({width:390,height:844});"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkCardScene.cjs",
+    "sha256": "da42b46922391cd3d4ef79b1d12eb2ac42c7c7d23696d8066d8fbdb72a14365c",
+    "assertions": [
+      {
+        "line": 93,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(point,'対象ダイスの見えている位置を選ぶ');await page.mouse.click(point.x,point.y);"
+      },
+      {
+        "line": 94,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.PaletteViewport .DiceResult[data-die-id=\"'+id+'\"]').getAttribute('aria-label'),'選択中');"
+      },
+      {
+        "line": 97,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(async()=>{"
+      },
+      {
+        "line": 108,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>{const f=frames.find(f=>f.motion==='play'&&f.easels.length);return new DOMMatrix(f.easels[0].transform).m41>=document.querySelector('.LayoutContent').clientWidth;}),'イーゼルは右の画面外から入る');"
+      },
+      {
+        "line": 111,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>window.firstEasel===document.querySelector('.PlayPainting')),'残るイーゼルの個体を維持');"
+      },
+      {
+        "line": 112,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>{"
+      },
+      {
+        "line": 120,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(before=>frames.slice(before.start).filter(f=>f.motion==='achievement-canvas').every(f=>JSON.stringify(f.easels)===JSON.stringify(before.easels)),beforeAchievement),'達成開始・カンバス演出中に全イーゼルの配置を変えない');"
+      },
+      {
+        "line": 121,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>check.mounted.session.game.state.discard.some(c=>c.step===1)));"
+      },
+      {
+        "line": 122,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>window.frames.some(f=>f.hidden.length>0)),'カンバス演出中だけ非表示');"
+      },
+      {
+        "line": 123,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>new DOMMatrix(document.querySelector('[data-painting-id=\"'+check.mounted.session.game.state.discard.find(c=>c.step===1).id+'\"]').style.transform).m41<0),'イーゼルは左の画面外へ抜ける');"
+      },
+      {
+        "line": 126,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>check.mounted.session.game.state.hand.length),4);"
+      },
+      {
+        "line": 133,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(cleanup.some(f=>f.motion==='day-cleanup')&&cleanup.some(f=>f.motion==='stock-rotate'));"
+      },
+      {
+        "line": 134,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(cleanup.every(f=>f.day==='Day 1'));"
+      },
+      {
+        "line": 135,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.InfoDay .InfoRow').first().textContent(),'Day 1');"
+      },
+      {
+        "line": 136,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>check.mounted.session.game.state.dice.every(die=>die.current!==null)));"
+      },
+      {
+        "line": 139,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>window.frames.some(f=>f.motion==='recycle-spread')));"
+      },
+      {
+        "line": 140,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>window.frames.some(f=>f.motion==='recycle-gather')));"
+      },
+      {
+        "line": 141,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>window.frames.some(f=>f.motion==='recycle-transfer')));"
+      },
+      {
+        "line": 147,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-scene-area=\"shipped\"] [data-scene-card]').count(),1);"
+      },
+      {
+        "line": 148,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>window.frames.some(f=>f.motion==='achievement-shipment'&&Number(f.tilt)>0&&Number(f.tilt)<1)));"
+      },
+      {
+        "line": 149,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-scene-area=\"shipped\"] .SceneShippedCanvas canvas').count(),1);"
+      },
+      {
+        "line": 153,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-scene-card]').count(),45);"
+      },
+      {
+        "line": 154,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await page.evaluate(()=>window.cardSceneFailures),[]);"
+      },
+      {
+        "line": 155,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);"
+      },
+      {
+        "line": 158,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-scene-card]').count(),45);"
+      },
+      {
+        "line": 163,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-scene-card]').count(),0);"
+      },
+      {
+        "line": 166,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-scene-card]').count(),45);"
+      },
+      {
+        "line": 168,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutCorkBoard').isVisible(),false);"
+      },
+      {
+        "line": 170,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>check.mounted.session.game.state.hand.length),4);"
+      },
+      {
+        "line": 171,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 6,
+        "source": "const page=await browser.newPage({viewport:{width:1200,height:800},reducedMotion:'reduce'});"
+      },
+      {
+        "line": 9,
+        "source": "const settings=JSON.parse(fs.readFileSync('public/data/cards.json','utf8'));"
+      },
+      {
+        "line": 10,
+        "source": "for(const card of settings.cards)for(const step of card.steps){step.playEffects=[];step.achievementEffects=[];}"
+      },
+      {
+        "line": 11,
+        "source": "await page.route(base,route=>route.fulfill({contentType:'text/html',body:`"
+      },
+      {
+        "line": 20,
+        "source": "const presentation=createLayoutPresentation(screen);const mounted=mountGame(root,${JSON.stringify(settings)},presentation);window.check={screen,mounted,presentation,settings:${JSON.stringify(settings)}};"
+      },
+      {
+        "line": 106,
+        "source": "await page.emulateMedia({reducedMotion:'no-preference'});"
+      },
+      {
+        "line": 157,
+        "source": "await page.setViewportSize({width:390,height:844});await page.evaluate(()=>check.screen.openPanel());await page.waitForTimeout(300);"
+      },
+      {
+        "line": 164,
+        "source": "await page.emulateMedia({reducedMotion:'reduce'});"
+      },
+      {
+        "line": 165,
+        "source": "await page.evaluate(async()=>{const {mountGame}=await import('./src/game/view.js');check.mounted=mountGame(document.querySelector('main'),check.settings,check.presentation);});"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkCardSceneLimits.cjs",
+    "sha256": "31d58417df69c56163d7f7dd0c74943b903cec3a1ef70704d1163a334e41e620",
+    "assertions": [
+      {
+        "line": 45,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>window.frames.some(f=>f.motion==='initial-deal')));"
+      },
+      {
+        "line": 46,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>frames.filter(f=>f.motion==='initial-deal').every(f=>initialStock.slice(0,7).every(({id,pose})=>{const c=f.cards.find(c=>c.id===id);return !c.matrix.every((v,i)=>Math.abs(v-pose.matrix[i])<1e-7)||c.z===pose.z;}))),'配分開始を待つカードはストックの重なり順を保つ');"
+      },
+      {
+        "line": 47,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>frames.some(f=>f.motion==='initial-deal'&&f.cards.some(c=>c.z>1000))),'配分中のカードはストックの手前を通る');"
+      },
+      {
+        "line": 48,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>window.frames.some(f=>f.motion==='draw')));"
+      },
+      {
+        "line": 49,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await page.evaluate(()=>window.cardSceneFailures),[]);"
+      },
+      {
+        "line": 59,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>window.limitRects.length),45);"
+      },
+      {
+        "line": 60,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>window.limitRects.every(r=>r.x>=0&&r.x+r.width<=innerWidth&&r.y>=0&&r.y+r.height<=innerHeight)));"
+      },
+      {
+        "line": 66,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>frames.some(f=>f.phase==='start'&&f.motion==='recycle-spread'&&f.hand===3)),'3枚ドロー後に翌朝の再構成待ちへ入る');"
+      },
+      {
+        "line": 67,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>frames.filter(f=>f.phase==='start'&&f.motion==='recycle-spread').every(f=>f.unconfirmed&&f.achievable.length===0)),'準備中は出目そのものが未確定で、前日の出目によるマークが付かない');"
+      },
+      {
+        "line": 73,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>check.mounted.session.game.state.hand.length),Math.min(4,count));"
+      },
+      {
+        "line": 74,
+        "test": "スクリプト内のassert",
+        "assert": "if(count>0)assert.ok(await page.evaluate(()=>window.frames.some(f=>f.motion==='recycle-transfer')));"
+      },
+      {
+        "line": 75,
+        "test": "スクリプト内のassert",
+        "assert": "else assert.ok(await page.evaluate(()=>!window.frames.some(f=>f.motion==='recycle-transfer')));"
+      },
+      {
+        "line": 76,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await page.evaluate(()=>window.cardSceneFailures),[]);"
+      },
+      {
+        "line": 86,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(id=>window.frames.some(f=>f.motion==='stock-close'&&f.cards.some(c=>c.id===id&&c.flip>0&&c.flip<180)),single));"
+      },
+      {
+        "line": 87,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(id=>check.presentation.cards.model.get(id).pose.flip,single),180);"
+      },
+      {
+        "line": 88,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await page.evaluate(()=>window.cardSceneFailures),[]);"
+      },
+      {
+        "line": 98,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(id=>{const frame=frames.slice(playFrameStart).find(f=>f.motion==='play'&&f.easels.some(e=>e.id===id));return new DOMMatrix(frame.easels.find(e=>e.id===id).transform).m41>=document.querySelector('.LayoutContent').clientWidth;},cycling),'再利用するイーゼルも右の画面外から入る');"
+      },
+      {
+        "line": 100,
+        "test": "スクリプト内のassert",
+        "assert": "else assert.ok(await page.evaluate(id=>window.cycleEasel===document.querySelector('.PlayPainting[data-painting-id=\"'+id+'\"]'),cycling));"
+      },
+      {
+        "line": 104,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(id=>check.mounted.session.game.state.hand.find(c=>c.id===id).step,cycling),nextStep);"
+      },
+      {
+        "line": 105,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(id=>originalCards.get(id)===document.querySelector('[data-scene-card=\"'+id+'\"]'),cycling));"
+      },
+      {
+        "line": 107,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await page.evaluate(()=>window.cardSceneFailures),[]);"
+      },
+      {
+        "line": 110,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-scene-card]').count(),45);"
+      },
+      {
+        "line": 112,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-scene-card]').count(),45);"
+      },
+      {
+        "line": 113,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(()=>[...check.presentation.cards.model.cards.values()].every(c=>Array.from(c.pose.matrix).every(Number.isFinite))));"
+      },
+      {
+        "line": 114,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);console.log('PASS animated initial deal/draw, hand45, recycle45/1/0, empty stocks, mobile panel');"
+      }
+    ],
+    "controls": [
+      {
+        "line": 6,
+        "source": "const page=await browser.newPage({viewport:{width:1200,height:800},reducedMotion:'reduce'});"
+      },
+      {
+        "line": 9,
+        "source": "const settings=JSON.parse(fs.readFileSync('public/data/cards.json','utf8'));"
+      },
+      {
+        "line": 10,
+        "source": "for(const card of settings.cards)for(const step of card.steps){step.playEffects=[];step.achievementEffects=[];}"
+      },
+      {
+        "line": 11,
+        "source": "await page.route(base,route=>route.fulfill({contentType:'text/html',body:`"
+      },
+      {
+        "line": 19,
+        "source": "const presentation=createLayoutPresentation(screen);const mounted=mountGame(root,${JSON.stringify(settings)},presentation);window.check={screen,mounted,presentation};"
+      },
+      {
+        "line": 44,
+        "source": "await installDayStartGate(page);await page.goto(base);await page.emulateMedia({reducedMotion:'no-preference'});await begin();"
+      },
+      {
+        "line": 70,
+        "source": "await page.emulateMedia({reducedMotion:'reduce'});await page.reload();"
+      },
+      {
+        "line": 72,
+        "source": "await page.emulateMedia({reducedMotion:'no-preference'});await begin();"
+      },
+      {
+        "line": 80,
+        "source": "await page.emulateMedia({reducedMotion:'reduce'});await page.reload();"
+      },
+      {
+        "line": 82,
+        "source": "await begin();await page.emulateMedia({reducedMotion:'no-preference'});"
+      },
+      {
+        "line": 90,
+        "source": "await page.emulateMedia({reducedMotion:'reduce'});await page.reload();await begin();"
+      },
+      {
+        "line": 92,
+        "source": "await page.emulateMedia({reducedMotion:'no-preference'});"
+      },
+      {
+        "line": 109,
+        "source": "await page.setViewportSize({width:390,height:844});await page.evaluate(()=>check.screen.openPanel());await page.waitForTimeout(300);"
+      },
+      {
+        "line": 111,
+        "source": "await page.evaluate(()=>check.screen.setFixedScale(2));await page.waitForTimeout(100);"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkCardSceneReduced.cjs",
+    "sha256": "b66c27ed2d32034f9e18200de9cb79317d1a60fa5116c5bcf0a630fee85f8365",
+    "assertions": [
+      {
+        "line": 81,
+        "test": "スクリプト内のassert",
+        "assert": "});assert.deepEqual(failures,[],label);assert.deepEqual(await page.evaluate(()=>cardSceneFailures),[],label);assert.deepEqual(errors,[],label);"
+      },
+      {
+        "line": 88,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(point,'対象ダイスの見えている位置を選ぶ');await page.mouse.click(point.x,point.y);"
+      },
+      {
+        "line": 89,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.PaletteViewport .DiceResult[data-die-id=\"'+id+'\"]').getAttribute('aria-label'),'選択中');"
+      },
+      {
+        "line": 96,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await board.isVisible(),true);"
+      },
+      {
+        "line": 99,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await board.isVisible(),false);"
+      },
+      {
+        "line": 102,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.PaletteViewport .DiceResult[data-die-id=\"'+first.die+'\"]').getAttribute('aria-label'),'選択中');"
+      },
+      {
+        "line": 104,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>check.mounted.session.game.state.field.length),2);await verify('reduce achievement and reflow');"
+      },
+      {
+        "line": 106,
+        "test": "スクリプト内のassert",
+        "assert": "await end();await verify('reduce cleanup');assert.equal(await page.locator('.PlayPainting:not([data-retired])').count(),0);"
+      },
+      {
+        "line": 107,
+        "test": "スクリプト内のassert",
+        "assert": "await begin();await verify('reduce morning draw and recycle');assert.equal(await page.evaluate(()=>check.mounted.session.game.state.recycleRequest),null);"
+      },
+      {
+        "line": 111,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(id=>check.mounted.session.game.state.shipped.some(c=>c.id===id),ship.id),true);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 6,
+        "source": "const page=await browser.newPage({viewport:{width:1200,height:800},reducedMotion:'reduce'});"
+      },
+      {
+        "line": 9,
+        "source": "const settings=JSON.parse(fs.readFileSync('public/data/cards.json','utf8'));"
+      },
+      {
+        "line": 10,
+        "source": "for(const card of settings.cards)for(const step of card.steps){step.playEffects=[];step.achievementEffects=[];}"
+      },
+      {
+        "line": 11,
+        "source": "await page.route(base,route=>route.fulfill({contentType:'text/html',body:`"
+      },
+      {
+        "line": 20,
+        "source": "const presentation=createLayoutPresentation(screen);const mounted=mountGame(root,${JSON.stringify(settings)},presentation);window.check={screen,mounted,presentation,settings:${JSON.stringify(settings)}};"
+      },
+      {
+        "line": 92,
+        "source": "await page.setViewportSize({width:390,height:844});"
+      },
+      {
+        "line": 100,
+        "source": "await page.setViewportSize({width:1200,height:800});"
+      },
+      {
+        "line": 113,
+        "source": "await page.setViewportSize({width:390,height:844});await page.waitForTimeout(100);await verify('reduce mobile');"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkStockArea.cjs",
+    "sha256": "18c21b7a48b0303e8fa62eb51e45de50743da46d49860536c5ab1c3926ae6141",
+    "assertions": [],
+    "controls": []
+  },
+  {
+    "file": "scripts/checkStockAcquisition.cjs",
+    "sha256": "9ecb4d0cd235fe9b2dc490e2c777f1cf1b694d8affd4cdac6042da666fa20fd5",
+    "assertions": [
+      {
+        "line": 42,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('#panel-toggle').getAttribute('aria-expanded'),'true');"
+      },
+      {
+        "line": 43,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameChoice[open]').count(),0);"
+      },
+      {
+        "line": 44,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-stock-acquire]').count(),3);"
+      },
+      {
+        "line": 45,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-stock-acquire].state-attention').count(),3);"
+      },
+      {
+        "line": 60,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(geometry.dx)<.1&&Math.abs(geometry.dy)<.1,'attention scales around the button center');"
+      },
+      {
+        "line": 61,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(geometry.moving,geometry.normal,'normal and moving card backs have identical dimensions');"
+      },
+      {
+        "line": 65,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(id=>window.stockCheck.mounted.session.game.state.discard.some(c=>c.id===id),id),true);"
+      },
+      {
+        "line": 68,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>window.stockCheck.mounted.session.game.state.pending),null);"
+      },
+      {
+        "line": 69,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-stock-acquire]').count(),0);"
+      },
+      {
+        "line": 78,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('#panel-toggle').getAttribute('aria-expanded'),'true','exchange opens the board before choosing a return');"
+      },
+      {
+        "line": 79,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameChoice[open]').count(),0);"
+      },
+      {
+        "line": 80,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.locator('[data-hand-return]:enabled').first().evaluate(node=>node.classList.contains('state-attention')));"
+      },
+      {
+        "line": 90,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>window.stockCheck.mounted.session.game.state.hand.length),handSize+1);"
+      },
+      {
+        "line": 91,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>window.stockCheck.mounted.session.game.state.pending),null);"
+      },
+      {
+        "line": 104,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(end.public,{A:null,B:null,C:null});"
+      },
+      {
+        "line": 105,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(end.stocks.A.at(-1).id,replacement);"
+      },
+      {
+        "line": 106,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-stock-acquire]').count(),0);"
+      },
+      {
+        "line": 107,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 6,
+        "source": "const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));"
+      },
+      {
+        "line": 11,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 700 }, reducedMotion: process.env.MYPALETTE_STOCK_MOTION ? 'no-preference' : 'reduce' });"
+      },
+      {
+        "line": 15,
+        "source": "await page.route(base, route => route.fulfill({ contentType: 'text/html', body: `"
+      },
+      {
+        "line": 27,
+        "source": "const settings=${JSON.stringify(settings)};"
+      },
+      {
+        "line": 28,
+        "source": "const mounted=mountGame(root,settings,presentation);"
+      },
+      {
+        "line": 29,
+        "source": "window.stockCheck={screen,presentation,mounted,root,settings};"
+      },
+      {
+        "line": 39,
+        "source": "await page.setViewportSize({width:390,height:844});"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkEffectCommonUi.cjs",
+    "sha256": "13f5d94c5a2ca789ee28c7fc1126e10982adab47ddf4fc15da32b989875dce80",
+    "assertions": [
+      {
+        "line": 32,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await icon.getAttribute('tabindex'), '-1');"
+      },
+      {
+        "line": 35,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await icon.getAttribute('aria-expanded'), String(expanded), `${key} must not toggle an explanation`);"
+      },
+      {
+        "line": 45,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails.is-pinned').count(), 1);"
+      },
+      {
+        "line": 50,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails .EffectDetails:not(.is-pinned)').count(), 1);"
+      },
+      {
+        "line": 52,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails').count(), 1, 'leaving nested hover closes only the child');"
+      },
+      {
+        "line": 54,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails .EffectDetails').count(), 1);"
+      },
+      {
+        "line": 56,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok((await page.locator('.EffectDetails .EffectDetails').innerText()).includes('名声値を増やす。'));"
+      },
+      {
+        "line": 58,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails').count(), 2);"
+      },
+      {
+        "line": 60,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails').count(), 1, 'tapping the nested anchor again closes its own popup');"
+      },
+      {
+        "line": 63,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails').count(), 1, 'a tap in the parent outside the child closes only the child');"
+      },
+      {
+        "line": 71,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectNoticeTitle').innerText(), '獲得効果');"
+      },
+      {
+        "line": 73,
+        "test": "スクリプト内のassert",
+        "assert": "assert.notEqual(background, 'rgba(0, 0, 0, 0)');"
+      },
+      {
+        "line": 74,
+        "test": "スクリプト内のassert",
+        "assert": "assert.notEqual(background, 'transparent');"
+      },
+      {
+        "line": 80,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(size.font, '20px'); assert.equal(size.icon, '40px');"
+      },
+      {
+        "line": 81,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(size.left >= 0 && size.right <= width);"
+      },
+      {
+        "line": 84,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(overflow.every(node => node.scroll <= node.client), `horizontal overflow at ${width}px: ${JSON.stringify(overflow)}`);"
+      },
+      {
+        "line": 89,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails.is-pinned').count(), 1);"
+      },
+      {
+        "line": 91,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails .EffectDetails').count(), 1);"
+      },
+      {
+        "line": 93,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails').count(), 1);"
+      },
+      {
+        "line": 99,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectNotice.special .EffectBodyRow').count(), 1);"
+      },
+      {
+        "line": 101,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(scroll, { x: 'visible', y: 'visible' });"
+      },
+      {
+        "line": 111,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(ratio.displayed - ratio.original) < .03, `long-effect icon distorted at ${width}px: ${JSON.stringify(ratio)}`);"
+      },
+      {
+        "line": 116,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectNoticeTitle').innerText(), 'Gained effects');"
+      },
+      {
+        "line": 117,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok((await page.locator('.EffectNotice').innerText()).includes('Gain reroll tickets.'));"
+      },
+      {
+        "line": 118,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors, []);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 8,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 900 }, hasTouch: true });"
+      },
+      {
+        "line": 14,
+        "source": "await page.route(base, route => route.fulfill({ contentType: 'text/html', body: `"
+      },
+      {
+        "line": 33,
+        "source": "for (const key of ['Enter', ' ', 'Escape']) {"
+      },
+      {
+        "line": 66,
+        "source": "for (const width of [1200, 754, 720, 390, 320]) {"
+      },
+      {
+        "line": 67,
+        "source": "await page.setViewportSize({ width, height: 900 });"
+      },
+      {
+        "line": 103,
+        "source": "for (const width of [320, 390, 1200]) {"
+      },
+      {
+        "line": 104,
+        "source": "await page.setViewportSize({ width, height: 900 });"
+      },
+      {
+        "line": 119,
+        "source": "console.log('EUI-C01: hover dismissal, tap persistence, outside tap dismissal, nested icon tap, enlarged notices, narrow viewport and auto-dismiss passed');"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkEffectGameConnection.cjs",
+    "sha256": "d024001ecd2823389d7d4fa9ff1619d608a5cefcc91d6baec85ca19dc9f1b6f1",
+    "assertions": [
+      {
+        "line": 31,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await notice.count(), 0, 'ordinary daily draw and tickets are not notified');"
+      },
+      {
+        "line": 41,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await notice.locator('.EffectBodyRow').count(), 2);"
+      },
+      {
+        "line": 42,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await play().isEnabled(), false, 'active notifications lock card actions');"
+      },
+      {
+        "line": 47,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameChoice[open]').count(), 0, 'choice waits until notice ends');"
+      },
+      {
+        "line": 52,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await notice.count(), 0);"
+      },
+      {
+        "line": 62,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok((await notice.getAttribute('class')).includes('special'));"
+      },
+      {
+        "line": 66,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok((await notice.getAttribute('class')).includes('special'));"
+      },
+      {
+        "line": 70,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await notice.count(), 0);"
+      },
+      {
+        "line": 71,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(() => window.notices.length), count, 'reserved effects do not notify twice');"
+      },
+      {
+        "line": 80,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameChoice input').count(), 1);"
+      },
+      {
+        "line": 83,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(() => window.check.session.game.state.dice.length), 3);"
+      },
+      {
+        "line": 86,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameChoice[open]').count(), 0);"
+      },
+      {
+        "line": 87,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(() => !!window.check.session.game.task), false, 'no-target effects finish without choosing');"
+      },
+      {
+        "line": 93,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectNoticeLayer').count(), 0);"
+      },
+      {
+        "line": 95,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectNoticeLayer').count(), 0);"
+      },
+      {
+        "line": 96,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors, []);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 4,
+        "source": "const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));"
+      },
+      {
+        "line": 5,
+        "source": "for (const card of settings.cards) for (const step of card.steps) { step.playEffects = []; step.achievementEffects = []; }"
+      },
+      {
+        "line": 11,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });"
+      },
+      {
+        "line": 14,
+        "source": "await page.route(base, route => route.fulfill({ contentType: 'text/html', body: `"
+      },
+      {
+        "line": 19,
+        "source": "window.check=mountGame(document.querySelector('main'),${JSON.stringify(settings)});"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkIconDescriptions.cjs",
+    "sha256": "fd6ab788240580fd34b27aa3ac44618818ba45a18eb5a11b2eeca4274172c9cd",
+    "assertions": [
+      {
+        "line": 25,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await popup.innerText(), 'いずれかの色の絵筆。');"
+      },
+      {
+        "line": 36,
+        "test": "スクリプト内のassert",
+        "assert": "await anchor.tap(); assert.equal(await popup.innerText(), description);"
+      },
+      {
+        "line": 37,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await anchor.getAttribute('tabindex'), '-1');"
+      },
+      {
+        "line": 40,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await anchor.getAttribute('aria-expanded'), 'true');"
+      },
+      {
+        "line": 45,
+        "test": "スクリプト内のassert",
+        "assert": "}); assert.ok(order, 'icon must be left of the explanation');"
+      },
+      {
+        "line": 46,
+        "test": "スクリプト内のassert",
+        "assert": "await anchor.tap(); assert.equal(await popup.count(), 0);"
+      },
+      {
+        "line": 55,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(bounds.x >= 0 && bounds.y >= 0 && bounds.x + bounds.width <= width - 20 && bounds.y + bounds.height <= 580);"
+      },
+      {
+        "line": 56,
+        "test": "スクリプト内のassert",
+        "assert": "await page.touchscreen.tap(width - 25, 570); assert.equal(await popup.count(), 0);"
+      },
+      {
+        "line": 60,
+        "test": "スクリプト内のassert",
+        "assert": "await goal.tap(); await page.evaluate(() => window.redraw()); assert.equal(await popup.count(), 0);"
+      },
+      {
+        "line": 62,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails.is-pinned').count(), 1);"
+      },
+      {
+        "line": 63,
+        "test": "スクリプト内のassert",
+        "assert": "await goal.tap(); assert.equal(await page.locator('.EffectDetails').count(), 0);"
+      },
+      {
+        "line": 64,
+        "test": "スクリプト内のassert",
+        "assert": "await page.locator('.PaintingTab').nth(1).tap(); assert.equal(await popup.count(), 0);"
+      },
+      {
+        "line": 67,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await popup.innerText(), 'Brush of any color.');"
+      },
+      {
+        "line": 77,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await popup.innerText(), 'いずれかの色の絵筆。');"
+      },
+      {
+        "line": 78,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors, []);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 8,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 900 }, hasTouch: true });"
+      },
+      {
+        "line": 10,
+        "source": "await page.route(base, route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: `"
+      },
+      {
+        "line": 27,
+        "source": "for (const [selector, description] of ["
+      },
+      {
+        "line": 38,
+        "source": "for (const key of ['Enter', ' ', 'Escape']) {"
+      },
+      {
+        "line": 48,
+        "source": "for (const width of [1200, 390, 320]) {"
+      },
+      {
+        "line": 49,
+        "source": "await page.setViewportSize({ width, height: 600 });"
+      },
+      {
+        "line": 50,
+        "source": "for (const zoom of [.6, 1, 1.5]) {"
+      },
+      {
+        "line": 53,
+        "source": "await page.setViewportSize({ width: width - 20, height: 580 });"
+      },
+      {
+        "line": 57,
+        "source": "await page.setViewportSize({ width, height: 600 });"
+      },
+      {
+        "line": 70,
+        "source": "await page.setViewportSize({ width: 1200, height: 900 });"
+      },
+      {
+        "line": 79,
+        "source": "console.log('PASS: normal faces, headings, icon/text order, hover/touch, keys, outside/repeat tap, replacement, cleanup, English, viewport/zoom/resize');"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkIconSpacing.cjs",
+    "sha256": "d82639e7f36fbed7f3f0d38146d597fe491408a1ec06b3e7132205dbadd184c9",
+    "assertions": [
+      {
+        "line": 3,
+        "test": "スクリプト内のassert",
+        "assert": "(async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{const page=await browser.newPage();await page.goto('http://127.0.0.1:3000/MyPalette/dev.html#icons');await page.locator('.IconLab').waitFor();const results=await page.evaluate(async()=>{const {effectIconCanvas}=await import('/MyPalette/src/icons/render.js');return [{type:'drawCards',count:1},{type:'gainStockCards',count:1},{type:'exchangeCards',count:1},{type:'useDie',count:2},{type:'gainNormalDice',count:2,lifetime:'permanent'}].map(effect=>{const c=effectIconCanvas(effect,1120),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;const columns=Array(c.width).fill(false);for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++)if(d[(y*c.width+x)*4+3])columns[x]=true;const gaps=[];let run=0,seen=false;for(const occupied of columns){if(occupied){if(seen&&run>=60)gaps.push(run/10);run=0;seen=true;}else if(seen)run++;}return {type:effect.type,gaps};});});for(const result of results){assert.equal(result.gaps.length,['exchangeCards','useDie'].includes(result.type)?2:1);for(const gap of result.gaps)assert(Math.abs(gap-8)<.5,JSON.stringify(result));}console.log(JSON.stringify(results));}finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});"
+      }
+    ],
+    "controls": []
+  },
+  {
+    "file": "scripts/checkRerollDisplay.cjs",
+    "sha256": "e45dbbdd75eddcee10452d9fc64ae5580c4366d0547503331699a62f215a348d",
+    "assertions": [
+      {
+        "line": 51,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await snapshot(),singleBefore); await die.click();"
+      },
+      {
+        "line": 54,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.RerollOverlay').count(),1);"
+      },
+      {
+        "line": 55,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('dialog[open]').count(),0);"
+      },
+      {
+        "line": 56,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await snapshot(),before);"
+      },
+      {
+        "line": 57,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await page.locator('.LayoutContent').evaluate(n=>n.inert));"
+      },
+      {
+        "line": 59,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await snapshot(),before);"
+      },
+      {
+        "line": 60,
+        "test": "スクリプト内のassert",
+        "assert": "await all.click();await page.keyboard.press('Escape');assert.equal(await page.locator('.RerollOverlay').count(),0);"
+      },
+      {
+        "line": 68,
+        "test": "スクリプト内のassert",
+        "assert": "assert(bounds.every(b=>b.left>=-1&&b.right<=1&&!b.clipped),JSON.stringify({width,height,scale,bounds}));"
+      },
+      {
+        "line": 76,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.PaletteRerolls').innerText(),'×0');"
+      },
+      {
+        "line": 77,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.RerollOverlay').count(),0);"
+      },
+      {
+        "line": 80,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>window.rerollCheck.session.game.state.hand.length),1);"
+      },
+      {
+        "line": 81,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await page.locator('[data-scene-area=hand] .state-achievable').count()>0);"
+      },
+      {
+        "line": 83,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.RerollOverlay').count(),0);"
+      },
+      {
+        "line": 84,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>window.rerollCheck.session.game.state.rerolls),0);"
+      },
+      {
+        "line": 85,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);console.log('reroll display / confirmation / resize checks passed');"
+      }
+    ],
+    "controls": [
+      {
+        "line": 5,
+        "source": "const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));"
+      },
+      {
+        "line": 6,
+        "source": "for (const card of settings.cards) for (const step of card.steps) {"
+      },
+      {
+        "line": 15,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 700 }, reducedMotion: 'reduce' });"
+      },
+      {
+        "line": 20,
+        "source": "await page.route(base, route => route.fulfill({ contentType: 'text/html', body: `"
+      },
+      {
+        "line": 32,
+        "source": "const settings=${JSON.stringify(settings)};"
+      },
+      {
+        "line": 33,
+        "source": "window.rerollCheck={screen,...mountGame(root,settings,presentation)};"
+      },
+      {
+        "line": 62,
+        "source": "await page.setViewportSize({width,height});"
+      },
+      {
+        "line": 63,
+        "source": "await page.evaluate(scale=>window.rerollCheck.screen.setFixedScale(scale),scale);"
+      },
+      {
+        "line": 70,
+        "source": "await page.setViewportSize({width:390,height:844});"
+      },
+      {
+        "line": 71,
+        "source": "await page.evaluate(()=>window.rerollCheck.screen.setFixedScale(.72));"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkDayStart.cjs",
+    "sha256": "a062592cc79861aefeb9265045d962debe7bb4a632fdc5d000a7bcac23db8a3b",
+    "assertions": [
+      {
+        "line": 28,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(growth[0].width<maximum*.4,'first displayed frame must use the small journal');"
+      },
+      {
+        "line": 29,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(intermediate.length>=5,'real startup must display intermediate growth frames');"
+      },
+      {
+        "line": 30,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);"
+      },
+      {
+        "line": 62,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.getByRole('button',{name:'今日の仕事を始める',exact:true}).count(),0);"
+      },
+      {
+        "line": 63,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(() => samples.filter(s=>s.motion).every(s=>s.hand===0&&s.rerolls===0&&s.count===1)));"
+      },
+      {
+        "line": 64,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>check.mounted.session.game.state.hand.length),4);"
+      },
+      {
+        "line": 73,
+        "test": "スクリプト内のassert",
+        "assert": "if (reducedMotion==='no-preference') assert.ok(samples.some(s=>s.motion==='next'&&s.day===1));"
+      },
+      {
+        "line": 74,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(samples.some(s=>s.motion==='next'&&s.day===2));"
+      },
+      {
+        "line": 75,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(samples.filter(s=>s.motion).every(s=>s.hand===0&&s.count===1));"
+      },
+      {
+        "line": 76,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>dayNode===document.querySelector('.InfoDay')),true);"
+      },
+      {
+        "line": 77,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.InfoDay [aria-label=\"名声 17\"]').count(),1);"
+      },
+      {
+        "line": 82,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-day-start]').count(),0);"
+      },
+      {
+        "line": 83,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>check.mounted.session.game.state.day),2);"
+      },
+      {
+        "line": 89,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>check.mounted.session.game.state.day),1);"
+      },
+      {
+        "line": 90,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 9,
+        "source": "for (const viewport of [{width:1200,height:800}, {width:390,height:844}]) {"
+      },
+      {
+        "line": 10,
+        "source": "const page = await browser.newPage({ viewport });"
+      },
+      {
+        "line": 31,
+        "source": "console.log(`PASS real startup journal growth ${viewport.width}: ${intermediate.length} intermediate frames`);"
+      },
+      {
+        "line": 35,
+        "source": "for (const reducedMotion of ['no-preference', 'reduce']) {"
+      },
+      {
+        "line": 36,
+        "source": "for (const viewport of [{width:1200,height:800}, {width:390,height:844}]) {"
+      },
+      {
+        "line": 37,
+        "source": "const page = await browser.newPage({ viewport, reducedMotion });"
+      },
+      {
+        "line": 39,
+        "source": "const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));"
+      },
+      {
+        "line": 40,
+        "source": "for (const card of settings.cards) for (const step of card.steps) { step.playEffects=[]; step.achievementEffects=[]; }"
+      },
+      {
+        "line": 41,
+        "source": "await page.route(base, route => route.fulfill({ contentType: 'text/html', body: `"
+      },
+      {
+        "line": 51,
+        "source": "const mount=()=>mountGame(root,${JSON.stringify(settings)},presentation);"
+      },
+      {
+        "line": 69,
+        "source": "await page.setViewportSize({width:viewport.width+40,height:viewport.height+30});"
+      },
+      {
+        "line": 70,
+        "source": "await page.evaluate(()=>{check.screen.setFixedScale(.8);check.screen.openPanel();});"
+      },
+      {
+        "line": 73,
+        "source": "if (reducedMotion==='no-preference') assert.ok(samples.some(s=>s.motion==='next'&&s.day===1));"
+      },
+      {
+        "line": 91,
+        "source": "console.log(`PASS day start ${viewport.width} ${reducedMotion}`);"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkBrowserInteraction.cjs",
+    "sha256": "956fcb6a05874fd258b0080a4c58c08509a14d47f7039a6a670fc3ec43f8b125",
+    "assertions": [
+      {
+        "line": 16,
+        "test": "スクリプト内のassert",
+        "assert": "assert.match(await page.locator('.TitleMetadata').textContent(), new RegExp(`v${version.replaceAll('.', '\\\\.')}$`));"
+      },
+      {
+        "line": 33,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(state.gestures, [true, true, true]);"
+      },
+      {
+        "line": 34,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(state.pinch, [true, true]);"
+      },
+      {
+        "line": 35,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(state.normal, [false, false, false, false]);"
+      },
+      {
+        "line": 36,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(state.scrollPolicy, 'manipulation');"
+      },
+      {
+        "line": 37,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(state.dicePolicy.every(value => value === 'none'));"
+      },
+      {
+        "line": 46,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(point.policy, 'manipulation');"
+      },
+      {
+        "line": 49,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(() => visualViewport.scale), 1);"
+      },
+      {
+        "line": 63,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(() => window.tapCount), 2);"
+      },
+      {
+        "line": 64,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(() => visualViewport.scale), 1);"
+      },
+      {
+        "line": 87,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(popup.url(), portalUrl);"
+      },
+      {
+        "line": 98,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('#app-version').textContent(), version);"
+      },
+      {
+        "line": 99,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameBrowserSurface').count(), 0);"
+      },
+      {
+        "line": 100,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors, []);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 10,
+        "source": "const page = await browser.newPage({ hasTouch: true, viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });"
+      },
+      {
+        "line": 40,
+        "source": "for (const selector of ['.TitleSign img']) {"
+      },
+      {
+        "line": 75,
+        "source": "for (const y of [200, 170, 140, 110, 80]) {"
+      },
+      {
+        "line": 93,
+        "source": "await page.setViewportSize({ width: 1000, height: 600 });"
+      },
+      {
+        "line": 95,
+        "source": "await page.setViewportSize({ width: 568, height: 320 });"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkDicePresentation.cjs",
+    "sha256": "344680357de6c34f38d081f66a14d3e7adf4ca4ee224452fcdbe90cfc0c14431",
+    "assertions": [
+      {
+        "line": 20,
+        "test": "スクリプト内のassert",
+        "assert": "});for(const value of Object.values(result))assert.equal(value,true);assert.deepEqual(errors,[]);console.log(JSON.stringify({result,errors}));"
+      }
+    ],
+    "controls": [
+      {
+        "line": 4,
+        "source": "const page=await browser.newPage({viewport:{width:1280,height:900}});const errors=[];page.on('pageerror',e=>errors.push(e.message));"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkDiceGraphics.cjs",
+    "sha256": "b38ea72c8df1e82293146efdc5f95c4eddc5c6bf53121bd4f50d23a946d4108f",
+    "assertions": [
+      {
+        "line": 38,
+        "test": "スクリプト内のassert",
+        "assert": "if (gray[i + 3] === 0 && fixed[i + 3] === 0) { if (merged[i + 3] !== 0) throw Error('Transparency lost'); transparent++; }"
+      },
+      {
+        "line": 43,
+        "test": "スクリプト内のassert",
+        "assert": "if (fixed[i+3]===0 && merged[i+3]!==gray[i+3]) throw Error('Original alpha changed');"
+      },
+      {
+        "line": 52,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(result.opaqueFixed > 0 && result.transparent > 0 && result.tinted > 0, JSON.stringify(result));"
+      },
+      {
+        "line": 53,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(result.maxFixedError <= 2, JSON.stringify(result));"
+      },
+      {
+        "line": 54,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(result.maxTintError <= 2, JSON.stringify(result));"
+      },
+      {
+        "line": 56,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(checks.special.every(Boolean));"
+      }
+    ],
+    "controls": [
+      {
+        "line": 19,
+        "source": "for (const material of MATERIALS) {"
+      },
+      {
+        "line": 22,
+        "source": "for (const [color, hex] of Object.entries(INKS)) {"
+      },
+      {
+        "line": 51,
+        "source": "for (const result of checks.results) {"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkCommonIcons.cjs",
+    "sha256": "1cc4c441b61d76f9637c4ed86b84e902c5c7fb43207c78ccf8164123e0040c3c",
+    "assertions": [
+      {
+        "line": 16,
+        "test": "スクリプト内のassert",
+        "assert": "CanvasRenderingContext2D.prototype.fillText=CanvasRenderingContext2D.prototype.strokeText=()=>{throw new Error('Font dependency');};"
+      },
+      {
+        "line": 35,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(results.empty,[]);assert.deepEqual(results.clipped,[]);assert.deepEqual(errors,[]);"
+      },
+      {
+        "line": 42,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.IconComparisons canvas').count(),6);"
+      },
+      {
+        "line": 43,
+        "test": "スクリプト内のassert",
+        "assert": "await quantity.fill('0');assert.equal(await page.locator('.IconComparisons canvas').count(),0);"
+      },
+      {
+        "line": 44,
+        "test": "スクリプト内のassert",
+        "assert": "await quantity.fill('10');assert.equal(await page.locator('.IconComparisons canvas').count(),6);"
+      },
+      {
+        "line": 46,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.IconComparisons canvas').count(),6);"
+      },
+      {
+        "line": 47,
+        "test": "スクリプト内のassert",
+        "assert": "await kind.selectOption('reroll');assert.equal(await page.locator('.IconLab input[type=number]').isVisible(),false);"
+      },
+      {
+        "line": 48,
+        "test": "スクリプト内のassert",
+        "assert": "await page.setViewportSize({width:390,height:844});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));"
+      }
+    ],
+    "controls": [
+      {
+        "line": 6,
+        "source": "const page=await browser.newPage({viewport:{width:1150,height:850}});const errors=[];page.on('pageerror',e=>errors.push(e.message));"
+      },
+      {
+        "line": 48,
+        "source": "await page.setViewportSize({width:390,height:844});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkDiscardArea.cjs",
+    "sha256": "285c104bca857352cfaa94a4e555b5a56c161089a33e596991fea9112df75e5a",
+    "assertions": [
+      {
+        "line": 25,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutAreaFixed[data-area=\"discard\"] .LayoutAreaName').textContent(),'捨て札 0枚');"
+      },
+      {
+        "line": 30,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutAreaFixed[data-area=\"discard\"] .LayoutAreaName').textContent(),'捨て札 12枚');"
+      },
+      {
+        "line": 36,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await tab.evaluate(n=>!!n.closest('[inert]')),false,'discard tabs use the common interactive face');"
+      },
+      {
+        "line": 38,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await top.locator('[aria-selected=\"true\"]').textContent(),'Step 1');"
+      },
+      {
+        "line": 39,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameCardDetail').count(),0,'tab does not open detail');"
+      },
+      {
+        "line": 43,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameCardDetail').count(),0,'closing a changed discard tab must not reopen detail');"
+      },
+      {
+        "line": 44,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutContent').evaluate(n=>n.inert),false,'detail releases board input');"
+      },
+      {
+        "line": 45,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>JSON.stringify(check.mounted.session.game.state)),state);"
+      },
+      {
+        "line": 51,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await top.locator('[aria-selected=\"true\"]').textContent(),'Step 1');"
+      },
+      {
+        "line": 52,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameCardDetail').count(),0,'discard tab changes only the step');"
+      },
+      {
+        "line": 55,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails.is-pinned').count(),1,'discard effect opens its explanation');"
+      },
+      {
+        "line": 56,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameCardDetail').count(),0,'effect does not open detail');"
+      },
+      {
+        "line": 59,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EffectDetails').count(),0,'effect explanation closes');"
+      },
+      {
+        "line": 62,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.locator('[aria-selected=\"true\"]').textContent(),'Step 1');"
+      },
+      {
+        "line": 65,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.count(),0,'detail does not reenter after restoring step');"
+      },
+      {
+        "line": 66,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutContent').evaluate(n=>n.inert),false);"
+      },
+      {
+        "line": 67,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>JSON.stringify(check.mounted.session.game.state)),state);"
+      },
+      {
+        "line": 73,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(occluded,topId,'a pointer over the stack reaches the visible top card');"
+      },
+      {
+        "line": 74,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-scene-area=deck]').first().evaluate(n=>n.inert),true,'back-facing deck stays inert');"
+      },
+      {
+        "line": 75,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await page.locator('[data-scene-area=discard] .PaintingCard').evaluateAll(ns=>ns.map(n=>n.getAttribute('style'))),placements);"
+      },
+      {
+        "line": 77,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(inside);"
+      },
+      {
+        "line": 80,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);console.log('PASS: empty/count, detail/steps without mutation, A/B bounds, stable scatter');"
+      }
+    ],
+    "controls": [
+      {
+        "line": 9,
+        "source": "const page=await browser.newPage({viewport:{width:1200,height:800},reducedMotion:process.env.MYPALETTE_STOCK_MOTION?'no-preference':'reduce'});"
+      },
+      {
+        "line": 11,
+        "source": "const settings=JSON.parse(fs.readFileSync('public/data/cards.json','utf8'));"
+      },
+      {
+        "line": 12,
+        "source": "for(const card of settings.cards)for(const step of card.steps)step.achievementEffects=[{type:'gainRerolls',count:1}];"
+      },
+      {
+        "line": 13,
+        "source": "await page.route(base,route=>route.fulfill({contentType:'text/html',body:`"
+      },
+      {
+        "line": 21,
+        "source": "const mounted=mountGame(root,${JSON.stringify(settings)},createLayoutPresentation(screen));"
+      },
+      {
+        "line": 46,
+        "source": "for(const viewport of [{width:390,height:844},{width:1200,height:800}]){"
+      },
+      {
+        "line": 47,
+        "source": "await page.setViewportSize(viewport);"
+      },
+      {
+        "line": 48,
+        "source": "if(viewport.width===390) await page.evaluate(()=>check.screen.openPanel());"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkSpecialFrames.cjs",
+    "sha256": "956cf27d05d2185ad4a60e00ad5e7e6ecb7fad44a769346f956b70b38c382d9d",
+    "assertions": [
+      {
+        "line": 11,
+        "test": "スクリプト内のassert",
+        "assert": "return {valid,clip:{x:Math.max(0,left),y:Math.max(0,top),width:Math.min(innerWidth,right)-Math.max(0,left),height:Math.min(innerHeight,bottom)-Math.max(0,top)}};});if(!result.valid)throw new Error('Frame shape mismatch');await page.screenshot({path:'tmp_review_special_star_frame.png',clip:result.clip});console.log(JSON.stringify(result));}finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});"
+      }
+    ],
+    "controls": [
+      {
+        "line": 2,
+        "source": "(async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{const page=await browser.newPage({viewport:{width:1280,height:700}});await page.goto((process.argv[2]||'http://127.0.0.1:3000/MyPalette/dev.html'));await page.getByRole('button',{name:'カード設定を開く',exact:true}).waitFor();const result=await page.evaluate(async()=>{"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkUseDice.cjs",
+    "sha256": "33133d47b7140344f6c484919b2155b5a5344330a7f61966689b2596e8a3afea",
+    "assertions": [
+      {
+        "line": 38,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await choice.locator('input').count(), 3);"
+      },
+      {
+        "line": 53,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(result.dice, result.before.map((d, i) => ({ ...d, used: i < 2 })));"
+      },
+      {
+        "line": 54,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(result.fame, 0); assert.deepEqual(result.consumed, [true, true, false]);"
+      },
+      {
+        "line": 55,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(result.hidden, [true, true, false]); assert.deepEqual(result.errors, []);"
+      },
+      {
+        "line": 57,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(glow.length); assert.ok(glow.every(value => !value));"
+      },
+      {
+        "line": 65,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.evaluate(() => [...document.querySelectorAll('[data-scene-area=hand] .PaintingCard')].every(n => n.classList.contains('state-achievable'))));"
+      },
+      {
+        "line": 81,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await choice.locator('input').count(), mode === 'reward' ? 2 : 3);"
+      },
+      {
+        "line": 85,
+        "test": "スクリプト内のassert",
+        "assert": "await choice.waitFor(); assert.equal(await choice.locator('input').count(), 1);"
+      },
+      {
+        "line": 95,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(result.used, [true, true, true]); assert.equal(result.count, 3);"
+      },
+      {
+        "line": 96,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(result.pending, null); assert.deepEqual(result.errors, []);"
+      },
+      {
+        "line": 97,
+        "test": "スクリプト内のassert",
+        "assert": "if (mode === 'chain') assert.equal(result.rerolls, 3);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 8,
+        "source": "const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });"
+      },
+      {
+        "line": 15,
+        "source": "for (const count of [1, 2, 10]) {"
+      },
+      {
+        "line": 18,
+        "source": "for (const color of ['#f4e9d2', '#d8e5ea']) {"
+      },
+      {
+        "line": 20,
+        "source": "for (const height of [128, 48, 32]) sample.append(effectIconCanvas({ type: 'useDie', count }, height));"
+      },
+      {
+        "line": 28,
+        "source": "for (const reducedMotion of process.env.MYPALETTE_ICONS_ONLY ? [] : ['reduce', 'no-preference']) {"
+      },
+      {
+        "line": 29,
+        "source": "await page.emulateMedia({ reducedMotion });"
+      },
+      {
+        "line": 30,
+        "source": "await page.setViewportSize({ width: 1200, height: 800 });"
+      },
+      {
+        "line": 39,
+        "source": "for (const size of [{ width: 390, height: 844 }, { width: 1200, height: 800 }]) {"
+      },
+      {
+        "line": 40,
+        "source": "await page.setViewportSize(size);"
+      },
+      {
+        "line": 41,
+        "source": "await page.evaluate(() => window.useDiceReview.screen.setFixedScale(.75));"
+      },
+      {
+        "line": 58,
+        "source": "await page.screenshot({ path: `tmp_use_dice_${reducedMotion}.png` });"
+      },
+      {
+        "line": 66,
+        "source": "console.log(`PASS: ${reducedMotion}, normal/special, permanent/temporary, retained faces, A/B resize, fixed scale, palette, hand glow, reuse`);"
+      },
+      {
+        "line": 68,
+        "source": "for (const mode of process.env.MYPALETTE_ICONS_ONLY ? [] : ['reward', 'chain', 'empty']) {"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkPaletteArea.cjs",
+    "sha256": "a37154095c31f0dce0262bc7b706822f184f654b82ba1bbf30a3473a847415ce",
+    "assertions": [
+      {
+        "line": 22,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await rerolls.isHidden());"
+      },
+      {
+        "line": 27,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(initialTabStops, [], '初日の開始前は裏向きカードで説明アイコンもない');"
+      },
+      {
+        "line": 29,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(() => document.activeElement.matches('button,[role=\"button\"],[role=\"tab\"]')), false);"
+      },
+      {
+        "line": 30,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.getByRole('button', {name:'今日の仕事を始める',exact:true}).count(), 0);"
+      },
+      {
+        "line": 31,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await palette.locator('.DiceResult:not([hidden])').count(), 0);"
+      },
+      {
+        "line": 55,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await endDay.isEnabled());assert(await rerolls.isVisible());assert.equal(await rerolls.innerText(),'×1');"
+      },
+      {
+        "line": 57,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await effectIcons.count() > 0, 'ドロー後のカードに説明アイコンがある');"
+      },
+      {
+        "line": 58,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await effectIcons.evaluateAll(nodes => nodes.every(node => node.tabIndex === -1 && node.getAttribute('role') === 'button')));"
+      },
+      {
+        "line": 61,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(tabStops, [], '効果説明を含む操作ボタン・タブはTab順次フォーカス対象外');"
+      },
+      {
+        "line": 64,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(() => document.activeElement.matches('button,[role=\"button\"],[role=\"tab\"]')), false);"
+      },
+      {
+        "line": 67,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await firstTab.getAttribute('aria-selected'), 'true');"
+      },
+      {
+        "line": 68,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.HandFixedActions .Button').first().evaluate(node => getComputedStyle(node).fontSize), '24px');"
+      },
+      {
+        "line": 73,
+        "test": "スクリプト内のassert",
+        "assert": "assert(ticketPosition.x >= 0 && ticketPosition.y >= 0);"
+      },
+      {
+        "line": 74,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await rerolls.evaluate(node => node.parentElement.classList.contains('PaletteFixedActions')));"
+      },
+      {
+        "line": 81,
+        "test": "スクリプト内のassert",
+        "assert": "assert(endDayPlacement.fixed && Math.abs(endDayPlacement.top)<1 && Math.abs(endDayPlacement.center)<1,JSON.stringify(endDayPlacement));"
+      },
+      {
+        "line": 82,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-game-area=\"info\"] [data-game-end-day]').count(),0);"
+      },
+      {
+        "line": 86,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(emerges.length, 3);"
+      },
+      {
+        "line": 87,
+        "test": "スクリプト内のassert",
+        "assert": "assert(emerges.every(count => count === 1), `出現アニメーションの再開: ${JSON.stringify(emerges)}`);"
+      },
+      {
+        "line": 97,
+        "test": "スクリプト内のassert",
+        "assert": "assert(physical.preserved); assert.deepEqual(physical.actual, physical.expected);"
+      },
+      {
+        "line": 98,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await palette.locator('canvas').count(), 1);"
+      },
+      {
+        "line": 99,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await palette.locator('.DiceResult').count(), 3);"
+      },
+      {
+        "line": 100,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await palette.locator('.DiceLabId,.GameDicePane').count(), 0);"
+      },
+      {
+        "line": 110,
+        "test": "スクリプト内のassert",
+        "assert": "assert(bounds.width > 0 && bounds.height > 0);"
+      },
+      {
+        "line": 111,
+        "test": "スクリプト内のassert",
+        "assert": "assert(bounds.dx < 1 && bounds.dy < 1 && bounds.same, JSON.stringify(bounds));"
+      },
+      {
+        "line": 118,
+        "test": "スクリプト内のassert",
+        "assert": "assert(Math.abs(actionSpace.height - 36) < 1, JSON.stringify(actionSpace));"
+      },
+      {
+        "line": 119,
+        "test": "スクリプト内のassert",
+        "assert": "assert(Math.abs(actionSpace.gap) < 1, JSON.stringify(actionSpace));"
+      },
+      {
+        "line": 126,
+        "test": "スクリプト内のassert",
+        "assert": "assert(Math.abs(bottomMargin - 4) < 1, JSON.stringify({bottomMargin}));"
+      },
+      {
+        "line": 132,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await palette.getAttribute('class'), before);"
+      },
+      {
+        "line": 133,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await firstTab.getAttribute('aria-selected'), 'true');"
+      },
+      {
+        "line": 137,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await rerolls.innerText(),'×0');"
+      },
+      {
+        "line": 138,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await palette.locator('canvas').evaluate(node => node === window.paletteCanvas));"
+      },
+      {
+        "line": 139,
+        "test": "スクリプト内のassert",
+        "assert": "await waitDayStart(page);assert.equal(await page.locator('.HandFixedActions .Button').count(),0);"
+      },
+      {
+        "line": 150,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await rerolls.isVisible());assert.equal(await rerolls.innerText(),'×1');"
+      },
+      {
+        "line": 151,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors, []);"
+      },
+      {
+        "line": 152,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(shadowWarnings, []);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 8,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });"
+      },
+      {
+        "line": 102,
+        "source": "for (const [width, height] of [[1200,800], [390,844], [844,390]]) {"
+      },
+      {
+        "line": 103,
+        "source": "await page.setViewportSize({ width, height });"
+      },
+      {
+        "line": 114,
+        "source": "const viewport = document.querySelector('.PaletteViewport').getBoundingClientRect();"
+      },
+      {
+        "line": 116,
+        "source": "return { height: actions.height / scale, gap: actions.top - viewport.bottom };"
+      },
+      {
+        "line": 129,
+        "source": "await page.setViewportSize({ width:390,height:844 });"
+      },
+      {
+        "line": 134,
+        "source": "await page.setViewportSize({ width:1200,height:800 });"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkProductionStartup.cjs",
+    "sha256": "f16360cc79029a03650cb264e5f702fc549d68cf11ece08981ae5b5783772348",
+    "assertions": [
+      {
+        "line": 39,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.TitleMetadata').textContent(),`© T.I.OAK 2026 | GameWorks OAKv${version}`);"
+      },
+      {
+        "line": 40,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.getByRole('link',{name:'GameWorks OAK',exact:true}).getAttribute('href'),'https://t-i-oak.github.io/GameWorksOAK/');"
+      },
+      {
+        "line": 41,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await startDay(page).count(),0);"
+      },
+      {
+        "line": 55,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await startTitle(page).isDisabled());"
+      },
+      {
+        "line": 56,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await titleGeometry(page),before);"
+      },
+      {
+        "line": 65,
+        "test": "スクリプト内のassert",
+        "assert": "assert.match(await page.getByRole('status').textContent(),/ゲームを開始できませんでした。/);"
+      },
+      {
+        "line": 66,
+        "test": "スクリプト内のassert",
+        "assert": "assert.match(await page.getByRole('status').textContent(),/「ゲーム開始」を押して、もう一度お試しください。/);"
+      },
+      {
+        "line": 67,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.getByRole('heading',{name:'My Palette',exact:true}).isVisible());"
+      },
+      {
+        "line": 68,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await startDay(page).count(),0);"
+      },
+      {
+        "line": 69,
+        "test": "スクリプト内のassert",
+        "assert": "assert.doesNotMatch(await page.getByRole('status').textContent(),/提供元|お知らせください/);"
+      },
+      {
+        "line": 70,
+        "test": "スクリプト内のassert",
+        "assert": "assert.doesNotMatch(await page.getByRole('status').textContent(),/cards|配列|ステップ|制作途中/);"
+      },
+      {
+        "line": 71,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.getByRole('button',{name:'再読み込み',exact:true}).count(),0);"
+      },
+      {
+        "line": 73,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(retryGeometry,before);"
+      },
+      {
+        "line": 74,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(retryGeometry[1].width / retryGeometry[1].height > 1, true);"
+      },
+      {
+        "line": 75,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await page.locator('.TitlePlaque').evaluate(node=>node.scrollWidth<=node.clientWidth), 'retry label must fit its plaque');"
+      },
+      {
+        "line": 76,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(retryGeometry.every(rect=>rect.left>=0&&rect.top>=0&&rect.right<=viewport.width&&rect.bottom<=viewport.height), 'retry button must remain within viewport');"
+      },
+      {
+        "line": 80,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await startDay(page).count(),0);"
+      },
+      {
+        "line": 81,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.StartIssues').count(),0);"
+      },
+      {
+        "line": 82,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.getByRole('button',{name:'入口へ戻る',exact:true}).count(),0);"
+      },
+      {
+        "line": 83,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.LayoutScreen').getAttribute('data-layout'),i===1?'B':'A');"
+      },
+      {
+        "line": 86,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.PaletteViewport .DiceResult:not([hidden])').count(),3);"
+      },
+      {
+        "line": 93,
+        "test": "スクリプト内のassert",
+        "assert": "assert.match(await page.locator('.InfoDay').textContent(),new RegExp('Day '+day));"
+      },
+      {
+        "line": 98,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(await result.isVisible());"
+      },
+      {
+        "line": 104,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.getByRole('button',{name:'タイトルへ戻る',exact:true}).getAttribute('tabindex'),'-1');"
+      },
+      {
+        "line": 105,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>document.activeElement.textContent==='タイトルへ戻る'),false);"
+      },
+      {
+        "line": 108,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>document.activeElement.closest('.GameStartup')!==null),false);"
+      },
+      {
+        "line": 111,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(()=>document.activeElement.classList.contains('TitleMenuButton')),false);"
+      },
+      {
+        "line": 113,
+        "test": "スクリプト内のassert",
+        "assert": "assert.match(await page.locator('.InfoDay').textContent(),/Day 1/);"
+      },
+      {
+        "line": 114,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await startDay(page).count(),0);"
+      },
+      {
+        "line": 116,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);await context.close();"
+      },
+      {
+        "line": 123,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('#app-version').textContent(),version);"
+      },
+      {
+        "line": 124,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceLab').count(),0);assert.equal(await page.getByRole('button',{name:'ダイス動作確認を開く',exact:true}).count(),0);"
+      },
+      {
+        "line": 125,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.getByRole('button',{name:'ゲーム開始',exact:true}).count(),0);"
+      },
+      {
+        "line": 126,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameMenu button').count(),2);"
+      },
+      {
+        "line": 128,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.EaselLab').count(),0);assert.equal(await page.getByRole('button',{name:'イーゼル確認を開く',exact:true}).count(),0);"
+      },
+      {
+        "line": 130,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 32,
+        "source": "const viewport=i===1?{width:390,height:844}:{width:1200,height:900};"
+      },
+      {
+        "line": 33,
+        "source": "const context=await browser.newContext({viewport,deviceScaleFactor:1,reducedMotion:'reduce'});"
+      },
+      {
+        "line": 46,
+        "source": "await page.route('**/data/cards.json',async route=>{"
+      },
+      {
+        "line": 49,
+        "source": "else if(i===3){const settings=JSON.parse(fs.readFileSync('public/data/cards.json','utf8'));settings.cards[0].steps[0].goals=[];await route.fulfill({body:JSON.stringify(settings)});}"
+      },
+      {
+        "line": 76,
+        "source": "assert.ok(retryGeometry.every(rect=>rect.left>=0&&rect.top>=0&&rect.right<=viewport.width&&rect.bottom<=viewport.height), 'retry button must remain within viewport');"
+      },
+      {
+        "line": 88,
+        "source": "runs.push({viewport,readyMs:Math.round(readyMs),...metrics});"
+      },
+      {
+        "line": 99,
+        "source": "finalScreens.push({viewport,text:await page.locator('.GameStartup:not([hidden])').innerText()});"
+      },
+      {
+        "line": 119,
+        "source": "const page=await browser.newPage({viewport:{width:1200,height:900}}),errors=[];"
+      },
+      {
+        "line": 131,
+        "source": "const report={conditions:{browser:browser.version(),deviceScaleFactor:1,cache:'fresh browser context per run',network:process.env.MYPALETTE_VERIFY_DIST==='1'?'dist assets routed in browser over existing localhost origin, no throttling':`${new URL(base).origin}, no throttling`,reducedMotion:true},runs,finalScreens};"
+      },
+      {
+        "line": 133,
+        "source": "console.log('PASS: stable title while loading, settings retry, day progression and restart in layouts A/B, developer tools');"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkAcceptanceVisuals.cjs",
+    "sha256": "7d219d8ddf99cbee2461f10d694413b180a694ed64c8a6b5ca8fcb60ea15bbeb",
+    "assertions": [
+      {
+        "line": 17,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('#app-version').textContent(), version);"
+      },
+      {
+        "line": 39,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(count, 138);"
+      },
+      {
+        "line": 94,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors, []);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 13,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 900 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });"
+      },
+      {
+        "line": 26,
+        "source": "for (const item of ICON_REVIEW_CASES) {"
+      },
+      {
+        "line": 30,
+        "source": "for (const size of [32, 128]) {"
+      },
+      {
+        "line": 53,
+        "source": "const settings = await fetch('./data/cards.json').then(response => response.json());"
+      },
+      {
+        "line": 58,
+        "source": "const definition = settings.cards.find(card => card.id === 'A01');"
+      },
+      {
+        "line": 59,
+        "source": "for (const step of [0, 1, 2, 3]) {"
+      },
+      {
+        "line": 66,
+        "source": "await page.setViewportSize({ width: 1250, height: 550 });"
+      },
+      {
+        "line": 73,
+        "source": "const settings = await fetch('./data/cards.json').then(response => response.json());"
+      },
+      {
+        "line": 74,
+        "source": "const definition = structuredClone(settings.cards[0]);"
+      },
+      {
+        "line": 89,
+        "source": "for (const viewport of [{ width: 1200, height: 900 }, { width: 390, height: 844 }]) {"
+      },
+      {
+        "line": 90,
+        "source": "await page.setViewportSize(viewport);"
+      },
+      {
+        "line": 92,
+        "source": "await page.screenshot({ path: `${directory}/complex-detail-${viewport.width}.png` });"
+      },
+      {
+        "line": 95,
+        "source": "const report = { version, browser: browser.version(), base, viewport: '1200x900 icons; 1250x550 cards; 1200x900 and 390x844 detail', dpr: 1, reducedMotion: 'reduce', fixture: 'production renderers; unmodified saved settings A01 currentStep 0/1/2/3; icon review cases; page-only complex detail uses changeSpecialFace temporaryBrush1 and temporary yellow_purple dice x10', sheets, cards, errors };"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkAcceptanceInformation.cjs",
+    "sha256": "fb4ae70460a466f0350e412ea2d4664c8f4ba571cd7bb93edd3810274daf4731",
+    "assertions": [
+      {
+        "line": 19,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(version, 'v' + require('../package.json').version);"
+      },
+      {
+        "line": 29,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.locator('.PaintingTab[aria-current=\"step\"]').textContent(), 'Step 0');"
+      },
+      {
+        "line": 31,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.locator('.PaintingTab[aria-current=\"step\"]').textContent(), 'Step 0');"
+      },
+      {
+        "line": 32,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.locator('.PaintingTab[aria-selected=\"true\"]').textContent(), 'Step 2');"
+      },
+      {
+        "line": 33,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.locator('.PaintingPanel.state-current').count(), 0);"
+      },
+      {
+        "line": 34,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(() => JSON.stringify(review.session.game.state)), before);"
+      },
+      {
+        "line": 45,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.getByRole('img', { name: '名声 17', exact: true }).count(), 1);"
+      },
+      {
+        "line": 46,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.getByRole('img', { name: '信用 4', exact: true }).count(), 1);"
+      },
+      {
+        "line": 48,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await shipped.locator('.SceneShippedArtwork').getAttribute('src'), `/MyPalette/assets/paintings/${shippedId}-3.png`);"
+      },
+      {
+        "line": 50,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.locator('.PaintingTab[aria-current=\"step\"]').textContent(), 'Done');"
+      },
+      {
+        "line": 56,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.locator('.PaintingTab[aria-current=\"step\"]').textContent(), 'Step 0');"
+      },
+      {
+        "line": 80,
+        "test": "スクリプト内のassert",
+        "assert": "for (const row of availability) for (const card of row.cards) assert.equal(card.actual, card.expected, `${row.name}/${card.id}`);"
+      },
+      {
+        "line": 86,
+        "test": "スクリプト内のassert",
+        "assert": "assert(works.length >= 2);"
+      },
+      {
+        "line": 93,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await detail.locator('.PaintingTitle').textContent(), work.name);"
+      },
+      {
+        "line": 97,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors, []);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 12,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 900 }, reducedMotion: 'reduce', hasTouch: true });"
+      },
+      {
+        "line": 15,
+        "source": "await page.route(base, route => route.fulfill({ contentType: 'text/html', body: diceListReviewFixture() }));"
+      },
+      {
+        "line": 53,
+        "source": "await page.setViewportSize({ width: 390, height: 844 });"
+      },
+      {
+        "line": 54,
+        "source": "await page.evaluate(() => reviewScreen.setFixedScale(.7));"
+      },
+      {
+        "line": 71,
+        "source": "for (const [name, dice] of cases) {"
+      },
+      {
+        "line": 80,
+        "source": "for (const row of availability) for (const card of row.cards) assert.equal(card.actual, card.expected, `${row.name}/${card.id}`);"
+      },
+      {
+        "line": 87,
+        "source": "for (const viewport of [{ width: 1200, height: 900 }, { width: 390, height: 844 }]) {"
+      },
+      {
+        "line": 88,
+        "source": "await page.setViewportSize(viewport);"
+      },
+      {
+        "line": 89,
+        "source": "await page.screenshot({ path: `${directory}/multiple-works-${viewport.width}.png` });"
+      },
+      {
+        "line": 90,
+        "source": "for (const work of works) {"
+      },
+      {
+        "line": 100,
+        "source": "viewports: ['1200x900 fixed1 reduce A', '390x844 fixed0.7 reduce B'], shippedId, availability, works, errors }, null, 2) + '\\n');"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkAcceptanceDayEnd.cjs",
+    "sha256": "6a8c13961fccfea0a2d7d337e1ebb4f930b1c4970cc8f15363025ed4ebe6b727",
+    "assertions": [
+      {
+        "line": 52,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(result.credit, 0);"
+      },
+      {
+        "line": 53,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(result.flyers, 0);"
+      },
+      {
+        "line": 54,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(result.progress, 0);"
+      },
+      {
+        "line": 55,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(result.orderCost, 5);"
+      },
+      {
+        "line": 56,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(result.frames.some(frame => frame.motion === 'flyer-work' && frame.used.length >= 1));"
+      },
+      {
+        "line": 57,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(result.frames.some(frame => frame.motion === 'flyer-reserve'));"
+      },
+      {
+        "line": 58,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(result.frames.some(frame => frame.motion === 'credit-loss'));"
+      },
+      {
+        "line": 80,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListRow').count(), 4);"
+      },
+      {
+        "line": 81,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListRow.state-consumed').count(), 4);"
+      },
+      {
+        "line": 92,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(after.state.map(die => die.id), permanentIds);"
+      },
+      {
+        "line": 93,
+        "test": "スクリプト内のassert",
+        "assert": "assert(after.state.every(die => die.lifetime === 'permanent' && !die.used));"
+      },
+      {
+        "line": 94,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(after.physical.map(die => die.id), permanentIds);"
+      },
+      {
+        "line": 95,
+        "test": "スクリプト内のassert",
+        "assert": "assert(after.physical.every(die => !die.consumed));"
+      },
+      {
+        "line": 96,
+        "test": "スクリプト内のassert",
+        "assert": "assert(after.removedVisual);"
+      },
+      {
+        "line": 98,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListRow').count(), 3);"
+      },
+      {
+        "line": 99,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListRow.state-consumed').count(), 0);"
+      },
+      {
+        "line": 100,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.DiceListRow[data-die-id=\"qa-temporary-removal\"]').count(), 0);"
+      },
+      {
+        "line": 104,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors, []);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 12,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 900 }, reducedMotion: 'reduce' });"
+      },
+      {
+        "line": 15,
+        "source": "await page.route(base, route => route.fulfill({ contentType: 'text/html', body: diceListReviewFixture() }));"
+      },
+      {
+        "line": 36,
+        "source": "await page.emulateMedia({ reducedMotion: 'no-preference' });"
+      },
+      {
+        "line": 60,
+        "source": "viewport: '1200x900 DPR1 fixed1 A', fixture: 'page-only 5 yellow brush dice, credit1, flyers2/progress0/orderCost3; no saved settings changes', result, errors }, null, 2) + '\\n');"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkAcceptanceChoices.cjs",
+    "sha256": "59abb59e508390fd54016d40e4afe8ab1148deabd382426e163b8c44877ee828",
+    "assertions": [
+      {
+        "line": 28,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await choice.locator('.GameDie').count(), 3);"
+      },
+      {
+        "line": 29,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await choice.locator('.DieFaceSlot').count(), 18);"
+      },
+      {
+        "line": 37,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(labels, expectedLabels);"
+      },
+      {
+        "line": 40,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await confirm.isDisabled());"
+      },
+      {
+        "line": 41,
+        "test": "スクリプト内のassert",
+        "assert": "await inputs.nth(1).check(); assert(await confirm.isEnabled());"
+      },
+      {
+        "line": 42,
+        "test": "スクリプト内のassert",
+        "assert": "await inputs.nth(0).check(); assert(await confirm.isDisabled());"
+      },
+      {
+        "line": 43,
+        "test": "スクリプト内のassert",
+        "assert": "await inputs.nth(0).uncheck(); assert(await confirm.isEnabled());"
+      },
+      {
+        "line": 47,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(await page.evaluate(() => review.session.game.state.dice.at(-1).faces), candidates[1]);"
+      },
+      {
+        "line": 56,
+        "test": "スクリプト内のassert",
+        "assert": "await select.waitFor(); assert(await select.isDisabled());"
+      },
+      {
+        "line": 60,
+        "test": "スクリプト内のassert",
+        "assert": "assert(await select.isEnabled());"
+      },
+      {
+        "line": 67,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(after.rerolls, before.rerolls);"
+      },
+      {
+        "line": 68,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(after.dice.slice(selectedCount), before.dice.slice(selectedCount));"
+      },
+      {
+        "line": 69,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await select.count(), 0);"
+      },
+      {
+        "line": 72,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors, []);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 12,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 900 }, reducedMotion: 'reduce' });"
+      },
+      {
+        "line": 15,
+        "source": "await page.route(base, route => route.fulfill({ contentType: 'text/html', body: diceListReviewFixture() }));"
+      },
+      {
+        "line": 49,
+        "source": "for (const selectedCount of [1, 2, 0]) {"
+      },
+      {
+        "line": 75,
+        "source": "viewport: '1200x900 DPR1 fixed1 A reduce', candidates, labels, rerolls, errors }, null, 2) + '\\n');"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkStockEdgeCases.cjs",
+    "sha256": "2cc580f608271ec1b447cbbd6fbc716d828e8be508877b4f70261c5407776c41",
+    "assertions": [
+      {
+        "line": 53,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-stock-acquire]').count(),1);"
+      },
+      {
+        "line": 54,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('.GameChoice[open]').count(),0);"
+      },
+      {
+        "line": 59,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(copies,0,'last acquired card is not duplicated in the moving stock');"
+      },
+      {
+        "line": 62,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.evaluate(id=>window.stockCheck.mounted.session.game.state.hand.find(c=>c.id===id).step,id),0);"
+      },
+      {
+        "line": 63,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-scene-area=stock] .PaintingCard').count(),0);"
+      },
+      {
+        "line": 72,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-stock-acquire]').count(),0);"
+      },
+      {
+        "line": 73,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-hand-return]').count(),0);"
+      },
+      {
+        "line": 81,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(await page.locator('[data-stock-acquire]').count(),0);"
+      },
+      {
+        "line": 87,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors,[]);"
+      }
+    ],
+    "controls": [
+      {
+        "line": 6,
+        "source": "const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));"
+      },
+      {
+        "line": 11,
+        "source": "const page = await browser.newPage({ viewport: { width: 1200, height: 700 }, reducedMotion: process.env.MYPALETTE_STOCK_MOTION ? 'no-preference' : 'reduce' });"
+      },
+      {
+        "line": 15,
+        "source": "await page.route(base, route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: `"
+      },
+      {
+        "line": 27,
+        "source": "const settings=${JSON.stringify(settings)};"
+      },
+      {
+        "line": 28,
+        "source": "const mounted=mountGame(root,settings,presentation);"
+      },
+      {
+        "line": 29,
+        "source": "window.stockCheck={screen,presentation,mounted,root,settings};"
+      },
+      {
+        "line": 48,
+        "source": "await page.setViewportSize({width:390,height:844});"
+      },
+      {
+        "line": 49,
+        "source": "await page.evaluate(()=>window.stockCheck.screen.setFixedScale(1.25));"
+      }
+    ]
+  },
+  {
+    "file": "scripts/checkAcceptanceCanvasSupport.cjs",
+    "sha256": "68f8be6df33c048c0ec7e286deac9b94b94f117ba7cd4e9a85b2ac64373f84d3",
+    "assertions": [
+      {
+        "line": 49,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(measurement.bottomGap) < 1e-6, 'canvas lower edge rests on tray');"
+      },
+      {
+        "line": 50,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(measurement.topGap) < 1e-6, `canvas upper edge must meet clamp: gap=${measurement.topGap}`);"
+      }
+    ],
+    "controls": []
+  },
+  {
+    "file": "scripts/checkAcceptanceCardSupport.cjs",
+    "sha256": "79179cb1b99dd9b0627a34d6cf74dde79e421aa066b0adf970bf68e289d05854",
+    "assertions": [
+      {
+        "line": 17,
+        "test": "スクリプト内のassert",
+        "assert": "assert(body.includes(original));"
+      },
+      {
+        "line": 65,
+        "test": "スクリプト内のassert",
+        "assert": "assert.equal(unshadowedHeight, measurement.frontHeight);"
+      },
+      {
+        "line": 66,
+        "test": "スクリプト内のassert",
+        "assert": "assert.deepEqual(errors, []);"
+      },
+      {
+        "line": 69,
+        "test": "スクリプト内のassert",
+        "assert": "assert.ok(Math.abs(measurement.frontHeight - measurement.projectionHeight) < .1,"
+      }
+    ],
+    "controls": []
+  }
+]

@@ -1,0 +1,7 @@
+{"name":"checkUseDice","start":"2026-11-27T08:49:42.417Z","status":0,"signal":null}
+PASS: reduce, normal/special, permanent/temporary, retained faces, A/B resize, fixed scale, palette, hand glow, reuse
+PASS: no-preference, normal/special, permanent/temporary, retained faces, A/B resize, fixed scale, palette, hand glow, reuse
+PASS: reward, selection resumes and all dice stay owned
+PASS: chain, selection resumes and all dice stay owned
+PASS: empty, selection resumes and all dice stay owned
+PASS: existing server title version 0.45.0

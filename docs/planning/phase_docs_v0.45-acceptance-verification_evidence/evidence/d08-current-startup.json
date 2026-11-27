@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-11-27T13:35:34.505Z",
+  "url": "http://127.0.0.1:3000/MyPalette/",
+  "version": "© T.I.OAK 2026 | GameWorks OAKv0.45.0",
+  "dialogOpen": true,
+  "modal": true,
+  "candidates": 3,
+  "handCards": 1,
+  "method": "Normal main.js startup; page-only expose returned session and replace one hand play effect. No fixture HTML or saved data changes."
+}

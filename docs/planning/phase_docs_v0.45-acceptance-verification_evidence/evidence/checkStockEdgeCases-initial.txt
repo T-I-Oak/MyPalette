@@ -1,0 +1,286 @@
+{"name":"checkStockEdgeCases","start":"2026-11-27T11:58:23.882Z","status":0,"signal":null}
+empty stock UI 今日の仕事を終える
+Day 1
+×0
+すべてリロール
+1つリロール
+ダイスリスト
+グレードA 0枚
+グレードB 0枚
+グレードC 0枚
+ストック
+捨て札 42枚
+デッキ 3枚
+A
+襍､豈帙�蟆大･ｳ
+Step 0
+Step 1
+Step 2
+—
+A
+雕翫ｋ襍､縺�干
+Step 0
+Step 1
+Step 2
+—
+A
+轣ｯ繧翫�縺ｨ繧ゅｋ遯�
+Step 0
+Step 1
+Step 2
+or
+—
+A
+襍､縺��霆｢霆�
+Step 0
+Step 1
+Step 2
+—
+A
+譁ｰ邱代�繝医Φ繝阪Ν
+Step 0
+Step 1
+Step 2
+—
+A
+襍､縺�焔陲�
+Step 0
+Step 1
+Step 2
+—
+A
+螟上�鮗ｦ繧上ｉ蟶ｽ蟄�
+Step 0
+Step 1
+Step 2
+—
+A
+髱偵＞繝薙�邇�
+Step 0
+Step 1
+Step 2
+—
+A
+譽ｮ縺ｮ繝悶Λ繝ｳ繧ｳ
+Step 0
+Step 1
+Step 2
+—
+A
+鮟�牡縺�｢ｨ
+Step 0
+Step 1
+Step 2
+—
+A
+螟上�繝励�繝ｫ繧ｵ繧､繝�
+Step 0
+Step 1
+Step 2
+or
+—
+B
+鮟��縺ｮ遐ゆｸ�
+Step 0
+Step 1
+Step 2
+—
+B
+鄙�髮ｨ縺ｮ遶ｹ譫�
+Step 0
+Step 1
+Step 2
+—
+B
+蟄秘它遏ｳ縺ｮ螟｢
+Step 0
+Step 1
+Step 2
+or
+—
+B
+邏��繝輔Λ繝｡繝ｳ繧ｳ
+Step 0
+Step 1
+Step 2
+or
+—
+B
+迴顔霜縺ｮ讌ｽ蝨�
+Step 0
+Step 1
+Step 2
+—
+B
+蜈峨�蝗槫ｻ�
+Step 0
+Step 1
+Step 2
+—
+B
+蠖ｩ濶ｲ縺ｮ陦嶺ｸｦ縺ｿ
+Step 0
+Step 1
+Step 2
+—
+B
+譫懷ｮ溘�鬣怜ｮｴ
+Step 0
+Step 1
+Step 2
+—
+B
+譏溽ｩｺ縺ｮ繧ｵ繝ｼ繧ｫ繧ｹ
+Step 0
+Step 1
+Step 2
+or
+—
+B
+髮ｨ荳翫′繧翫�闃ｱ蟶ょ�ｴ
+Step 0
+Step 1
+Step 2
+—
+B
+豌ｴ譎ｶ縺ｮ豢樒ｪ�
+Step 0
+Step 1
+Step 2
+—
+B
+螟墓坩繧後�繝ｩ繝ｳ繧ｿ繝ｳ逾ｭ繧�
+Step 0
+Step 1
+Step 2
+—
+B
+螟上�險俶�
+Step 0
+Step 1
+Step 2
+—
+B
+髱偵＞繝ｴ繧｡繧､繧ｪ繝ｪ繝ｳ
+Step 0
+Step 1
+Step 2
+—
+B
+豌ｴ讒ｽ縺ｮ蜷代％縺��
+Step 0
+Step 1
+Step 2
+—
+C
+蜿守ｩｫ縺ｮ逾晉･ｭ
+Step 0
+Step 1
+Step 2
+—
+C
+鄙｡鄙�縺ｮ闊櫁ｸ�
+Step 0
+Step 1
+Step 2
+or
+—
+C
+阮�坩縺ｮ逾医ｊ
+Step 0
+Step 1
+Step 2
+—
+C
+髯ｽ蜈峨�譫懈ｨｹ蝨�
+Step 0
+Step 1
+Step 2
+or
+C
+螟懈Φ譖ｲ
+Step 0
+Step 1
+Step 2
+or
+—
+C
+邏�動縺ｮ鬨手｡�
+Step 0
+Step 1
+Step 2
+or
+—
+C
+譛井ｸ九�阯､譽�
+Step 0
+Step 1
+Step 2
+C
+阮碑枚縺ｨ遑晏ｭ�
+Step 0
+Step 1
+Step 2
+—
+C
+蜊�ｹｴ縺ｮ螟墓丐縺�
+Step 0
+Step 1
+Step 2
+—
+C
+髱ｩ蜻ｽ縺ｮ譛�
+Step 0
+Step 1
+Step 2
+C
+蟇�棊縺ｮ邇�
+Step 0
+Step 1
+Step 2
+—
+C
+闥ｼ螟ｩ縺ｮ縺ｲ縺ｾ繧上ｊ
+Step 0
+Step 1
+Step 2
+—
+C
+邇ｻ迺��陜ｶ
+Step 0
+Step 1
+Step 2
+C
+遑晏ｭ占�莠ｺ縺ｮ蟾･謌ｿ
+Step 0
+Step 1
+Step 2
+C
+蜈峨�邯呎価
+Step 0
+Step 1
+Step 2
+—
+A
+繝ｬ繝｢繝ｳ縺ｮ縺ゅｋ髱咏黄
+Step 0
+Step 1
+Step 2
+—
+A
+縺吶∩繧後�闃ｱ譚�
+Step 0
+Step 1
+Step 2
+A
+螟慕┥縺代�霍ｯ髱｢髮ｻ霆�
+Step 0
+Step 1
+Step 2
+—
+A
+遯楢ｾｺ縺ｮ繝槭�繝槭Ξ繝ｼ繝�
+Step 0
+Step 1
+Step 2
+stock edges: empty-grade return, same-card acquisition, two exchanges, resize/scale, no duplicates, all-empty gain and ordering passed

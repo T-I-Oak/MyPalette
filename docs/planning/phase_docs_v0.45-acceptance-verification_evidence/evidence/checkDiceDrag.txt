@@ -1,0 +1,2 @@
+{"name":"checkDiceDrag","start":"2026-11-27T08:37:42.879Z","status":0,"signal":null}
+PASS: ready body drag, bounds, global roll lock, floating icon drag, A/B, face preserved, touch drag

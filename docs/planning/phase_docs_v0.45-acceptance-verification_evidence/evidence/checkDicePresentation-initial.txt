@@ -1,0 +1,12 @@
+{"name":"checkDicePresentation","start":"2026-11-27T08:37:01.661Z","status":1,"signal":null}
+
+locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('button', { name: 'カード設定を開く', exact: true }) to be visible[22m
+
+    at C:\Users\tioak\Documents\Games\Projects\GameWorksOAK\MyPalette\scripts\checkDicePresentation.cjs:5:139 {
+  log: [
+    "  - waiting for getByRole('button', { name: 'カード設定を開く', exact: true }) to be visible"
+  ],
+  name: 'TimeoutError'
+}

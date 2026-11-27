@@ -1,0 +1,164 @@
+{
+  "version": "v0.45.0",
+  "browser": "158.0.4370.33",
+  "base": "http://127.0.0.1:3000/MyPalette/",
+  "fixture": "diceListReviewFixture: page-only empty effects/brush goals; one card played; hand card assigned step3/shipped; fame17/credit4/flyers2/progress1",
+  "viewports": [
+    "1200x900 fixed1 reduce A",
+    "390x844 fixed0.7 reduce B"
+  ],
+  "shippedId": "A12",
+  "availability": [
+    {
+      "name": "initial",
+      "cards": [
+        {
+          "id": "A07",
+          "expected": true,
+          "actual": true
+        },
+        {
+          "id": "A10",
+          "expected": true,
+          "actual": true
+        },
+        {
+          "id": "A09",
+          "expected": true,
+          "actual": true
+        }
+      ]
+    },
+    {
+      "name": "consume-all",
+      "cards": [
+        {
+          "id": "A07",
+          "expected": false,
+          "actual": false
+        },
+        {
+          "id": "A10",
+          "expected": false,
+          "actual": false
+        },
+        {
+          "id": "A09",
+          "expected": false,
+          "actual": false
+        }
+      ]
+    },
+    {
+      "name": "reuse-one",
+      "cards": [
+        {
+          "id": "A07",
+          "expected": true,
+          "actual": true
+        },
+        {
+          "id": "A10",
+          "expected": true,
+          "actual": true
+        },
+        {
+          "id": "A09",
+          "expected": true,
+          "actual": true
+        }
+      ]
+    },
+    {
+      "name": "reroll-current",
+      "cards": [
+        {
+          "id": "A07",
+          "expected": false,
+          "actual": false
+        },
+        {
+          "id": "A10",
+          "expected": false,
+          "actual": false
+        },
+        {
+          "id": "A09",
+          "expected": false,
+          "actual": false
+        }
+      ]
+    },
+    {
+      "name": "rewrite-current-face",
+      "cards": [
+        {
+          "id": "A07",
+          "expected": true,
+          "actual": true
+        },
+        {
+          "id": "A10",
+          "expected": true,
+          "actual": true
+        },
+        {
+          "id": "A09",
+          "expected": true,
+          "actual": true
+        }
+      ]
+    },
+    {
+      "name": "remove-all",
+      "cards": [
+        {
+          "id": "A07",
+          "expected": false,
+          "actual": false
+        },
+        {
+          "id": "A10",
+          "expected": false,
+          "actual": false
+        },
+        {
+          "id": "A09",
+          "expected": false,
+          "actual": false
+        }
+      ]
+    },
+    {
+      "name": "add-die",
+      "cards": [
+        {
+          "id": "A07",
+          "expected": true,
+          "actual": true
+        },
+        {
+          "id": "A10",
+          "expected": true,
+          "actual": true
+        },
+        {
+          "id": "A09",
+          "expected": true,
+          "actual": true
+        }
+      ]
+    }
+  ],
+  "works": [
+    {
+      "id": "A09",
+      "name": "青いビー玉"
+    },
+    {
+      "id": "A07",
+      "name": "夏の麦わら帽子"
+    }
+  ],
+  "errors": []
+}

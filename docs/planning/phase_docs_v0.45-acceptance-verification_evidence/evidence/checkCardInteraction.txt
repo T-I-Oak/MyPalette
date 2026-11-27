@@ -1,0 +1,2 @@
+{"name":"checkCardInteraction","start":"2026-11-27T08:38:32.747Z","status":0,"signal":null}
+card interaction: custom detail, focus, background restoration, play, return, stock gain/exchange/order passed

@@ -1,0 +1,108 @@
+{
+  "version": "0.45.0",
+  "browser": "158.0.4370.33",
+  "fixture": "diceListReviewFixture; actual play operation; A 1200x900 DPR3 reduce; second screenshot disables shadow/outline in browser only",
+  "measurement": {
+    "cardId": "A02",
+    "cardArea": "field",
+    "parentClass": "CardSceneCard",
+    "frontTransform": "none",
+    "matchedRules": [
+      {
+        "selector": ".PaintingFront, .PaintingBack",
+        "css": "grid-area: 1 / 1; min-width: 0px; backface-visibility: hidden; border: 1px solid var(--painting-rim); border-radius: 12px; padding: 9px; box-shadow: var(--edge-x) var(--edge-y) 0 var(--painting-rim), 1px 6px 10px var(--ui-scrim);"
+      },
+      {
+        "selector": ".PaintingFront",
+        "css": "background: var(--painting-frame); transform: translateZ(0.75px);"
+      },
+      {
+        "selector": ".CardSceneCard > .PaintingCard[data-card-area=\"field\"] .PaintingFront",
+        "css": "transform: none; backface-visibility: visible;"
+      },
+      {
+        "selector": ".CardSceneCard > .PaintingCard[data-card-area=\"field\"] :is(.PaintingFront, .PaintingSheet, .PaintingArtwork, .PaintingTab, .PaintingBlock)",
+        "css": "border-width: 1.5px;"
+      }
+    ],
+    "frontHeight": 414,
+    "cardHeight": "414px",
+    "trayEdge": [
+      {
+        "x": 0,
+        "edge": {
+          "x": 191.33424367943053,
+          "y": 447.84585656634016
+        },
+        "downwardPixels": 0.05831056850513505
+      },
+      {
+        "x": 147,
+        "edge": {
+          "x": 285.04013860147415,
+          "y": 443.8790064612273
+        },
+        "downwardPixels": 0.055011595094754284
+      },
+      {
+        "x": 294,
+        "edge": {
+          "x": 378.58856286823686,
+          "y": 439.9188225587687
+        },
+        "downwardPixels": 0.05172184806599489
+      }
+    ],
+    "projectionHeight": 414,
+    "borderWidth": "1px",
+    "boxSizing": "border-box",
+    "shadow": "rgb(189, 179, 162) 0px 1.5px 0px 0px, rgba(48, 44, 40, 0.4) 1px 6px 10px 0px",
+    "outline": "rgb(48, 44, 40) none 3px",
+    "samples": [
+      {
+        "x": 0,
+        "reference": {
+          "x": 191.24156831230368,
+          "y": 447.9041671348453
+        },
+        "actual": {
+          "x": 191.24156831230368,
+          "y": 447.9041671348453
+        },
+        "downwardPixels": 0
+      },
+      {
+        "x": 147,
+        "reference": {
+          "x": 285.02702804750015,
+          "y": 443.93401805632203
+        },
+        "actual": {
+          "x": 285.02702804750015,
+          "y": 443.93401805632203
+        },
+        "downwardPixels": 0
+      },
+      {
+        "x": 294,
+        "reference": {
+          "x": 378.65479642937703,
+          "y": 439.9705444068347
+        },
+        "actual": {
+          "x": 378.65479642937703,
+          "y": 439.9705444068347
+        },
+        "downwardPixels": 0
+      }
+    ],
+    "clip": {
+      "x": 115.02702804750015,
+      "y": 348.93401805632203,
+      "width": 340,
+      "height": 190
+    }
+  },
+  "unshadowedHeight": 414,
+  "errors": []
+}

@@ -26,7 +26,7 @@ const waitForRoll=page=>page.waitForFunction(()=>{
  throw error;
 });
 (async()=>{const browser=await chromium.launch({channel:'msedge',headless:true});try{
- const runs=[];
+ const runs=[],finalScreens=[];
  for(let i=0;i<4;i++){
   console.log('startup check run',i);
   const viewport=i===1?{width:390,height:844}:{width:1200,height:900};
@@ -96,6 +96,11 @@ const waitForRoll=page=>page.waitForFunction(()=>{
     if(await result.isVisible())break;
    }
    assert.ok(await result.isVisible());
+   finalScreens.push({viewport,text:await page.locator('.GameStartup:not([hidden])').innerText()});
+   if(process.env.MYPALETTE_ACCEPTANCE_EVIDENCE){
+    fs.mkdirSync(process.env.MYPALETTE_ACCEPTANCE_EVIDENCE,{recursive:true});
+    await page.screenshot({path:require('node:path').join(process.env.MYPALETTE_ACCEPTANCE_EVIDENCE,`final-result-${i===1?'B':'A'}.png`)});
+   }
    assert.equal(await page.getByRole('button',{name:'タイトルへ戻る',exact:true}).getAttribute('tabindex'),'-1');
    assert.equal(await page.evaluate(()=>document.activeElement.textContent==='タイトルへ戻る'),false);
    for(const key of ['Tab','Shift+Tab']){
@@ -123,7 +128,7 @@ const waitForRoll=page=>page.waitForFunction(()=>{
  assert.equal(await page.locator('.EaselLab').count(),0);assert.equal(await page.getByRole('button',{name:'イーゼル確認を開く',exact:true}).count(),0);
  await page.goto('about:blank');await page.goto(devBase+'dev.html#icons');await page.locator('#editor canvas').first().waitFor();
  assert.deepEqual(errors,[]);
- const report={conditions:{browser:browser.version(),deviceScaleFactor:1,cache:'fresh browser context per run',network:process.env.MYPALETTE_VERIFY_DIST==='1'?'dist assets routed in browser over existing localhost origin, no throttling':`${new URL(base).origin}, no throttling`,reducedMotion:true},runs};
+ const report={conditions:{browser:browser.version(),deviceScaleFactor:1,cache:'fresh browser context per run',network:process.env.MYPALETTE_VERIFY_DIST==='1'?'dist assets routed in browser over existing localhost origin, no throttling':`${new URL(base).origin}, no throttling`,reducedMotion:true},runs,finalScreens};
  fs.writeFileSync('tmp_production_startup.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
  console.log('PASS: stable title while loading, settings retry, day progression and restart in layouts A/B, developer tools');
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

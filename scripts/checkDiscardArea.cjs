@@ -50,7 +50,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  await top.getByRole('tab',{name:'Step 1',exact:true}).click();
  assert.equal(await top.locator('[aria-selected="true"]').textContent(),'Step 1');
  assert.equal(await page.locator('.GameCardDetail').count(),0,'discard tab changes only the step');
- const effect=top.locator('.CardIcon[aria-expanded]').first();
+ const effect=top.locator('.PaintingBlock.reward .CardIcon[aria-expanded]').first();
  await effect.click();
  assert.equal(await page.locator('.EffectDetails.is-pinned').count(),1,'discard effect opens its explanation');
  assert.equal(await page.locator('.GameCardDetail').count(),0,'effect does not open detail');

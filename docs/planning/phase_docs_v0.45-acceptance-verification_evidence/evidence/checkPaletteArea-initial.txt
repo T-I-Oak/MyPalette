@@ -1,0 +1,11 @@
+{"name":"checkPaletteArea","start":"2026-11-27T08:49:05.095Z","status":1,"signal":null}
+
+AssertionError [ERR_ASSERTION]: {"bottomMargin":2.888916015625}
+    at C:\Users\tioak\Documents\Games\Projects\GameWorksOAK\MyPalette\scripts\checkPaletteArea.cjs:125:13 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}

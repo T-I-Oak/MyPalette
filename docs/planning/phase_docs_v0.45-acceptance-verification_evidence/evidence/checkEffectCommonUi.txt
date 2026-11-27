@@ -1,0 +1,10 @@
+{"name":"checkEffectCommonUi","start":"2026-11-27T08:43:13.356Z","status":0,"signal":null}
+EUI-C01: hover dismissal, tap persistence, outside tap dismissal, nested icon tap, enlarged notices, narrow viewport and auto-dismiss passed
+
+WebSocket connection to 'ws://127.0.0.1:3000/MyPalette/?token=QdygwHYGy8yn' failed: Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS
+WebSocket connection to 'ws://127.0.0.1:3000/MyPalette/?token=QdygwHYGy8yn' failed: Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS
+[vite] failed to connect to websocket.
+your current setup:
+  (browser) 127.0.0.1:3000/MyPalette/ <--[HTTP]--> 127.0.0.1:3000/MyPalette/ (server)
+  (browser) 127.0.0.1:3000/MyPalette/ <--[WebSocket (failing)]--> 127.0.0.1:3000/MyPalette/ (server)
+Check out your Vite / network configuration and https://vite.dev/config/server-options.html#server-hmr .

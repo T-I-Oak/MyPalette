@@ -1,0 +1,2 @@
+{"name":"checkAcceptanceDayEnd","start":"2026-11-27T11:44:13.104Z","status":0,"signal":null}
+PASS: flyer work/reservation/credit loss, orderCost3->5, flyers2+1->0, credit1->0, visible motion snapshots

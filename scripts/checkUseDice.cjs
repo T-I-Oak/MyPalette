@@ -98,7 +98,8 @@ const reviewUrl = new URL('tmp_use_dice_review.html', base).href;
             console.log(`PASS: ${mode}, selection resumes and all dice stay owned`);
         }
         await page.goto(base);
-        await page.getByText('0.42.0', { exact: false }).first().waitFor();
-        console.log('PASS: existing server title version 0.42.0');
+        const { version } = require('../package.json');
+        await page.getByText(version, { exact: false }).first().waitFor();
+        console.log(`PASS: existing server title version ${version}`);
     } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -1,0 +1,3 @@
+Version 0.45.0
+Command: node scripts/checkAcceptanceCanvasSupport.cjs http://127.0.0.1:3000/MyPalette/
+Result: exit 1; lower edge contact passed; upper edge contact failed: gap=0.12183333333333346

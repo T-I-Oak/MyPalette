@@ -1,0 +1,286 @@
+{"name":"checkStockEdgeCases","start":"2026-11-27T12:08:13.388Z","status":0,"signal":null}
+empty stock UI 今日の仕事を終える
+Day 1
+×0
+すべてリロール
+1つリロール
+ダイスリスト
+グレードA 0枚
+グレードB 0枚
+グレードC 0枚
+ストック
+捨て札 42枚
+デッキ 3枚
+A
+赤毛の少女
+Step 0
+Step 1
+Step 2
+—
+A
+踊る赤い花
+Step 0
+Step 1
+Step 2
+—
+A
+灯りのともる窓
+Step 0
+Step 1
+Step 2
+or
+—
+A
+赤い自転車
+Step 0
+Step 1
+Step 2
+—
+A
+新緑のトンネル
+Step 0
+Step 1
+Step 2
+—
+A
+赤い手袋
+Step 0
+Step 1
+Step 2
+—
+A
+夏の麦わら帽子
+Step 0
+Step 1
+Step 2
+—
+A
+青いビー玉
+Step 0
+Step 1
+Step 2
+—
+A
+森のブランコ
+Step 0
+Step 1
+Step 2
+—
+A
+黄色い風
+Step 0
+Step 1
+Step 2
+—
+A
+夏のプールサイド
+Step 0
+Step 1
+Step 2
+or
+—
+B
+黄昏の砂丘
+Step 0
+Step 1
+Step 2
+—
+B
+翠雨の竹林
+Step 0
+Step 1
+Step 2
+—
+B
+孔雀石の夢
+Step 0
+Step 1
+Step 2
+or
+—
+B
+紅のフラメンコ
+Step 0
+Step 1
+Step 2
+or
+—
+B
+珊瑚の楽園
+Step 0
+Step 1
+Step 2
+—
+B
+光の回廊
+Step 0
+Step 1
+Step 2
+—
+B
+彩色の街並み
+Step 0
+Step 1
+Step 2
+—
+B
+果実の饗宴
+Step 0
+Step 1
+Step 2
+—
+B
+星空のサーカス
+Step 0
+Step 1
+Step 2
+or
+—
+B
+雨上がりの花市場
+Step 0
+Step 1
+Step 2
+—
+B
+水晶の洞窟
+Step 0
+Step 1
+Step 2
+—
+B
+夕暮れのランタン祭り
+Step 0
+Step 1
+Step 2
+—
+B
+夏の記憶
+Step 0
+Step 1
+Step 2
+—
+B
+青いヴァイオリン
+Step 0
+Step 1
+Step 2
+—
+B
+水槽の向こう側
+Step 0
+Step 1
+Step 2
+—
+C
+収穫の祝祭
+Step 0
+Step 1
+Step 2
+—
+C
+翡翠の舞踏
+Step 0
+Step 1
+Step 2
+or
+—
+C
+薄暮の祈り
+Step 0
+Step 1
+Step 2
+—
+C
+陽光の果樹園
+Step 0
+Step 1
+Step 2
+or
+C
+夜想曲
+Step 0
+Step 1
+Step 2
+or
+—
+C
+紅蓮の騎行
+Step 0
+Step 1
+Step 2
+or
+—
+C
+月下の藤棚
+Step 0
+Step 1
+Step 2
+C
+薔薇と硝子
+Step 0
+Step 1
+Step 2
+—
+C
+千年の夕映え
+Step 0
+Step 1
+Step 2
+—
+C
+革命の朝
+Step 0
+Step 1
+Step 2
+C
+密林の王
+Step 0
+Step 1
+Step 2
+—
+C
+蒼天のひまわり
+Step 0
+Step 1
+Step 2
+—
+C
+玻璃の蝶
+Step 0
+Step 1
+Step 2
+C
+硝子職人の工房
+Step 0
+Step 1
+Step 2
+C
+光の継承
+Step 0
+Step 1
+Step 2
+—
+A
+レモンのある静物
+Step 0
+Step 1
+Step 2
+—
+A
+すみれの花束
+Step 0
+Step 1
+Step 2
+A
+夕焼けの路面電車
+Step 0
+Step 1
+Step 2
+—
+A
+窓辺のマーマレード
+Step 0
+Step 1
+Step 2
+stock edges: empty-grade return, same-card acquisition, two exchanges, resize/scale, no duplicates, all-empty gain and ordering passed

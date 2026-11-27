@@ -17,8 +17,8 @@ const assert = require('node:assert/strict');
         };
         const results = [];
         for (const material of MATERIALS) {
-            const gray = await pixels(`/assets/dice/${material}_grayscale.png`);
-            const fixed = await pixels(`/assets/dice/${material}_fixed.png`);
+            const gray = await pixels(`/MyPalette/assets/dice/${material}_grayscale.png`);
+            const fixed = await pixels(`/MyPalette/assets/dice/${material}_fixed.png`);
             for (const [color, hex] of Object.entries(INKS)) {
                 const merged = await pixels(graphics.get({ material, color }));
                 const ink = [1, 3, 5].map(start => parseInt(hex.slice(start, start + 2), 16));

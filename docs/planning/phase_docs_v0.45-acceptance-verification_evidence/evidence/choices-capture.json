@@ -1,0 +1,220 @@
+{
+  "version": "0.45.0",
+  "browser": "158.0.4370.33",
+  "fixture": "diceListReviewFixture with page-only card play effect gainNormalDice or reroll, followed by fame+3; reroll zero case all used",
+  "viewport": "1200x900 DPR1 fixed1 A reduce",
+  "candidates": [
+    [
+      {
+        "color": "red",
+        "material": "airbrush"
+      },
+      {
+        "color": "blue",
+        "material": "brush"
+      },
+      {
+        "color": "yellow",
+        "material": "brush"
+      },
+      {
+        "color": "purple",
+        "material": "brush"
+      },
+      {
+        "color": "red",
+        "material": "brush"
+      },
+      {
+        "color": "yellow",
+        "material": "pastel"
+      }
+    ],
+    [
+      {
+        "color": "purple",
+        "material": "airbrush"
+      },
+      {
+        "color": "blue",
+        "material": "pastel"
+      },
+      {
+        "color": "green",
+        "material": "brush"
+      },
+      {
+        "color": "blue",
+        "material": "airbrush"
+      },
+      {
+        "color": "green",
+        "material": "airbrush"
+      },
+      {
+        "color": "yellow",
+        "material": "airbrush"
+      }
+    ],
+    [
+      {
+        "color": "orange",
+        "material": "brush"
+      },
+      {
+        "color": "red",
+        "material": "pastel"
+      },
+      {
+        "color": "orange",
+        "material": "pastel"
+      },
+      {
+        "color": "orange",
+        "material": "airbrush"
+      },
+      {
+        "color": "green",
+        "material": "pastel"
+      },
+      {
+        "color": "purple",
+        "material": "pastel"
+      }
+    ]
+  ],
+  "labels": [
+    "1面：赤・エアブラシ",
+    "2面：青・絵筆",
+    "3面：黄・絵筆",
+    "4面：紫・絵筆",
+    "5面：赤・絵筆",
+    "6面：黄・パステル",
+    "1面：紫・エアブラシ",
+    "2面：青・パステル",
+    "3面：緑・絵筆",
+    "4面：青・エアブラシ",
+    "5面：緑・エアブラシ",
+    "6面：黄・エアブラシ",
+    "1面：橙・絵筆",
+    "2面：赤・パステル",
+    "3面：橙・パステル",
+    "4面：橙・エアブラシ",
+    "5面：緑・パステル",
+    "6面：紫・パステル"
+  ],
+  "rerolls": [
+    {
+      "selectedCount": 1,
+      "before": {
+        "rerolls": 1,
+        "dice": [
+          [
+            "D1",
+            5
+          ],
+          [
+            "D2",
+            3
+          ],
+          [
+            "D3",
+            3
+          ]
+        ]
+      },
+      "after": {
+        "rerolls": 1,
+        "dice": [
+          [
+            "D1",
+            5
+          ],
+          [
+            "D2",
+            3
+          ],
+          [
+            "D3",
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "selectedCount": 2,
+      "before": {
+        "rerolls": 1,
+        "dice": [
+          [
+            "D1",
+            2
+          ],
+          [
+            "D2",
+            1
+          ],
+          [
+            "D3",
+            0
+          ]
+        ]
+      },
+      "after": {
+        "rerolls": 1,
+        "dice": [
+          [
+            "D1",
+            3
+          ],
+          [
+            "D2",
+            0
+          ],
+          [
+            "D3",
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "selectedCount": 0,
+      "before": {
+        "rerolls": 1,
+        "dice": [
+          [
+            "D1",
+            5
+          ],
+          [
+            "D2",
+            4
+          ],
+          [
+            "D3",
+            2
+          ]
+        ]
+      },
+      "after": {
+        "rerolls": 1,
+        "dice": [
+          [
+            "D1",
+            5
+          ],
+          [
+            "D2",
+            4
+          ],
+          [
+            "D3",
+            2
+          ]
+        ]
+      }
+    }
+  ],
+  "errors": []
+}

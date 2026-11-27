@@ -1,0 +1,26 @@
+{
+  "version": "0.45.0",
+  "browser": "158.0.4370.33",
+  "fixture": "production createEasel/createPaintingCanvas/mountCanvas/orientPainting; saved A01-1; three view angles, no product changes",
+  "measurement": {
+    "image": [
+      1536,
+      1024
+    ],
+    "canvas": {
+      "width": 1.3,
+      "height": 0.8666666666666667,
+      "depth": 0.05,
+      "center": [
+        0,
+        1.1708333333333334,
+        0.2775
+      ],
+      "top": 1.6041666666666667
+    },
+    "clampBottom": 1.7260000000000002,
+    "trayTop": 0.7374999999999999,
+    "bottomGap": 1.1102230246251565e-16,
+    "topGap": 0.12183333333333346
+  }
+}

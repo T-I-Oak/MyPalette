@@ -1,6 +1,7 @@
 const { chromium } = require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 const base = process.argv[2] || 'http://127.0.0.1:3010/MyPalette/';
+const { version } = require('../package.json');
 (async () => {
     const browser = await chromium.launch({ channel: 'msedge', headless: true });
     try {
@@ -68,7 +69,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3010/MyPalette/';
         await page.unroute(base);
         await page.setViewportSize({ width: 1200, height: 900 });
         await page.goto(new URL('tmp_icon_descriptions_review.html', base).href);
-        await page.waitForFunction(() => document.querySelector('#version')?.textContent === 'v0.43.0');
+        await page.waitForFunction(expected => document.querySelector('#version')?.textContent === expected, `v${version}`);
         await page.locator('[data-scene-area="hand"] [data-goal-condition]').first().waitFor({ timeout: 60000 });
         await page.waitForFunction(() => { const button = document.querySelector('[data-game-end-day]'); return button && !button.disabled; }, null, { timeout: 60000 });
         await page.locator('[data-scene-area="hand"] [data-goal-condition]').first().tap();

@@ -1,0 +1,4 @@
+Version 0.45.0
+Command: node scripts/checkAcceptanceCardSupport.cjs http://127.0.0.1:3000/MyPalette/
+Result: exit 0; PASS: card lower edge matches easel projection
+Actual tray front edge: approximately 0.05 CSS pixels above card surface lower edge; diagnostics recorded in d03-card-lower-edge.json
