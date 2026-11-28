@@ -1,2 +1,0 @@
-{"name":"checkCardSceneReduced","start":"2026-11-27T08:41:09.593Z","status":0,"signal":null}
-PASS: reduced motion first/multiple play, scaling, achievement, retirement, cleanup, morning recycle, shipping, mobile, 45 identities

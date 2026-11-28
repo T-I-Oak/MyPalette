@@ -1,5 +1,0 @@
-{"name":"checkCardScene","start":"2026-11-27T08:38:48.313Z","status":0,"signal":null}
-stock gain and draw
-exchange
-morning recycle
-PASS: 45 persistent card identities every frame, visibility invariant, hand/easel reflow, achievement canvas, shipping, stock gain/exchange, draw/recycle, cleanup, resize, cancellation

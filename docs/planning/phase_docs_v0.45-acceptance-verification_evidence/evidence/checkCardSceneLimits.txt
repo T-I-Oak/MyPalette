@@ -1,6 +1,0 @@
-{"name":"checkCardSceneLimits","start":"2026-11-27T08:39:41.492Z","status":0,"signal":null}
-PASS recycle limit 45
-PASS recycle limit 1
-PASS recycle limit 0
-PASS same-card achievement reward recycle/draw and reused easel
-PASS animated initial deal/draw, hand45, recycle45/1/0, empty stocks, mobile panel

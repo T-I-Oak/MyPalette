@@ -1,2 +1,0 @@
-{"name":"checkDiceSelection","start":"2026-11-27T08:37:33.887Z","status":0,"signal":null}
-PASS: icon/body tap toggle, outline, achievement consumption, drag suppression and duration-independent selection, resize

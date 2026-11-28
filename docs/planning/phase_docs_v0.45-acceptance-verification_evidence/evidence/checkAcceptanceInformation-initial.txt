@@ -1,2 +1,0 @@
-{"name":"checkAcceptanceInformation","start":"2026-11-27T11:56:14.095Z","status":0,"signal":null}
-PASS: field/current-vs-inspected steps/read-only state/shipped detail/finished art/fame/credit/A-B detail; availability after consume/reuse/current/face/remove/add

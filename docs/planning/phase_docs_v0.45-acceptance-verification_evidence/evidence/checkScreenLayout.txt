@@ -1,2 +1,0 @@
-{"name":"checkScreenLayout","start":"2026-11-27T08:36:41.203Z","status":0,"signal":null}
-{"viewports":7,"deviceScaleFactors":[2,1],"panelAnimation":"passed","developerScreens":2,"errors":[]}

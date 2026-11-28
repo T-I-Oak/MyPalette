@@ -1,2 +1,0 @@
-{"name":"checkRerollDisplay","start":"2026-11-27T08:45:02.626Z","status":0,"signal":null}
-reroll display / confirmation / resize checks passed

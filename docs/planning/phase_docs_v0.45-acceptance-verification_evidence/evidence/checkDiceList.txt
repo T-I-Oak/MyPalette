@@ -1,3 +1,0 @@
-{"name":"checkDiceList","start":"2026-11-27T08:37:57.245Z","status":0,"signal":null}
-PASS: dice list reduce
-PASS: dice list no-preference

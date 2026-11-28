@@ -1,6 +1,0 @@
-{"name":"checkDiceGraphics","start":"2026-11-27T08:37:32.663Z","status":1,"signal":null}
-
-page.evaluate: EncodingError: The source image cannot be decoded.
-    at C:\Users\tioak\Documents\Games\Projects\GameWorksOAK\MyPalette\scripts\checkDiceGraphics.cjs:6:31 {
-  log: []
-}

@@ -1,2 +1,0 @@
-{"name":"checkSpecialFrames","start":"2026-11-27T08:49:40.063Z","status":0,"signal":null}
-{"valid":true,"clip":{"x":390,"y":86.015625,"width":565.703125,"height":301.4564041056394}}

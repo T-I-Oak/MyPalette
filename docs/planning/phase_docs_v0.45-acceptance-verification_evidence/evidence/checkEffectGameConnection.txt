@@ -1,2 +1,0 @@
-{"name":"checkEffectGameConnection","start":"2026-11-27T08:43:46.103Z","status":0,"signal":null}
-PASS: real game play, multiple effects, blocking notices, choice resume, nested specials, reservation-only notices and disposal

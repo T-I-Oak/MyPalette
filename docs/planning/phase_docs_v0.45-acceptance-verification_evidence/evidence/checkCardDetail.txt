@@ -1,2 +1,0 @@
-{"name":"checkCardDetail","start":"2026-11-27T08:38:31.232Z","status":0,"signal":null}
-card detail: root/choice dialog, short viewport, tabs, focus, keyboard blocking including Escape, close-before-action, inert restoration, idempotent disposal passed

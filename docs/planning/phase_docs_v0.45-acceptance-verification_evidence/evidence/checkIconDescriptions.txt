@@ -1,2 +1,0 @@
-{"name":"checkIconDescriptions","start":"2026-11-27T08:44:15.312Z","status":0,"signal":null}
-PASS: normal faces, headings, icon/text order, hover/touch, keys, outside/repeat tap, replacement, cleanup, English, viewport/zoom/resize

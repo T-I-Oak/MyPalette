@@ -1,2 +1,0 @@
-{"name":"checkDiscardArea","start":"2026-11-27T08:49:30.174Z","status":0,"signal":null}
-PASS: empty/count, detail/steps without mutation, A/B bounds, stable scatter

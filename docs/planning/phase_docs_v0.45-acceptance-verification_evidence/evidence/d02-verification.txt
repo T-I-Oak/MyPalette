@@ -1,3 +1,0 @@
-Version 0.45.0
-Command: node scripts/checkAcceptanceDayEnd.cjs http://127.0.0.1:3000/MyPalette/
-Result: exit 0; PASS: flyer work/reservation/credit loss; A/normal and B/reduce: consumed dice retained, temporary removed at day end, permanent reused next day
