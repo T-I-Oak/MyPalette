@@ -12,7 +12,7 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));
         page.on('console', message => { if(message.type()==='error' && /^\w*Error:/.test(message.text())) errors.push(message.text()); });
-        await page.route(base, route => route.fulfill({ contentType: 'text/html', body: `
+        await page.route(base, route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: `
             <body class="theme-atelier texture-layout"><main class="LayoutScreen"><button id="panel-toggle" class="PanelToggle"></button></main>
             <script type="module">
             import {createLayoutScreen} from './src/ui/screenLayout/createLayoutScreen.js';
@@ -79,6 +79,11 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
                 await page.getByRole('button',{name:'今日の仕事を終える',exact:true}).click();
         await page.waitForFunction(()=>window.dayStartWaiting===true);
         assert.equal(await page.locator('[data-stock-acquire]').count(),0);
+        if(process.env.MYPALETTE_ACCEPTANCE_EVIDENCE){
+            fs.mkdirSync(process.env.MYPALETTE_ACCEPTANCE_EVIDENCE,{recursive:true});
+            await page.screenshot({path:require('node:path').join(process.env.MYPALETTE_ACCEPTANCE_EVIDENCE,'empty-stock-order.png')});
+            console.log('empty stock UI',await page.locator('.LayoutScreen').innerText());
+        }
         assert.deepEqual(errors,[]);
         console.log('stock edges: empty-grade return, same-card acquisition, two exchanges, resize/scale, no duplicates, all-empty gain and ordering passed');
     } finally { await browser.close(); }

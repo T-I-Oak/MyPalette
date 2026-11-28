@@ -117,13 +117,13 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             });
             assert(Math.abs(actionSpace.height - 36) < 1, JSON.stringify(actionSpace));
             assert(Math.abs(actionSpace.gap) < 1, JSON.stringify(actionSpace));
-            const bottomMargins = await page.evaluate(() => {
+            const bottomMargin = await page.evaluate(() => {
                 const paletteActions = document.querySelector('.PaletteFixedActions');
-                const handActions = document.querySelector('.HandFixedActions');
                 const gap = node => node.parentElement.getBoundingClientRect().bottom - node.getBoundingClientRect().bottom;
-                return { palette: gap(paletteActions), hand: gap(handActions) };
+                const scale = new DOMMatrix(getComputedStyle(paletteActions.parentElement).transform).a;
+                return gap(paletteActions) / scale;
             });
-            assert(Math.abs(bottomMargins.palette - bottomMargins.hand) < 1, JSON.stringify(bottomMargins));
+            assert(Math.abs(bottomMargin - 4) < 1, JSON.stringify({bottomMargin}));
             await page.screenshot({ path: `tmp_palette_area_${width}.png` });
         }
         await page.setViewportSize({ width:390,height:844 });

@@ -1,5 +1,6 @@
 const {chromium} = require(process.env.MYPALETTE_PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
+const {version} = require('../package.json');
 const {diceListReviewFixture} = require('./diceListReviewFixture.cjs');
 const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
 
@@ -14,7 +15,7 @@ const base = process.argv[2] || 'http://127.0.0.1:3000/MyPalette/';
             await page.waitForFunction(() => window.review?.session.game.state.phase === 'play' && !window.review.session.game.state.rollRequest,
                 null,{timeout:90000});
             await page.waitForFunction(() => window.reviewScene && [...window.reviewScene.visuals.values()].some(v=>!v.result.hidden),null,{timeout:60000});
-            assert.equal(await page.locator('#version').textContent(),'v0.44.0');
+            assert.equal(await page.locator('#version').textContent(),`v${version}`);
             const open = () => page.locator('.DiceListOpen').click();
             const panel = page.locator('.DiceList');
             await open(); await panel.waitFor({state:'visible'});
