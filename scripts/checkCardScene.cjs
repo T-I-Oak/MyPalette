@@ -18,7 +18,8 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  Math.random=()=>.4;
  const root=document.querySelector('main'),screen=createLayoutScreen(root,document.querySelector('button'));
  const presentation=createLayoutPresentation(screen);const mounted=mountGame(root,${JSON.stringify(settings)},presentation);window.check={screen,mounted,presentation,settings:${JSON.stringify(settings)}};
- window.frames=[];window.cardSceneFailures=[];window.easelIdentities=new Map();
+ window.frames=[];window.cardSceneFailures=[];window.easelIdentities=new Map();window.layoutStressMotions=[];
+ const stress=${Boolean(process.env.MYPALETTE_SCENE_LAYOUT_STRESS)}, stressed=new Set();
  const finish=presentation.play.finish.bind(presentation.play);
  presentation.play.finish=()=>{
  presentation.play.sample(1);
@@ -43,6 +44,8 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  const model=presentation.cards.model,counts=presentation.cards.counts;
  if(counts.deck+counts.hand+counts.field+counts.discard+counts.shipped+counts.transit+Object.values(counts.stocks).reduce((a,b)=>a+b,0)!==45)window.cardSceneFailures.push('location count');
  for(const [id,record] of model.cards){
+ if(!Array.from(record.pose.matrix).every(Number.isFinite)||!Number.isFinite(record.pose.flip))window.cardSceneFailures.push('invalid-pose:'+id);
+ if(presentation.cards.busy&&!root.querySelector('[data-scene-id="'+id+'"]').inert)window.cardSceneFailures.push('unlocked-card:'+id);
  if(model.motion?.owner==='hand-return-insert'&&record.area==='transit'){
  const wrapper=root.querySelector('[data-scene-id="'+id+'"]');
  if(!wrapper.parentElement.classList.contains('panel'))window.cardSceneFailures.push('return-above-stock:'+id);
@@ -63,6 +66,15 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  }
  const hidden=[...model.cards.values()].filter(c=>c.opacity<.999);
  const motion=root.querySelector('[data-card-scene-motion]')?.dataset.cardSceneMotion;
+ if(stress&&motion&&!stressed.has(motion)){
+ stressed.add(motion);layoutStressMotions.push(motion);
+ const narrow=stressed.size%2===1;
+ setTimeout(()=>{
+ root.style.width=narrow?'390px':'100%';root.style.height=narrow?'700px':'390px';
+ screen.setFixedScale(narrow?.65:1.2);
+ if(narrow)screen.openPanel();else screen.closePanel();
+ },0);
+ }
  const shipment=root.querySelector('.CardSceneLayer.moving [data-scene-area="shipped"] .SceneShippedCanvas');
  const tilt=shipment?.style.getPropertyValue('--shipment-progress');
  if(motion==='achievement-shipment'&&shipment&&
@@ -70,14 +82,26 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
       shipment.querySelector('canvas')?.width!==1536))window.cardSceneFailures.push('shipment face');
  if(motion==='stock-reveal'&&mounted.session.game.state.phase==='start'&&[...root.querySelectorAll('.PaletteViewport .DiceResult')].some(n=>!n.hidden))window.cardSceneFailures.push('stock revealed before dice ready');
  if(hidden.length&&motion!=='achievement-canvas')window.cardSceneFailures.push('opacity:'+motion);
- window.frames.push({time,motion,tilt,day:root.querySelector('.InfoDay span').textContent,hidden:hidden.map(c=>c.id),cards:[...model.cards].map(([id,c])=>({id,matrix:Array.from(c.pose.matrix),flip:c.pose.flip})),easels:[...root.querySelectorAll('.PlayPainting')].map(n=>({id:n.dataset.paintingId,transform:n.style.transform}))});
+ window.frames.push({time,motion,tilt,width:content.clientWidth,day:root.querySelector('.InfoDay span').textContent,hidden:hidden.map(c=>c.id),cards:[...model.cards].map(([id,c])=>({id,matrix:Array.from(c.pose.matrix),flip:c.pose.flip})),easels:[...root.querySelectorAll('.PlayPainting')].map(n=>({id:n.dataset.paintingId,transform:n.style.transform}))});
  window.cardSceneRaf=requestAnimationFrame(observe);
  }
  requestAnimationFrame(observe);
  </script>`}));
 
 
- const idle=async()=>{await page.waitForFunction(()=>!check.presentation.cards.busy&&!document.querySelector('[data-card-scene-motion]'),null,{timeout:60000});};
+ const idle=async()=>{
+ await page.waitForFunction(()=>!check.presentation.cards.busy&&!document.querySelector('[data-card-scene-motion]'),null,{timeout:60000});
+ assert.deepEqual(await page.evaluate(()=>{
+ const scene=check.presentation.cards,failures=[];
+ for(const [id,record] of scene.model.cards){
+ const expected=scene.poseFor(id),wrapper=document.querySelector('[data-scene-id="'+id+'"]');
+ if(record.owner!==null||scene.model.motion)failures.push('unfinished:'+id);
+ if(record.area!==wrapper.dataset.sceneArea||wrapper.parentElement.classList.contains('moving'))failures.push('final-area:'+id);
+ if(expected.matrix.some((v,i)=>Math.abs(v-record.pose.matrix[i])>1e-5)||Math.abs(expected.flip-record.pose.flip)>1e-5)failures.push('final-pose:'+id);
+ }
+ return failures;
+ }),[]);
+ };
  const begin=async()=>{await releaseDayStart(page);await page.waitForFunction(()=>check.mounted.session.game.state.phase==='play',null,{timeout:60000});await idle();};
  const play=async()=>{await page.locator('.HandFixedActions button:enabled').first().click({force:true});await idle();};
  const stock=async()=>{await page.waitForFunction(()=>document.querySelector('[data-stock-acquire]')?.disabled===false);await page.locator('[data-stock-acquire]').first().click({force:true});await idle();};
@@ -105,7 +129,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  }),true,'カンバスを載せてもイーゼル部品の位置を変えない');
  await page.emulateMedia({reducedMotion:'no-preference'});
  await play();
- assert.ok(await page.evaluate(()=>{const f=frames.find(f=>f.motion==='play'&&f.easels.length);return new DOMMatrix(f.easels[0].transform).m41>=document.querySelector('.LayoutContent').clientWidth;}),'イーゼルは右の画面外から入る');
+ assert.ok(await page.evaluate(()=>{const f=frames.find(f=>f.motion==='play'&&f.easels.length);return new DOMMatrix(f.easels[0].transform).m41>=f.width;}),'イーゼルは右の画面外から入る');
  const first=await page.evaluate(()=>{const g=check.mounted.session.game;const die=g.state.dice.find(d=>!d.faces[d.current].special);for(const c of [...g.state.hand,...g.state.field])g.step(c).goals=[{color:die.faces[die.current].color,material:null}];window.firstEasel=document.querySelector('.PlayPainting');return {id:g.state.field[0].id,die:die.id};});
  await play();
  assert.ok(await page.evaluate(()=>window.firstEasel===document.querySelector('.PlayPainting')),'残るイーゼルの個体を維持');
@@ -117,7 +141,7 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  await select(first.die);
  const beforeAchievement=await page.evaluate(()=>({start:frames.length,easels:[...document.querySelectorAll('.PlayPainting')].map(n=>({id:n.dataset.paintingId,transform:n.style.transform}))}));
  await page.getByRole('button',{name:'選択ダイスで達成',exact:true}).first().click({force:true});await idle();
- assert.ok(await page.evaluate(before=>frames.slice(before.start).filter(f=>f.motion==='achievement-canvas').every(f=>JSON.stringify(f.easels)===JSON.stringify(before.easels)),beforeAchievement),'達成開始・カンバス演出中に全イーゼルの配置を変えない');
+ if(!process.env.MYPALETTE_SCENE_LAYOUT_STRESS)assert.ok(await page.evaluate(before=>frames.slice(before.start).filter(f=>f.motion==='achievement-canvas').every(f=>JSON.stringify(f.easels)===JSON.stringify(before.easels)),beforeAchievement),'配置変更がない達成開始・カンバス演出中に全イーゼルの配置を変えない');
  assert.ok(await page.evaluate(()=>check.mounted.session.game.state.discard.some(c=>c.step===1)));
  assert.ok(await page.evaluate(()=>window.frames.some(f=>f.hidden.length>0)),'カンバス演出中だけ非表示');
  assert.ok(await page.evaluate(()=>new DOMMatrix(document.querySelector('[data-painting-id="'+check.mounted.session.game.state.discard.find(c=>c.step===1).id+'"]').style.transform).m41<0),'イーゼルは左の画面外へ抜ける');
@@ -153,6 +177,11 @@ const base=process.argv[2]||'http://127.0.0.1:3000/MyPalette/';
  assert.equal(await page.locator('[data-scene-card]').count(),45);
  assert.deepEqual(await page.evaluate(()=>window.cardSceneFailures),[]);
  assert.deepEqual(errors,[]);
+ if(process.env.MYPALETTE_SCENE_LAYOUT_STRESS){
+ const motions=await page.evaluate(()=>layoutStressMotions);
+ for(const name of ['initial-deal','draw','play','achievement-canvas','achievement-transfer','achievement-shipment','stock-transfer','hand-return-flight','day-cleanup','recycle-transfer'])assert.ok(motions.includes(name),'layout stress reached '+name);
+ console.log('layout stress motions: '+motions.join(', '));
+ }
  // Resizing and panel movement keep all physical cards and their identity.
  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>check.screen.openPanel());await page.waitForTimeout(300);
  assert.equal(await page.locator('[data-scene-card]').count(),45);

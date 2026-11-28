@@ -31,6 +31,7 @@ try {
     const presentation=createLayoutPresentation(screen),mounted=mountGame(root,settings,presentation),cards=presentation.cards;
     await new Promise(resolve=>{function wait(){if(mounted.session.game.state.phase==='play'&&!cards.busy)resolve();else requestAnimationFrame(wait);}wait();});
     const initial=structuredClone(cards.display);
+    presentation.clear();
     status.textContent='準備完了';stockButton.disabled=false;recycleButton.disabled=false;
     async function run(kind) {
         stockButton.disabled=true;recycleButton.disabled=true;status.textContent='実行中：'+(kind==='stock'?'公開切替':'再構成＋ドロー');

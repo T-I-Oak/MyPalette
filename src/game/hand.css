@@ -4,4 +4,5 @@
 .HandArea .PaintingCard { margin: 0; }
 .HandFixedActions { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-origin: top left; z-index: 5; pointer-events: none; }
 .HandFixedActions > .GameCardActions { position: absolute; margin: 0; width: max-content; height: 36px; transform: translateX(-50%); pointer-events: auto; }
+.HandFixedActions > .GameCardActions[hidden] { display: none; }
 .HandFixedActions .Button { box-sizing: border-box; width: auto; max-width: 100%; min-width: 0; height: 36px; min-height: 0; padding: 0 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 24px/32px system-ui, sans-serif; }

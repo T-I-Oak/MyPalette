@@ -21,6 +21,7 @@ export function createHandPresentation(area, host, scene) {
             if (!handIds.has(id)) {
                 action.remove(); actions.delete(id); continue;
             }
+            action.hidden = record.area !== 'hand';
             const position = handActionPosition(record.pose.matrix, frame, area.bottomRightOffset.y);
             action.style.left = `${position.x}px`;
             action.style.top = `${position.y}px`;

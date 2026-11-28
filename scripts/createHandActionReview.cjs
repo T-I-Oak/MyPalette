@@ -7,7 +7,7 @@ html,body{margin:0;height:100%;overflow:hidden}body{display:flex;flex-direction:
 .guide{padding:8px 12px;font:14px/1.5 system-ui;background:#fff4c9;color:#302a18}.guide p{margin:0 0 6px}.guide button,.guide select{font:inherit;margin-right:8px}
 main.LayoutScreen{flex:1;min-height:0;height:0;width:100%;align-self:center}body[data-narrow=true] main{width:min(100%,390px)}
 </style></head><body class="theme-atelier texture-layout">
-<aside class="guide"><p>MP38-01〜03 / ${version}：初日のドローを観察し、手札の「着手」で2枚の効果ドローを確認。着手したカードのボタンは移動開始時に消え、残る手札も追従します。演出中は操作できません。保存済み設定は変更しません。</p>
+<aside class="guide"><p>MP47-01 / ${version}：初日と着手時の効果ドローを観察してください。「着手」は各カードが手札へ到着してから表示されます。複数枚では先に到着したカードから表示され、演出完了まで操作できません。着手したカードのボタンは移動開始時に消え、残る手札も追従します。保存済み設定は変更しません。</p>
 <button id="restart">最初から</button><button id="width">A/B幅切替</button><label>固定倍率<select id="scale"><option value="1">1</option><option value="0.65">0.65</option><option value="1.2">1.2</option></select></label><span id="status"></span></aside>
 <main class="LayoutScreen"><button id="panel-toggle" class="PanelToggle" type="button"></button></main>
 <script type="module">
