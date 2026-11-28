@@ -10,7 +10,7 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
     try {
         const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: process.env.MYPALETTE_STOCK_MOTION ? 'no-preference' : 'reduce' });
         const errors = [];
-        page.on('pageerror', error => { errors.push(error.message); console.error(error.message); });
+        page.on('pageerror', error => { errors.push(error.message); console.error(error.stack); });
         page.on('console', message => { if(message.type()==='error' && /^\w*Error:/.test(message.text())) errors.push(message.text()); });
         await page.route(base, route => route.fulfill({ contentType: 'text/html', body: `
             <body class="theme-atelier texture-layout"><main class="LayoutScreen"><button id="panel-toggle" class="PanelToggle"></button></main>
@@ -49,6 +49,8 @@ const settings = JSON.parse(fs.readFileSync('public/data/cards.json', 'utf8'));
             const {screen,presentation}=stockCheck, cards=presentation.cards;
             const initial=structuredClone(cards.display);
             window.identities=[...document.querySelectorAll('[data-scene-card]')];
+                // Synthetic scene snapshots do not render engine controls between moves.
+                presentation.clear();
             window.runBoardScenario=async(mode,flipDuring=false)=>{
                 await cards.move(initial,0,'restore');cards.busy=false;cards.update();
                 if(mode==='closed')screen.closePanel();else screen.openPanel();
