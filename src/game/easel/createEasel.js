@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { canvasPlacement } from './canvasPlacement.js';
 
 // Local +Z faces the painter; the front assembly leans away from them.
 export function createEasel() {
@@ -42,8 +43,11 @@ export function createEasel() {
     bar(front, 'tray-back', [1.28, .13, .065], [0, .79, .22]);
     bar(front, 'tray-shelf', [1.34, .055, .15], [0, .71, .2775]);
     bar(front, 'tray-lip', [1.34, .055, .025], [0, .705, .3525]);
-    bar(front, 'top-clamp-block', [.16, .075, .055], [0, 1.79, .235]);
-    bar(front, 'top-clamp-lip', [.18, .018, .09], [0, 1.735, .2725]);
+    const canvasTop = canvasPlacement(1536, 1024).top;
+    const clampLipHeight = .018, clampBlockHeight = .075;
+    const clampBlockY = canvasTop + clampLipHeight + clampBlockHeight / 2;
+    bar(front, 'top-clamp-block', [.16, clampBlockHeight, .055], [0, clampBlockY, .235]);
+    bar(front, 'top-clamp-lip', [.18, clampLipHeight, .09], [0, canvasTop + clampLipHeight / 2, .2725]);
     const frontRotation = new THREE.Matrix4().makeRotationX(front.rotation.x);
     const hinge = new THREE.Vector3(0, 1.64, .13).applyMatrix4(frontRotation);
     const rearFoot = new THREE.Vector3(0, .035, -.83);
@@ -51,7 +55,7 @@ export function createEasel() {
     const braceFront = new THREE.Vector3(0, .43, .13).applyMatrix4(frontRotation);
     const braceRear = rearFoot.clone().lerp(hinge, (braceFront.y - rearFoot.y) / (hinge.y - rearFoot.y));
     beam(easel, 'spreader', braceRear.toArray(), braceFront.toArray(), .035, .035);
-    for (const [name, y, z] of [['tray-knob', .70, .375], ['clamp-knob', 1.81, .27]]) {
+    for (const [name, y, z] of [['tray-knob', .70, .375], ['clamp-knob', clampBlockY, .28]]) {
         const knob = new THREE.Mesh(new THREE.CylinderGeometry(.026, .026, .035, 20), metal);
         knob.name = name; knob.rotation.x = Math.PI / 2; knob.position.set(0, y, z);
         knob.castShadow = true; front.add(knob);
